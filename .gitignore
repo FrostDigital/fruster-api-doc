@@ -66,3 +66,7 @@ typings/
 
 # vs code
 .vscode
+
+dist/json-schemas
+dist/assets/client.js
+dist/server.js
