@@ -68,3 +68,5 @@ typings/
 .vscode
 
 dist/json-schemas
+dist/assets/client.js
+dist/server.js
