@@ -12,7 +12,7 @@ const app = express();
 const bus = require("fruster-bus");
 const utils = require("./utils/utils");
 const config = require("../config");
-const port = process.env.PORT || 3100;
+const port = config.port || 3100;
 
 (async function () {
 
@@ -20,7 +20,7 @@ const port = process.env.PORT || 3100;
         address: config.bus
     });
 
-    require("fruster-health").start();
+    // require("fruster-health").start();
 
     await startServer();
 
@@ -34,7 +34,7 @@ const endpointsByType = {
 
 function startServer() {
 
-    app.use("/assets", express.static("assets"));
+    app.use("/assets", express.static("./assets"));
 
     app.get("/", async (req, res) => {
 
