@@ -11,11 +11,13 @@ const server = express();
 
 const bus = require("fruster-bus");
 const utils = require("./utils/utils");
+const config = require("../config");
+
 
 (async function () {
 
     await bus.connect({
-        address: "nats://localhost:4222"
+        address: config.bus
     });
 
     await startServer();
@@ -90,11 +92,11 @@ function startServer() {
 
     });
 
-    server.listen(8080);
+    server.listen(config.port);
     console.log("listening");
 
     if (process.send) {
-        process.send({ event: "online", url: "http://localhost:8080/" });
+        process.send({ event: "online", url: `http://localhost:${config.port}/` });
     }
 
 }
