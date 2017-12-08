@@ -10,4 +10,4 @@ RUN \
   npm run-script docker;
 
 EXPOSE 4000
-cmd ["node", "app.js"]
+cmd ["cd dist", "node", "server.js"]
