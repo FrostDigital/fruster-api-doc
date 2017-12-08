@@ -1,24 +1,26 @@
 require("babel-polyfill");
 
-import express from "express";
 import React from "react";
 import { renderToString } from "react-dom/server";
 import App from "./app";
 import template from "./template";
 
+const express = require("express");
 const uuid = require("uuid");
-const server = express();
+const app = express();
 
 const bus = require("fruster-bus");
 const utils = require("./utils/utils");
 const config = require("../config");
-
+const port = process.env.PORT || 3100;
 
 (async function () {
 
     await bus.connect({
         address: config.bus
     });
+
+    require("fruster-health").start();
 
     await startServer();
 
@@ -32,9 +34,9 @@ const endpointsByType = {
 
 function startServer() {
 
-    server.use("/assets", express.static("assets"));
+    app.use("/assets", express.static("assets"));
 
-    server.get("/", async (req, res) => {
+    app.get("/", async (req, res) => {
 
         const metadataResponses = await bus.requestMany({
             subject: "metadata",
@@ -92,11 +94,11 @@ function startServer() {
 
     });
 
-    server.listen(config.port);
+    app.listen(port);
     console.log("listening");
 
     if (process.send) {
-        process.send({ event: "online", url: `http://localhost:${config.port}/` });
+        process.send({ event: "online", url: `http://localhost:${port}/` });
     }
 
 }

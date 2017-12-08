@@ -120,7 +120,7 @@ function setFakerSpecificAttrs(object) {
                     object["faker"] = "random.uuid";
                     break;
                 case "uri":
-                    object["faker"] = "random.url";
+                    object["faker"] = "internet.url";
                     break;
             }
 

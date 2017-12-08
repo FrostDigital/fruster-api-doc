@@ -14,6 +14,7 @@
     "dependencies": {
         "express": "^4.14.0",
         "fruster-bus": "^0.2.18",
+        "fruster-health": "^0.0.11",
         "json-formatter-js": "^2.2.0",
         "json-schema-faker": "^0.4.6",
         "json-schema-ref-parser": "4.0.4",
