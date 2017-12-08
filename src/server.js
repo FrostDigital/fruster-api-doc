@@ -8,6 +8,7 @@ import template from "./template";
 const express = require("express");
 const uuid = require("uuid");
 const app = express();
+const path = require("path");
 
 const bus = require("fruster-bus");
 const utils = require("./utils/utils");
@@ -34,7 +35,7 @@ const endpointsByType = {
 
 function startServer() {
 
-    app.use("/assets", express.static("./assets"));
+    app.use("/assets", express.static(path.resolve(`${__dirname}/assets`)));
 
     app.get("/", async (req, res) => {
 
