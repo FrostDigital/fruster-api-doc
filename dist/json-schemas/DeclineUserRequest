@@ -1,0 +1,13 @@
+{
+  "id": "DeclineUserRequest",
+  "description": "Request for declining a user",
+  "additionalProperties": false,
+  "properties": {
+    "reason": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "reason"
+  ]
+}

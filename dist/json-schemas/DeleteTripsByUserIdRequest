@@ -1,0 +1,13 @@
+{
+  "id": "DeleteTripsByUserIdRequest",
+  "description": "Request for deleting trips by user id",
+  "additionalProperties": false,
+  "properties": {
+    "userId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "userId"
+  ]
+}
