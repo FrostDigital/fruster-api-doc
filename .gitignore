@@ -1,3 +1,10 @@
+db
+log
+.DS_Store
+
+# Fruster health file
+.health
+
 # Logs
 logs
 *.log
@@ -57,3 +64,9 @@ typings/
 # dotenv environment variables file
 .env
 
+# vs code
+.vscode
+
+dist/json-schemas
+dist/assets/client.js
+dist/server.js
