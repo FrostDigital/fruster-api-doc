@@ -8,6 +8,10 @@ export default class App extends Component {
     render() {
         return (
             <div className="container">
+                <br />
+                <div className="alert alert-danger" id="try-again-warning" hidden>
+                    <strong>Note:</strong> Something went wrong; <a id="refresh-page" href="#">please refresh the page.</a>
+                </div>
                 <a href="#"><h1>API</h1></a>
 
                 <h4>Table of contents</h4>

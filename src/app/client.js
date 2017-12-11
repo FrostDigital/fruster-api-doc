@@ -7,6 +7,13 @@ $(() => {
     const copyJsonSchemaJson = "#modal #copy-json-schema-json";
     const copySampleJson = "#modal #copy-sample-json";
 
+    if ($(".service-container").length === 0) {
+        $("#try-again-warning").show();
+        $("#refresh-page").click(event => {
+            location.reload();
+        });
+    }
+
     $(".request-schema").click(clickEvent);
     $(".response-schema").click(clickEvent);
     $(copyJsonSchemaJson).click(() => $(jsonSchemaJson).toggle());
@@ -20,8 +27,6 @@ $(() => {
         const service = entryClasses[1];
         const schemaId = entryClasses[2];
         const schema = window._APP_STATE_.schemasPerService[service] ? window._APP_STATE_.schemasPerService[service].find(schema => schema.id === schemaId) : null;
-
-        console.log(schema);
 
         if (typeof schema === "object" && !!schema) {
             const schemaToJson = Object.assign({}, schema);
@@ -66,5 +71,4 @@ $(() => {
         formatter.openAtDepth(Infinity);
         return formatter.render()
     }
-
 });
