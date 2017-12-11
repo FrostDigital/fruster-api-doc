@@ -70,6 +70,8 @@ ul.service {
 .modal-content {
     padding: 30px;
     overflow-x: scroll;
+    border-radius: 0 !important;
+    border: 0 !important;
 }
 
 textarea {
@@ -82,6 +84,33 @@ textarea {
     overflow-y: scroll !important;
 }
 
+.modal-open .modal .close {
+    float: right;
+}
+
 .modal-lg {
     overflow: hidden;
+}
+
+.doc-entry-title {
+    font-weight: bold;
+}
+
+.description-key {
+    font-weight: bold;
+    color: #727272;
+}
+
+.table>tbody>tr>td,
+.table>tbody>tr>th,
+.table>tfoot>tr>td,
+.table>tfoot>tr>th,
+.table>thead>tr>td,
+.table>thead>tr>th {
+    padding: 2px !important;
+}
+
+.glyphicon {
+    font-size: 12px !important;
+    margin-left: 5px;
 }

@@ -45,6 +45,7 @@ export default class App extends Component {
                 <div id="modal" className="modal fade bd-example-modal-lg" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
                     <div className="modal-dialog modal-lg">
                         <div className="modal-content">
+                            <span className="glyphicon glyphicon-remove close" id="close-btn"></span>
                             <h1 id="header"></h1>
 
                             <h2>Json schema</h2>
@@ -97,14 +98,39 @@ function listEndpointDetails(endpointsJson, type) {
                             <tr>
                                 <th>Request body</th>
                                 <th>Response body</th>
-                                <th>Description</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td className={"request-schema" + " " + endpoint.instanceId + " " + endpoint.requestSchema}>{endpoint.requestSchema || "n/a"}</td>
-                                <td className={"response-schema" + " " + endpoint.instanceId + " " + endpoint.responseSchema}>{endpoint.responseSchema || "n/a"}</td>
-                                <td>{endpoint.description || "n/a"}</td>
+                                <td className={"request-schema" + " " + endpoint.instanceId + " " + endpoint.requestSchema}>{endpoint.requestSchema || "n/a"}
+                                    {endpoint.requestSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}
+                                </td>
+                                <td className={"response-schema" + " " + endpoint.instanceId + " " + endpoint.responseSchema}>{endpoint.responseSchema || "n/a"}
+                                    {endpoint.responseSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table className="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Documentation</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td className="description">
+                                    {endpoint.docs ?
+                                        <p>
+                                            <div className="doc-entry-title">Description</div>
+                                            <span className="description-value"> {endpoint.docs.description}</span>
+                                            {endpoint.docs.params ? getDocEntry(endpoint.docs.params, "Url parameters") : ""}
+                                            {endpoint.docs.query ? getDocEntry(endpoint.docs.query, "Query parameters") : ""}
+                                            {endpoint.docs.errors ? getDocEntry(endpoint.docs.errors, "Errors") : ""}
+                                        </p> : "n/a"}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -113,6 +139,19 @@ function listEndpointDetails(endpointsJson, type) {
 
         </div>
     })
+}
+
+function getDocEntry(input, title) {
+    if (Object.keys(input).length > 0) {
+        return <p>
+            <div className="doc-entry-title">{title}</div>
+            {forEach(input, (value, key) => {
+                return <span>
+                    <div className="description-item"><span className="description-key">{key}</span>: <span className="description-value">{value}</span></div>
+                </span>
+            })}
+        </p>
+    }
 }
 
 function forEach(toLoop, handler) {

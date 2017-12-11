@@ -66,13 +66,23 @@ module.exports = {
      * @param {Object} object object to add to array
      * @param {Array} array array to add object to
      * 
-     * @return {Void}
+     * @return {Array}
      */
     addUnique: (object, array) => {
-        const objectExists = !!array.find(o => o.subject === object.subject);
+        let objectExists = array.find((e, i, a) => {
+            let isObject = e.subject === object.subject;
 
-        if (!objectExists)
+            if (isObject)
+                a[i] = object;
+
+            return isObject;
+        });
+
+        if (!objectExists) {
             array.push(object);
+        }
+
+        return array;
     },
 
     /**
