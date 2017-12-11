@@ -96,6 +96,11 @@ textarea {
     font-weight: bold;
 }
 
+.description-key {
+    font-weight: bold;
+    color: #727272;
+}
+
 .table>tbody>tr>td,
 .table>tbody>tr>th,
 .table>tfoot>tr>td,
