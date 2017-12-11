@@ -46,6 +46,9 @@ $(() => {
             $(jsonSchemaJson).append(JSON.stringify(schemaToJson));
             $(sampleJson).append(JSON.stringify(schema.sample));
 
+            $("#close-btn").click(event => {
+                $('#modal').modal("hide");
+            });
             $('#modal').modal();
 
             $('#modal').on("hide.bs.modal", () => {

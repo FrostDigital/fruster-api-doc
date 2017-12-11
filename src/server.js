@@ -27,8 +27,8 @@ const port = config.port || 3100;
 
 }());
 
-const schemasPerService = {};
-const endpointsByType = {
+let schemasPerService = {};
+let endpointsByType = {
     http: {},
     service: {}
 };
@@ -38,6 +38,14 @@ function startServer() {
     app.use("/assets", express.static(path.resolve(`${__dirname}/assets`)));
 
     app.get("/", async (req, res) => {
+
+        if (req.query.resetCache) {
+            schemasPerService = {};
+            endpointsByType = {
+                http: {},
+                service: {}
+            };
+        }
 
         const metadataResponses = await bus.requestMany({
             subject: "metadata",
@@ -76,7 +84,7 @@ function startServer() {
             if (!endpointsByType[type][splits[splitIndex]])
                 endpointsByType[type][splits[splitIndex]] = [];
 
-            utils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
+            endpointsByType[type][splits[splitIndex]] = utils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
 
             if (!schemasPerService[instanceId])
                 schemasPerService[instanceId] = schemas;
