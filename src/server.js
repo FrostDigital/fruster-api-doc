@@ -38,7 +38,6 @@ function startServer() {
     app.use("/assets", express.static(path.resolve(`${__dirname}/assets`)));
 
     app.get("/", async (req, res) => {
-
         if (req.query.resetCache) {
             schemasPerService = {};
             endpointsByType = {
@@ -55,17 +54,24 @@ function startServer() {
             }
         });
 
-        metadataResponses.forEach(async response => {
-            const schemas = await utils.derefJsonSchema(response.data.schemas);
+        const promises = [];
 
-            response.data.exposing.map((object, i) => {
-                if (object.subject.includes("http")) {
-                    parseEndpoint(object, 2, "http", schemas, response.from.instanceId);
-                } else {
-                    parseEndpoint(object, 0, "service", schemas, response.from.instanceId);
-                }
-            });
+        metadataResponses.forEach(response => {
+            const promise = utils.derefJsonSchema(response.data.schemas)
+                .then((schemas) => {
+                    response.data.exposing.map((object, i) => {
+                        if (object.subject.includes("http")) {
+                            parseEndpoint(object, 2, "http", schemas, response.from.instanceId);
+                        } else {
+                            parseEndpoint(object, 0, "service", schemas, response.from.instanceId);
+                        }
+                    });
+                });
+
+            promises.push(promise);
         });
+
+        await Promise.all(promises);
 
         /**
          * @param {Object} object response object
