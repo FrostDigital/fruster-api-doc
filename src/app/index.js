@@ -138,8 +138,8 @@ function listEndpointDetails(endpointsJson, type) {
                                 <td className="description">
                                     {endpoint.docs ?
                                         <p>
-                                            <div className="doc-entry-title">Description</div>
-                                            <span className="description-value"> {endpoint.docs.description}</span>
+                                            {endpoint.doc.description ? <div className="doc-entry-title">Description</div> : ""}
+                                            {endpoint.doc.description ? <span className="description-value"> {endpoint.docs.description}</span> : ""}
                                             {endpoint.docs.params ? getDocEntry(endpoint.docs.params, "Url parameters") : ""}
                                             {endpoint.docs.query ? getDocEntry(endpoint.docs.query, "Query parameters") : ""}
                                             {endpoint.docs.errors ? getDocEntry(endpoint.docs.errors, "Errors") : ""}
