@@ -37,14 +37,20 @@ function startServer() {
 
     app.use("/assets", express.static(path.resolve(`${__dirname}/assets`)));
 
+    app.post("/reset-cache", (req, res) => {
+        console.log("Resetting cache");
+
+        schemasPerService = {};
+        endpointsByType = {
+            http: {},
+            service: {}
+        };
+
+        res.status(200);
+        res.end();
+    });
+
     app.get("/", async (req, res) => {
-        if (req.query.resetCache) {
-            schemasPerService = {};
-            endpointsByType = {
-                http: {},
-                service: {}
-            };
-        }
 
         const metadataResponses = await bus.requestMany({
             subject: "metadata",

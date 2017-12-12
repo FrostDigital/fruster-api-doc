@@ -19,10 +19,26 @@ $(() => {
     $(copyJsonSchemaJson).click(() => $(jsonSchemaJson).toggle());
     $(copySampleJson).click(() => $(sampleJson).toggle());
 
+    $("#reset-cache").click(resetCache);
+
+    /**
+     * @param {Object} event click event
+     */
+    function resetCache(event) {
+        if (confirm("This should only be used when old endpoints still show up in the list. \nAre you sure you want to reset the cache?")) {
+            $.post("/reset-cache")
+                .then(() => {
+                    location.reload();
+                });
+        }
+    }
+
     /**
      * @param {Object} event click event
      */
     function clickEvent(event) {
+        event.preventDefault();
+
         const entryClasses = $(event.currentTarget).attr('class').split(/\s+/);
         const service = entryClasses[1];
         const schemaId = entryClasses[2];
