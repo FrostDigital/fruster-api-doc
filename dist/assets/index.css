@@ -17,6 +17,15 @@ body {
     overflow-y: scroll;
 }
 
+.toolbar {
+    background-color: #313131;
+    padding: 10px;
+}
+
+#reset-cache {
+    float: right;
+}
+
 h1 {
     margin-top: 40px !important;
 }
@@ -29,6 +38,11 @@ h2 {
 .request-schema,
 .response-schema {
     cursor: pointer;
+}
+
+.request-schema.deactivated,
+.response-schema.deactivated {
+    cursor: default;
 }
 
 .true {
@@ -53,14 +67,6 @@ h2 {
 
 .PUT {
     color: #e9982f;
-}
-
-ul.http {
-    float: left;
-}
-
-ul.service {
-    float: right;
 }
 
 .clearfix {
@@ -113,4 +119,13 @@ textarea {
 .glyphicon {
     font-size: 12px !important;
     margin-left: 5px;
+}
+
+a.deactivated,
+a:visited.deactivated,
+a:active.deactivated,
+a:hover.deactivated {
+    color: inherit !important;
+    text-decoration: inherit !important;
+    cursor: default !important;
 }
