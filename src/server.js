@@ -51,6 +51,13 @@ function startServer() {
     });
 
     app.get("/", async (req, res) => {
+        if (req.query.resetCache) {
+            schemasPerService = {};
+            endpointsByType = {
+                http: {},
+                service: {}
+            };
+        }
 
         const metadataResponses = await bus.requestMany({
             subject: "metadata",
