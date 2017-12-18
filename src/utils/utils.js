@@ -4,10 +4,11 @@ const uuid = require("uuid");
 const constants = require("../constants");
 const fs = require("fs-extra");
 const path = require("path");
+const log = require("fruster-log");
 
 const filePath = path.resolve(`${__dirname}/json-schemas`);
 const JsonSchemaCruncher = require("../utils/JsonSchemaCruncher");
-const jsonSchemaCruncher = new JsonSchemaCruncher(filePath);
+
 const jsf = require("json-schema-faker");
 
 jsf.option({
@@ -85,28 +86,42 @@ module.exports = {
         return array;
     },
 
+
     /**
      * derefs json schemas
      * 
      * @param {Array<Object>} schemas schemas to save to folder
      * 
-     * @return {Promise<Array<Object>>}
+     * @return {Promise<Object>}
      */
     derefJsonSchema: async (schemas, serviceName) => {
-        await jsonSchemaCruncher.buildContext(serviceName, schemas);
+        const jsonSchemaCruncher = new JsonSchemaCruncher(filePath, serviceName);
+        await jsonSchemaCruncher.buildContext(schemas);
 
         const schemaPromises = [];
 
-        schemas.forEach(schema => {
-            schemaPromises.push(jsonSchemaCruncher.getSchema(schema.id).then(schema => {
-                setFakerSpecificAttrs(schema);
+        schemas.forEach(schema => schemaPromises.push(
+            jsonSchemaCruncher.getSchema(schema.id)
+                .then(schema => {
+                    setFakerSpecificAttrs(schema);
+                    schema.sample = jsf(schema);
 
-                schema.sample = jsf(schema);
-                return schema;
-            }));
-        });
+                    return schema;
+                }).catch(err => {
+                    log.error(err);
+                    return {
+                        id: schema.id,
+                        description: err,
+                        error: true
+                    };
+                })
+        ));
 
-        return await Promise.all(schemaPromises);
+        return await Promise.all(schemaPromises)
+            .then(schemas => {
+                const errors = schemas.filter(result => result.error);
+                return { schemas, errors };
+            });
     }
 };
 

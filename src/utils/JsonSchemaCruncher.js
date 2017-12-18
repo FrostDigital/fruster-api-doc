@@ -6,27 +6,28 @@ const log = require("fruster-log");
 
 class JsonSchemaCruncher {
 
-	constructor(tempDir) {
-		this.tempDir = tempDir || os.tmpdir();
+	constructor(tempDir, serviceName) {
+		this.serviceName = serviceName;
+		this.schemasDir = path.join(tempDir, serviceName);
 	}
 
-	getSchema(schemaId) {
+	async getSchema(schemaId) {
 		log.debug("derefing", schemaId);
 		const schemaPath = path.join(this.schemasDir, schemaId);
-		return $RefParser.dereference(schemaPath);
+
+		return await $RefParser.dereference(schemaPath);
 	}
 
-	async buildContext(serviceName, bundle) {
-		await this._writeJsonSchemas(serviceName, bundle);
+	async buildContext(bundle) {
+		await this._writeJsonSchemas(bundle);
 	}
 
-	async _writeJsonSchemas(serviceName, bundle) {
-		this.schemasDir = path.join(this.tempDir, serviceName);
-
+	async _writeJsonSchemas(bundle) {
 		await fs.ensureDir(this.schemasDir);
 
 		await bundle.map(async (jsonSchema) => {
 			const filePath = path.join(this.schemasDir, jsonSchema.id);
+
 			log.debug(filePath);
 			return fs.writeJson(filePath, jsonSchema);
 		});

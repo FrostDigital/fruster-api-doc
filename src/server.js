@@ -11,6 +11,7 @@ const app = express();
 const path = require("path");
 
 const bus = require("fruster-bus");
+const log = require("fruster-log");
 const utils = require("./utils/utils");
 const config = require("../config");
 const port = config.port || 3100;
@@ -51,75 +52,94 @@ function startServer() {
     });
 
     app.get("/", async (req, res) => {
-        if (req.query.resetCache) {
-            schemasPerService = {};
-            endpointsByType = {
-                http: {},
-                service: {}
-            };
-        }
-
-        const metadataResponses = await bus.requestMany({
-            subject: "metadata",
-            maxResponses: 10000,
-            message: {
-                reqId: uuid.v4()
+        try {
+            if (req.query.resetCache) {
+                schemasPerService = {};
+                endpointsByType = {
+                    http: {},
+                    service: {}
+                };
             }
-        });
 
-        const promises = [];
+            const metadataResponses = await bus.requestMany({
+                subject: "metadata",
+                maxResponses: 10000,
+                message: {
+                    reqId: uuid.v4()
+                }
+            });
+            /**@type {Object<String, Array>} serviceName: [JsonSchemaId]*/
+            let schemasWithErrors;
+            const promises = [];
 
-        metadataResponses.forEach(response => {
-            const promise = utils.derefJsonSchema(response.data.schemas, response.from.instanceId)
-                .then((schemas) => {
-                    response.data.exposing.map((object, i) => {
-                        if (object.subject.includes("http")) {
-                            parseEndpoint(object, 2, "http", schemas, response.from.instanceId);
-                        } else {
-                            parseEndpoint(object, 0, "service", schemas, response.from.instanceId);
+            metadataResponses.forEach(response => {
+                const serviceName = response.from.service === "n/a" ? response.from.instanceId : response.from.service;
+                const fixedServiceName = serviceName.replace("n/a", "na");
+
+                const promise = utils.derefJsonSchema(response.data.schemas, fixedServiceName)
+                    .then((derefResp) => {
+                        const schemas = derefResp.schemas;
+
+                        if (derefResp.errors && Object.keys(derefResp.errors).length > 0) {
+                            schemasWithErrors = {};
+                            schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
                         }
+                        response.data.exposing.map((object, i) => {
+                            if (object.subject.includes("http")) {
+                                parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
+                            } else {
+                                parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
+                            }
+                        });
                     });
-                });
 
-            promises.push(promise);
-        });
+                promises.push(promise);
+            });
 
-        await Promise.all(promises);
+            await Promise.all(promises);
 
-        /**
-         * @param {Object} object response object
-         * @param {Number} splitIndex index of endpoint identifier (http.post.>>user<< for http and >>user-service<<.create-user for service).
-         * @param {String} type type of endpoint 
-         * @param {Array<Object>} schemas schemas for response
-         */
-        function parseEndpoint(object, splitIndex, type, schemas, instanceId) {
-            const splits = object.subject.split(".");
+            /**
+             * @param {Object} object response object
+             * @param {Number} splitIndex index of endpoint identifier (http.post.>>user<< for http and >>user-service<<.create-user for service).
+             * @param {String} type type of endpoint 
+             * @param {Array<Object>} schemas schemas for response
+             * @param {String} serviceName name of service
+             * @param {String} instanceId 
+             */
+            function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
+                const splits = object.subject.split(".");
 
-            if (splits[splitIndex] === "health")
-                return;
+                if (splits[splitIndex] === "health")
+                    return;
 
-            object.instanceId = instanceId;
+                object.instanceId = instanceId;
+                object.serviceName = serviceName;
 
-            if (!endpointsByType[type][splits[splitIndex]])
-                endpointsByType[type][splits[splitIndex]] = [];
+                if (!endpointsByType[type][splits[splitIndex]])
+                    endpointsByType[type][splits[splitIndex]] = [];
 
-            endpointsByType[type][splits[splitIndex]] = utils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
+                endpointsByType[type][splits[splitIndex]] = utils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
 
-            if (!schemasPerService[instanceId])
-                schemasPerService[instanceId] = schemas;
+                if (!schemasPerService[serviceName])
+                    schemasPerService[serviceName] = schemas;
+            }
+
+            const state = {
+                endpointsByType, schemasPerService, schemasWithErrors
+            };
+            const appString = renderToString(<App {...state} />);
+
+            const renderedHtml = template({
+                body: appString,
+                title: "API documentation",
+                initialState: JSON.stringify(state)
+            });
+
+            res.send(renderedHtml);
+        } catch (err) {
+            log.error(err);
+            res.json(err);
         }
-
-        const state = { endpointsByType, schemasPerService };
-        const appString = renderToString(<App {...state} />);
-
-        const renderedHtml = template({
-            body: appString,
-            title: "API documentation",
-            initialState: JSON.stringify(state)
-        });
-
-        res.send(renderedHtml);
-
     });
 
     app.listen(port);

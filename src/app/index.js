@@ -8,6 +8,7 @@ export default class App extends Component {
     render() {
         return (
             <span>
+
                 <div className="toolbar">
                     <button className="btn btn-danger btn-xs" id="reset-cache">Reset cache</button>
                     <div className="clearfix"></div>
@@ -17,6 +18,22 @@ export default class App extends Component {
                     <div className="alert alert-danger" id="try-again-warning" hidden>
                         <strong>Note:</strong> Something went wrong or there are no endpoints registered; <a id="refresh-page" href="#">please refresh the page.</a>
                     </div>
+
+                    {this.props.schemasWithErrors ? <div className="alert alert-danger" id="schemas-contains-errors">
+                        <strong>Note:</strong>Errors were detected in the following json schemas:
+                        {
+                            forEach(this.props.schemasWithErrors, (schemas, serviceName) => {
+
+                                return forEach(schemas, (schemaWithError) => {
+
+                                    return <li className={"request-schema" + " " + serviceName + " " + schemaWithError}>
+                                        <a href="" >{schemaWithError} <span className="glyphicon glyphicon-new-window"></span></a> from {serviceName}
+                                    </li>
+                                })
+                            })
+                        }
+                    </div> : ""}
+
                     <a href="#"><h1>API</h1></a>
 
                     <h4>Table of contents</h4>
@@ -115,13 +132,11 @@ function listEndpointDetails(endpointsJson, type) {
                         </thead>
                         <tbody>
                             <tr>
-                                <td className={"request-schema" + " " + endpoint.instanceId + " " + endpoint.requestSchema + " " + (endpoint.requestSchema ? " " : "deactivated")}>
-                                    <a href="" className={endpoint.requestSchema ? "" : "deactivated"}>{endpoint.requestSchema || "n/a"}</a>
-                                    {endpoint.requestSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}
+                                <td className={"request-schema" + " " + endpoint.serviceName + " " + endpoint.requestSchema + " " + (endpoint.requestSchema ? " " : "deactivated")}>
+                                    <a href="" className={endpoint.requestSchema ? "" : "deactivated"}>{endpoint.requestSchema || "n/a"} {endpoint.requestSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
                                 </td>
-                                <td className={"response-schema" + " " + endpoint.instanceId + " " + endpoint.responseSchema + " " + (endpoint.responseSchema ? " " : "deactivated")}>
-                                    <a href="" className={endpoint.responseSchema ? "" : "deactivated"} >{endpoint.responseSchema || "n/a"}</a>
-                                    {endpoint.responseSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}
+                                <td className={"response-schema" + " " + endpoint.serviceName + " " + endpoint.responseSchema + " " + (endpoint.responseSchema ? " " : "deactivated")}>
+                                    <a href="" className={endpoint.responseSchema ? "" : "deactivated"} >{endpoint.responseSchema || "n/a"} {endpoint.responseSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
                                 </td>
                                 <td></td>
                             </tr>
@@ -138,8 +153,8 @@ function listEndpointDetails(endpointsJson, type) {
                                 <td className="description">
                                     {endpoint.docs ?
                                         <p>
-                                            <div className="doc-entry-title">Description</div>
-                                            <span className="description-value"> {endpoint.docs.description}</span>
+                                            {endpoint.docs.description ? <div className="doc-entry-title">Description</div> : ""}
+                                            {endpoint.docs.description ? <span className="description-value"> {endpoint.docs.description}</span> : "n/a"}
                                             {endpoint.docs.params ? getDocEntry(endpoint.docs.params, "Url parameters") : ""}
                                             {endpoint.docs.query ? getDocEntry(endpoint.docs.query, "Query parameters") : ""}
                                             {endpoint.docs.errors ? getDocEntry(endpoint.docs.errors, "Errors") : ""}

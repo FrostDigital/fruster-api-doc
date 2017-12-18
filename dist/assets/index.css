@@ -118,7 +118,6 @@ textarea {
 
 .glyphicon {
     font-size: 12px !important;
-    margin-left: 5px;
 }
 
 a.deactivated,
@@ -128,4 +127,8 @@ a:hover.deactivated {
     color: inherit !important;
     text-decoration: inherit !important;
     cursor: default !important;
+}
+
+.alert-danger li {
+    margin-left: 12px;
 }

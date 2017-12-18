@@ -14,6 +14,11 @@ $(() => {
         });
     }
 
+    console.log(window._APP_STATE_);
+
+    if (window._APP_STATE_.schemasContainErrors)
+        $("#try-again-warning").show();
+
     $(".request-schema").click(clickEvent);
     $(".response-schema").click(clickEvent);
     $(copyJsonSchemaJson).click(() => $(jsonSchemaJson).toggle());
@@ -38,13 +43,16 @@ $(() => {
      */
     function clickEvent(event) {
         event.preventDefault();
+        console.log("clicked"); // <-- Sanity check console log if something wouldn't work as expected.
 
         const entryClasses = $(event.currentTarget).attr('class').split(/\s+/);
         const service = entryClasses[1];
         const schemaId = entryClasses[2];
-        const schema = window._APP_STATE_.schemasPerService[service] ? window._APP_STATE_.schemasPerService[service].find(schema => schema.id === schemaId) : null;
+        let schema = window._APP_STATE_.schemasPerService[service] ? window._APP_STATE_.schemasPerService[service].find(schema => schema.id === schemaId) : null;
 
         if (typeof schema === "object" && !!schema) {
+            schema = sortObject(schema);
+
             const schemaToJson = Object.assign({}, schema);
             delete schemaToJson.sample;
 
@@ -91,3 +99,26 @@ $(() => {
         return formatter.render()
     }
 });
+
+/**
+ * @param {Object} obj object to sort keys for
+ */
+function sortObject(obj) {
+    return sortLayer(obj);
+
+    function sortLayer(layer) {
+        const output = {};
+
+        Object.keys(layer).sort().forEach(key => {
+            if (!!layer[key] && typeof layer[key] === "object" && !(layer[key] instanceof Array))
+                output[key] = sortLayer(layer[key]);
+            else if (!!layer[key] && (layer[key] instanceof Array)) {
+                layer[key].sort();
+                output[key] = layer[key];
+            } else
+                output[key] = layer[key];
+        });
+
+        return output;
+    }
+}
