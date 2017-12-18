@@ -92,8 +92,8 @@ module.exports = {
      * 
      * @return {Promise<Array<Object>>}
      */
-    derefJsonSchema: async (schemas) => {
-        await jsonSchemaCruncher.buildContext("", schemas);
+    derefJsonSchema: async (schemas, serviceName) => {
+        await jsonSchemaCruncher.buildContext(serviceName, schemas);
 
         const schemaPromises = [];
 

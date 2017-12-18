@@ -2,15 +2,16 @@ const $RefParser = require("json-schema-ref-parser");
 const os = require("os");
 const fs = require("fs-extra");
 const path = require("path");
+const log = require("fruster-log");
 
 class JsonSchemaCruncher {
 
 	constructor(tempDir) {
-		console.log("tempDir", tempDir);
 		this.tempDir = tempDir || os.tmpdir();
 	}
 
 	getSchema(schemaId) {
+		log.debug("derefing", schemaId);
 		const schemaPath = path.join(this.schemasDir, schemaId);
 		return $RefParser.dereference(schemaPath);
 	}
@@ -26,7 +27,7 @@ class JsonSchemaCruncher {
 
 		await bundle.map(async (jsonSchema) => {
 			const filePath = path.join(this.schemasDir, jsonSchema.id);
-			console.log(filePath);
+			log.debug(filePath);
 			return fs.writeJson(filePath, jsonSchema);
 		});
 	}

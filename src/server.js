@@ -70,7 +70,7 @@ function startServer() {
         const promises = [];
 
         metadataResponses.forEach(response => {
-            const promise = utils.derefJsonSchema(response.data.schemas)
+            const promise = utils.derefJsonSchema(response.data.schemas, response.from.instanceId)
                 .then((schemas) => {
                     response.data.exposing.map((object, i) => {
                         if (object.subject.includes("http")) {
