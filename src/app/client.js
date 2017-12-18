@@ -1,5 +1,5 @@
 // Client code goes here.
-const JSONFormatter = require("json-formatter-js");
+const hljs = require("highlight.js");
 
 $(() => {
     const jsonSchemaJson = "#modal #json-schema-json";
@@ -43,9 +43,9 @@ $(() => {
      */
     function clickEvent(event) {
         event.preventDefault();
-        console.log("clicked"); // <-- Sanity check console log if something wouldn't work as expected.
+        console.log("clicked"); // <-- Sanity check console log if something wouldn"t work as expected.
 
-        const entryClasses = $(event.currentTarget).attr('class').split(/\s+/);
+        const entryClasses = $(event.currentTarget).attr("class").split(/\s+/);
         const service = entryClasses[1];
         const schemaId = entryClasses[2];
         let schema = window._APP_STATE_.schemasPerService[service] ? window._APP_STATE_.schemasPerService[service].find(schema => schema.id === schemaId) : null;
@@ -56,31 +56,23 @@ $(() => {
             const schemaToJson = Object.assign({}, schema);
             delete schemaToJson.sample;
 
-            const jsonSchemaHtml = getJsonHtml(schemaToJson);
-            const sampleHtml = getJsonHtml(schema.sample);
-
             const header = "#modal #header";
-            const jsonSchema = "#modal #json-schema";
-            const jsonSample = "#modal #json-sample";
 
             $(header).text(schema.id);
-            $(jsonSchema).append(jsonSchemaHtml);
-            $(jsonSample).append(sampleHtml);
+            $(jsonSchemaJson).append(JSON.stringify(schemaToJson, null, 2));
+            $(sampleJson).append(JSON.stringify(schema.sample, null, 2));
 
-            $(jsonSchemaJson).append(JSON.stringify(schemaToJson));
-            $(sampleJson).append(JSON.stringify(schema.sample));
+            $("pre code").each(function (i, block) {
+                hljs.highlightBlock(block);
+            });
 
             $("#close-btn").click(event => {
-                $('#modal').modal("hide");
+                $("#modal").modal("hide");
             });
-            $('#modal').modal();
+            $("#modal").modal();
 
-            $('#modal').on("hide.bs.modal", () => {
-                $(jsonSchemaJson).hide();
-                $(sampleJson).hide();
+            $("#modal").on("hide.bs.modal", () => {
                 $(header).empty();
-                $(jsonSchema).empty();
-                $(jsonSample).empty();
                 $(jsonSchemaJson).empty();
                 $(sampleJson).empty();
             });

@@ -2,7 +2,6 @@ import React, { Component, PropTypes } from "react";
 const constants = require("../constants");
 const utils = require("../utils/utils");
 
-
 export default class App extends Component {
 
     render() {
@@ -69,21 +68,28 @@ export default class App extends Component {
 
                     <br />
 
-                    <div id="modal" className="modal fade bd-example-modal-lg" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+                    <div id="modal" className="modal fade bd-example-modal-lg" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true" >
                         <div className="modal-dialog modal-lg">
                             <div className="modal-content">
                                 <span className="glyphicon glyphicon-remove close" id="close-btn"></span>
                                 <h1 id="header"></h1>
 
-                                <h2>Json schema</h2>
-                                <div id="json-schema"></div>
-                                <button id="copy-json-schema-json">Toggle raw json</button>
-                                <textarea hidden id="json-schema-json"></textarea>
+                                <a href="#schema">
+                                    <div>Go to json Schema <span className="glyphicon glyphicon-chevron-right"></span></div>
+                                </a>
+                                <a href="#sample">
+                                    <div>Go to sample <span className="glyphicon glyphicon-chevron-right"></span></div>
+                                </a>
 
-                                <h2>Sample</h2>
-                                <div id="json-sample"></div>
-                                <button id="copy-sample-json">Toggle raw json</button>
-                                <textarea hidden id="sample-json"></textarea>
+                                <h2 id="schema">Json schema</h2>
+                                <pre>
+                                    <code id="json-schema-json"></code>
+                                </pre>
+
+                                <h2 id="sample">Sample</h2>
+                                <pre>
+                                    <code id="sample-json"></code>
+                                </pre>
                             </div>
                         </div>
                     </div>

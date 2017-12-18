@@ -22,7 +22,7 @@ const port = config.port || 3100;
         address: config.bus
     });
 
-    // require("fruster-health").start();
+    require("fruster-health").start();
 
     await startServer();
 

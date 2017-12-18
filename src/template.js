@@ -7,6 +7,7 @@ export default ({ body, title, initialState }) => {
   <script>window._APP_STATE_ = ${ initialState};</script>
   <title>${title}</title>
   <link rel="stylesheet" href="/assets/index.css" />
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@9.12.0/build/styles/googlecode.min.css">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
 </head>
 

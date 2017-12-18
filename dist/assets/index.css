@@ -11,6 +11,21 @@
     transition-property: none !important;
     animation-delay: 0 !important;
     animation-duration: 0.001;
+    -webkit-transition: none !important;
+    transition: none !important;
+    transition-duration: 0 !important;
+    transition-delay: 0 !important;
+}
+
+.collapsing,
+.modal-open,
+.modal,
+.in,
+.out {
+    -webkit-transition: none !important;
+    transition: none !important;
+    transition-duration: 0 !important;
+    transition-delay: 0 !important;
 }
 
 body {
@@ -81,9 +96,8 @@ h2 {
 }
 
 textarea {
-    display: block;
     width: 100%;
-    min-height: 300px;
+    box-sizing: border-box;
 }
 
 .modal-open .modal {
