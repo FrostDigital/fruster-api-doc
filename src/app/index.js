@@ -126,7 +126,10 @@ function listEndpointDetails(endpointsJson, type) {
                             <tr>
                                 <td>{endpoint.subject}</td>
                                 <td className={endpoint.mustBeLoggedIn.toString()}>{endpoint.mustBeLoggedIn.toString()}</td>
-                                <td>{endpoint.permissions || "none"}</td>
+                                <td>{endpoint.permissions ? forEach(endpoint.permissions, (permissions) => {
+                                    return <span className="permission-group">
+                                        {permissions instanceof Array ? forEach(permissions, (permission) => { return <span className="permission">{permission}</span> }) : permissions}</span>
+                                }) : "none"}</td>
                             </tr>
                         </tbody>
                         <thead>

@@ -116,9 +116,34 @@ textarea {
     font-weight: bold;
 }
 
-.description-key {
+.description-key,
+.permission {
     font-weight: bold;
     color: #727272;
+}
+
+.permission:after {
+    content: ", ";
+}
+
+.permission:last-child:after {
+    content: " or ";
+}
+
+.permission:nth-last-child(2):after {
+    content: " and ";
+}
+
+.permission-group:last-child .permission:last-child:after {
+    content: "";
+}
+
+.permission:after,
+.permission:last-child:after,
+.permission:nth-last-child(2):after,
+.permission-group:last-child .permission:last-child:after {
+    font-weight: normal;
+    color: #000;
 }
 
 .table>tbody>tr>td,
@@ -128,6 +153,10 @@ textarea {
 .table>thead>tr>td,
 .table>thead>tr>th {
     padding: 2px !important;
+}
+
+td {
+    max-width: 300px;
 }
 
 .glyphicon {
