@@ -13,9 +13,9 @@
     "license": "MIT",
     "dependencies": {
         "express": "^4.14.0",
-        "fruster-bus": "^0.2.18",
-        "fruster-health": "^0.0.11",
-        "fruster-log": "^0.0.15",
+        "fruster-bus": "^0.2.19",
+        "fruster-health": "^0.0.12",
+        "fruster-log": "^0.0.16",
         "highlight.js": "^9.12.0",
         "json-schema-faker": "^0.4.6",
         "json-schema-ref-parser": "4.0.4",
