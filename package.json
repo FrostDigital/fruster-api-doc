@@ -13,7 +13,7 @@
     "license": "MIT",
     "dependencies": {
         "express": "^4.14.0",
-        "fruster-bus": "^0.2.19",
+        "fruster-bus": "^0.2.20",
         "fruster-health": "^0.0.12",
         "fruster-log": "^0.0.16",
         "highlight.js": "^9.12.0",
