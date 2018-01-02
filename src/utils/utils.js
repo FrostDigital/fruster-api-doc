@@ -5,9 +5,9 @@ const constants = require("../constants");
 const fs = require("fs-extra");
 const path = require("path");
 const log = require("fruster-log");
+const util = require("util");
 
-// const filePath = path.resolve(`${__dirname}/json-schemas`);
-const filePath = path.resolve(`c:/json-schemas`);
+const filePath = path.resolve(`${__dirname}/json-schemas`);
 const JsonSchemaCruncher = require("../utils/JsonSchemaCruncher");
 
 const jsf = require("json-schema-faker");
@@ -87,7 +87,6 @@ module.exports = {
         return array;
     },
 
-
     /**
      * derefs json schemas
      * 
@@ -109,10 +108,10 @@ module.exports = {
 
                     return schema;
                 }).catch(err => {
-                    log.error("YO\n\n\n\n\n\n\n\n", err);
+                    log.error(err);
                     return {
                         id: schema.id,
-                        description: err,
+                        description: util.inspect(err),
                         error: true
                     };
                 })
