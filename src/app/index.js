@@ -40,19 +40,26 @@ export default class App extends Component {
                         <div className="col-md-6">
                             <ul className="http">
                                 {forEach(this.props.endpointsByType.http, (endpoints, serviceName) => {
-                                    return forEach(endpoints, (endpoint) => {
-                                        const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
-                                        return <li><a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}><span className={parsedSubject.method}>{parsedSubject.method}</span> to {parsedSubject.url}</a></li>
-                                    });
+                                    return <span>
+                                        <a href={"#" + serviceName}><h4>{serviceName}</h4></a>
+                                        {forEach(endpoints, (endpoint) => {
+                                            const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
+                                            return <li><a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}><span className={parsedSubject.method}>{parsedSubject.method}</span> to {parsedSubject.url}</a></li>
+                                        })}
+
+                                    </span>
                                 })}
                             </ul>
                         </div>
                         <div className="col-md-6">
                             <ul className="service">
                                 {forEach(this.props.endpointsByType.service, (endpoints, serviceName) => {
-                                    return forEach(endpoints, (endpoint) => {
-                                        return <li><a href={"#" + endpoint.subject}>{endpoint.subject}</a></li>
-                                    });
+                                    return <span>
+                                        <a href={"#" + serviceName}><h4>{serviceName}</h4></a>
+                                        {forEach(endpoints, (endpoint) => {
+                                            return <li><a href={"#" + endpoint.subject}>{endpoint.subject}</a></li>
+                                        })}
+                                    </span>
                                 })}
                             </ul>
                         </div>

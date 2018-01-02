@@ -50,6 +50,14 @@ h2 {
     font-weight: bold;
 }
 
+a h1,
+a h2,
+a h3,
+a h4,
+a h5 {
+    color: #0559a2;
+}
+
 .request-schema,
 .response-schema {
     cursor: pointer;
