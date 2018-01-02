@@ -6,7 +6,8 @@ const fs = require("fs-extra");
 const path = require("path");
 const log = require("fruster-log");
 
-const filePath = path.resolve(`${__dirname}/json-schemas`);
+// const filePath = path.resolve(`${__dirname}/json-schemas`);
+const filePath = path.resolve(`c:/json-schemas`);
 const JsonSchemaCruncher = require("../utils/JsonSchemaCruncher");
 
 const jsf = require("json-schema-faker");
@@ -108,7 +109,7 @@ module.exports = {
 
                     return schema;
                 }).catch(err => {
-                    log.error(err);
+                    log.error("YO\n\n\n\n\n\n\n\n", err);
                     return {
                         id: schema.id,
                         description: err,
@@ -133,40 +134,41 @@ module.exports = {
  * @return {Void}
  */
 function setFakerSpecificAttrs(object) {
+    if (object) {
+        Object.keys(object).forEach(key => {
+            if (object.hasOwnProperty(key)) {
+                if (object && typeof object[key] === "object") {
+                    setFakerSpecificAttrs(object[key]);
+                }
 
-    Object.keys(object).forEach(key => {
-        if (object.hasOwnProperty(key)) {
-            if (typeof object[key] === "object") {
-                setFakerSpecificAttrs(object[key]);
+                switch (object[key]) {
+                    case "uuid":
+                        object["faker"] = "random.uuid";
+                        break;
+                    case "uri":
+                        object["faker"] = "internet.url";
+                        break;
+                }
+
+                switch (key) {
+                    case "email":
+                        object[key]["faker"] = "internet.email";
+                        break;
+                    case "password":
+                        object[key]["faker"] = "internet.password";
+                        break;
+
+                    case "firstName":
+                        object[key]["faker"] = "name.firstName";
+                        break;
+                    case "middleName":
+                        object[key]["faker"] = "name.firstName";
+                        break;
+                    case "lastName":
+                        object[key]["faker"] = "name.lastName";
+                        break;
+                }
             }
-
-            switch (object[key]) {
-                case "uuid":
-                    object["faker"] = "random.uuid";
-                    break;
-                case "uri":
-                    object["faker"] = "internet.url";
-                    break;
-            }
-
-            switch (key) {
-                case "email":
-                    object[key]["faker"] = "internet.email";
-                    break;
-                case "password":
-                    object[key]["faker"] = "internet.password";
-                    break;
-
-                case "firstName":
-                    object[key]["faker"] = "name.firstName";
-                    break;
-                case "middleName":
-                    object[key]["faker"] = "name.firstName";
-                    break;
-                case "lastName":
-                    object[key]["faker"] = "name.lastName";
-                    break;
-            }
-        }
-    });
+        });
+    }
 }
