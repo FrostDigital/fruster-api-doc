@@ -31,7 +31,8 @@ const port = config.port || 3100;
 let schemasPerService = {};
 let endpointsByType = {
     http: {},
-    service: {}
+    service: {},
+    ws: {}
 };
 
 function startServer() {
@@ -44,7 +45,8 @@ function startServer() {
         schemasPerService = {};
         endpointsByType = {
             http: {},
-            service: {}
+            service: {},
+            ws: {}
         };
 
         res.status(200);
@@ -57,7 +59,8 @@ function startServer() {
                 schemasPerService = {};
                 endpointsByType = {
                     http: {},
-                    service: {}
+                    service: {},
+                    ws: {}
                 };
             }
 
@@ -87,6 +90,8 @@ function startServer() {
                         response.data.exposing.map((object, i) => {
                             if (object.subject.includes("http")) {
                                 parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
+                            } else if (object.subject.includes("ws")) {
+                                parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
                             } else {
                                 parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
                             }
