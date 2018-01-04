@@ -128,7 +128,7 @@ export default class App extends Component {
 function listEndpointDetails(endpointsJson, type) {
     return forEach(endpointsJson, (endpoints, serviceName) => {
         return <div className={"service-container " + serviceName}>
-            <a href={"#" + serviceName + "-" + type}><h2 id={serviceName + "-" + type}>{serviceName}</h2></a>
+            <a href={"#" + serviceName + "-" + type}><h2 id={serviceName + "-" + (type || "service")}>{serviceName}</h2></a>
 
             {forEach(endpoints, endpoint => {
                 const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
