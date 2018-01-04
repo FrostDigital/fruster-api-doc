@@ -39,9 +39,10 @@ export default class App extends Component {
                     <div className="row">
                         <div className="col-md-6">
                             <ul className="http">
+                                <a href="#http-endpoints"><h3>Http endpoints</h3></a>
                                 {forEach(this.props.endpointsByType.http, (endpoints, serviceName) => {
                                     return <span>
-                                        <a href={"#" + serviceName}><h4>{serviceName}</h4></a>
+                                        <a href={"#" + serviceName + "-http"}><h4>{serviceName}</h4></a>
                                         {forEach(endpoints, (endpoint) => {
                                             const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
                                             return <li><a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}><span className={parsedSubject.method}>{parsedSubject.method}</span> to {parsedSubject.url}</a></li>
@@ -53,9 +54,23 @@ export default class App extends Component {
                         </div>
                         <div className="col-md-6">
                             <ul className="service">
+                                <a href="#service-endpoints"><h3>Service endpoints</h3></a>
                                 {forEach(this.props.endpointsByType.service, (endpoints, serviceName) => {
                                     return <span>
-                                        <a href={"#" + serviceName}><h4>{serviceName}</h4></a>
+                                        <a href={"#" + serviceName + "-service"}><h4>{serviceName}</h4></a>
+                                        {forEach(endpoints, (endpoint) => {
+                                            return <li><a href={"#" + endpoint.subject}>{endpoint.subject}</a></li>
+                                        })}
+                                    </span>
+                                })}
+                            </ul>
+                        </div>
+                        <div className="col-md-6">
+                            <ul className="ws">
+                                <a href="#ws-endpoints"><h3>Ws endpoints</h3></a>
+                                {forEach(this.props.endpointsByType.ws, (endpoints, serviceName) => {
+                                    return <span>
+                                        <a href={"#" + serviceName + "-ws"}><h4>{serviceName}</h4></a>
                                         {forEach(endpoints, (endpoint) => {
                                             return <li><a href={"#" + endpoint.subject}>{endpoint.subject}</a></li>
                                         })}
@@ -69,6 +84,9 @@ export default class App extends Component {
 
                     <a href="#http-endpoints"><h1 id="http-endpoints">Http endpoints</h1></a>
                     {listEndpointDetails(this.props.endpointsByType.http, "http")}
+
+                    <a href="#ws-endpoints"><h1 id="ws-endpoints">Ws endpoints</h1></a>
+                    {listEndpointDetails(this.props.endpointsByType.ws, "ws")}
 
                     <a href="#service-endpoints"><h1 id="service-endpoints">Service endpoints</h1></a>
                     {listEndpointDetails(this.props.endpointsByType.service)}
@@ -110,7 +128,7 @@ export default class App extends Component {
 function listEndpointDetails(endpointsJson, type) {
     return forEach(endpointsJson, (endpoints, serviceName) => {
         return <div className={"service-container " + serviceName}>
-            <a href={"#" + serviceName}><h2 id={serviceName}>{serviceName}</h2></a>
+            <a href={"#" + serviceName + "-" + type}><h2 id={serviceName + "-" + type}>{serviceName}</h2></a>
 
             {forEach(endpoints, endpoint => {
                 const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
