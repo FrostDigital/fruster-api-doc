@@ -62,6 +62,8 @@ $(() => {
             $(jsonSchemaJson).append(JSON.stringify(schemaToJson, null, 2));
             $(sampleJson).append(JSON.stringify(schema.sample, null, 2));
 
+            hljs.configure({ languages: ["json"] });
+
             $("pre code").each(function (i, block) {
                 hljs.highlightBlock(block);
             });

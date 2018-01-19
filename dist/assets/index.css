@@ -41,6 +41,11 @@ body {
     float: right;
 }
 
+.hljs-formula {
+    background-color: inherit !important;
+    font-style: inherit !important;
+}
+
 h1 {
     margin-top: 40px !important;
 }

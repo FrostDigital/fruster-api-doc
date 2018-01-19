@@ -1,6 +1,7 @@
 import React, { Component, PropTypes } from "react";
 const constants = require("../constants");
 const utils = require("../utils/utils");
+const config = require("../../config");
 
 export default class App extends Component {
 
@@ -33,7 +34,7 @@ export default class App extends Component {
                         }
                     </div> : ""}
 
-                    <a href="#"><h1>API</h1></a>
+                    <a href="#"><h1>{config.projectName} API</h1></a>
 
                     <h4>Table of contents</h4>
                     <div className="row">
@@ -143,14 +144,19 @@ function listEndpointDetails(endpointsJson, type) {
                         <thead>
                             <tr>
                                 <th>Subject</th>
-                                <th>Must be logged in</th>
+                                <th>Request body</th>
                                 <th>Required permissions</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
+                                {/* Subject */}
                                 <td>{endpoint.subject}</td>
-                                <td className={endpoint.mustBeLoggedIn.toString()}>{endpoint.mustBeLoggedIn.toString()}</td>
+                                {/* Request body */}
+                                <td className={"request-schema" + " " + endpoint.serviceName + " " + endpoint.requestSchema + " " + (endpoint.requestSchema ? " " : "deactivated")}>
+                                    <a href="" className={endpoint.requestSchema ? "" : "deactivated"}>{endpoint.requestSchema || "n/a"} {endpoint.requestSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
+                                </td>
+                                {/* Required permissions */}
                                 <td>{endpoint.permissions ? forEach(endpoint.permissions, (permissions) => {
                                     return <span className="permission-group">
                                         {permissions instanceof Array ? forEach(permissions, (permission) => { return <span className="permission">{permission}</span> }) : permissions}</span>
@@ -159,20 +165,24 @@ function listEndpointDetails(endpointsJson, type) {
                         </tbody>
                         <thead>
                             <tr>
-                                <th>Request body</th>
+                                <th>Url</th>
                                 <th>Response body</th>
-                                <th></th>
+                                <th>Must be logged in</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td className={"request-schema" + " " + endpoint.serviceName + " " + endpoint.requestSchema + " " + (endpoint.requestSchema ? " " : "deactivated")}>
-                                    <a href="" className={endpoint.requestSchema ? "" : "deactivated"}>{endpoint.requestSchema || "n/a"} {endpoint.requestSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
-                                </td>
+                                {/* Url */}
+                                <td>{type === "http" ? config.apiRoot + parsedSubject.url : "n/a"}</td>
+                                {/* Response body */}
                                 <td className={"response-schema" + " " + endpoint.serviceName + " " + endpoint.responseSchema + " " + (endpoint.responseSchema ? " " : "deactivated")}>
                                     <a href="" className={endpoint.responseSchema ? "" : "deactivated"} >{endpoint.responseSchema || "n/a"} {endpoint.responseSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
                                 </td>
-                                <td></td>
+                                {/* Must be logged in */}
+
+                                <td className={(endpoint.permissions && endpoint.permissions.length > 0) ? true.toString() : endpoint.mustBeLoggedIn.toString()}>
+                                    {(endpoint.permissions && endpoint.permissions.length > 0) ? true.toString() : endpoint.mustBeLoggedIn.toString()}
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -218,6 +228,9 @@ function getDocEntry(input, title) {
 }
 
 function forEach(toLoop, handler) {
+    if (!toLoop || Object.keys(toLoop).length === 0)
+        return `No endpoints`;
+
     return Object.keys(toLoop)
         .sort()
         .map(index => {

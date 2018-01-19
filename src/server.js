@@ -129,6 +129,10 @@ function startServer() {
                     schemasPerService[serviceName] = schemas;
             }
 
+            Object.keys(endpointsByType).forEach(endpointType => {
+                sortAfterEndpointName(endpointsByType[endpointType]);
+            });
+
             const state = {
                 endpointsByType, schemasPerService, schemasWithErrors
             };
@@ -136,7 +140,7 @@ function startServer() {
 
             const renderedHtml = template({
                 body: appString,
-                title: "API documentation",
+                title: `${config.projectName} API documentation`,
                 initialState: JSON.stringify(state)
             });
 
@@ -154,4 +158,28 @@ function startServer() {
         process.send({ event: "online", url: `http://localhost:${port}/` });
     }
 
+}
+
+/**
+ * @param {Object} endpoints 
+ */
+function sortAfterEndpointName(endpoints) {
+    if (endpoints) {
+        const array = [];
+
+        Object.keys(endpoints)
+            .forEach(serviceName => {
+                endpoints[serviceName] = endpoints[serviceName].sort((a, b) => {
+                    const aU = a.subject.toUpperCase();
+                    const bU = b.subject.toUpperCase();
+
+                    if (aU > bU)
+                        return 1;
+                    else if (aU < bU)
+                        return -1;
+                    else
+                        return 0;
+                });
+            });
+    }
 }

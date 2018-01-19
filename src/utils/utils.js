@@ -6,8 +6,9 @@ const fs = require("fs-extra");
 const path = require("path");
 const log = require("fruster-log");
 const util = require("util");
+const os = require("os");
 
-const filePath = path.resolve(`${__dirname}/json-schemas`);
+const filePath = path.resolve(`${os.tmpdir()}/json-schemas`);
 const JsonSchemaCruncher = require("../utils/JsonSchemaCruncher");
 
 const jsf = require("json-schema-faker");
@@ -108,14 +109,25 @@ module.exports = {
 
                     return schema;
                 }).catch(err => {
-                    log.error(err);
+                    let errorString = err;
+
+                    try {
+                        errorString.message = fixErrorOutput(errorString.message);
+                        errorString.path = fixErrorOutput(errorString.path);
+                        errorString.stack = fixErrorOutput(errorString.stack);
+                    } catch (error) { }
+
                     return {
                         id: schema.id,
-                        description: util.inspect(err),
-                        error: true
+                        description: errorString,
+                        error: true,
+                        sample: errorString.message
                     };
-                })
-        ));
+
+                    function fixErrorOutput(string) {
+                        return string.replace(/\\/g, "/").replace(/\"/g, "'").replace(/\n/g, "<br/>");
+                    }
+                })));
 
         return await Promise.all(schemaPromises)
             .then(schemas => {
