@@ -8,7 +8,7 @@ const log = require("fruster-log");
 const util = require("util");
 const os = require("os");
 
-const filePath = path.resolve(`${os.tmpdir()}/json-schemas`);
+const filePath = path.resolve(`${__dirname}/json-schemas`);
 const JsonSchemaCruncher = require("../utils/JsonSchemaCruncher");
 
 const jsf = require("json-schema-faker");
