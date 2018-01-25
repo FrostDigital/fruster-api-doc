@@ -73,7 +73,7 @@ export default class App extends Component {
                                     return <span>
                                         <a href={"#" + serviceName + "-ws"}><h4>{serviceName}</h4></a>
                                         {forEach(endpoints, (endpoint) => {
-                                            return <li><a href={"#" + endpoint.subject}>{endpoint.subject}</a></li>
+                                            return <li><a dangerouslySetInnerHTML={{ __html: getColorCodedTitle(endpoint.subject) }} href={"#" + endpoint.subject}></a></li>
                                         })}
                                     </span>
                                 })}
