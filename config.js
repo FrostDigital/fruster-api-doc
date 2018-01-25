@@ -9,6 +9,24 @@ module.exports = {
     apiRoot: process.env.API_ROOT || "{[host}}",
 
     /** Project name in order to display the name in the header and title of the page */
-    projectName: process.env.PROJECT_NAME || ""
+    projectName: process.env.PROJECT_NAME || "",
+
+    /** Words to be color coded in service endpoints. Uses the structure {cssClass}:{word},{word};{cssClass}:{word},{word}; */
+    colorCodedWords: parseColorCodedWords(process.env.COLOR_CODED_WORDS || "GET:get,find;DELETE:delete,remove;POST:create,post,add,generate;PUT:put,update")
 
 };
+
+function parseColorCodedWords(string) {
+    const output = {};
+    const rules = string.split(";");
+
+    rules.forEach(rule => {
+        const indexOfColon = rule.indexOf(":");
+        const words = rule.substring(indexOfColon + 1).split(",");
+
+        words.forEach(word => {
+            output[word] = rule.substring(0, indexOfColon);
+        });
+    });
+    return output;
+}

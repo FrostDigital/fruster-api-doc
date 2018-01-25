@@ -60,7 +60,7 @@ export default class App extends Component {
                                     return <span>
                                         <a href={"#" + serviceName + "-service"}><h4>{serviceName}</h4></a>
                                         {forEach(endpoints, (endpoint) => {
-                                            return <li><a href={"#" + endpoint.subject}>{endpoint.subject}</a></li>
+                                            return <li><a dangerouslySetInnerHTML={{ __html: getColorCodedTitle(endpoint.subject) }} href={"#" + endpoint.subject}></a></li>
                                         })}
                                     </span>
                                 })}
@@ -138,7 +138,7 @@ function listEndpointDetails(endpointsJson, type) {
                     {type === "http"
                         ? <span><a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}><h3 id={parsedSubject.method + "-to-" + parsedSubject.url}>
                             <span className={parsedSubject.method}>{parsedSubject.method}</span> to {parsedSubject.url}</h3></a>from {endpoint.instanceId}</span>
-                        : <span> <a href={"#" + endpoint.subject}><h3 id={endpoint.subject}>{endpoint.subject}</h3></a> from {endpoint.instanceId}</span>}
+                        : <span> <a href={"#" + endpoint.subject}><h3 id={endpoint.subject} dangerouslySetInnerHTML={{ __html: getColorCodedTitle(endpoint.subject) }}></h3></a> from {endpoint.instanceId}</span>}
 
                     <table className="table table-hover">
                         <thead>
@@ -214,6 +214,10 @@ function listEndpointDetails(endpointsJson, type) {
     })
 }
 
+/**
+ * @param {Object|Array} input 
+ * @param {String} title 
+ */
 function getDocEntry(input, title) {
     if (Object.keys(input).length > 0) {
         return <p>
@@ -227,6 +231,10 @@ function getDocEntry(input, title) {
     }
 }
 
+/**
+ * @param {Object|Array} toLoop 
+ * @param {Function} handler 
+ */
 function forEach(toLoop, handler) {
     if (!toLoop || Object.keys(toLoop).length === 0)
         return `No endpoints`;
@@ -236,4 +244,18 @@ function forEach(toLoop, handler) {
         .map(index => {
             return handler(toLoop[index], index);
         });
+}
+
+/**
+ * @param {String} string 
+ */
+function getColorCodedTitle(string) {
+    const colorCodedWords = Object.keys(config.colorCodedWords);
+
+    for (let i = 0; i < colorCodedWords.length; i++) {
+        string = utils.replaceAll(string, colorCodedWords[i],
+            `<span class="${config.colorCodedWords[colorCodedWords[i]]}">${colorCodedWords[i]}</span>`);
+    }
+
+    return string;
 }
