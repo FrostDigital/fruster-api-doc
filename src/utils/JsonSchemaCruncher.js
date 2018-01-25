@@ -15,22 +15,7 @@ class JsonSchemaCruncher {
 		log.debug("derefing", schemaId);
 		const schemaPath = path.join(this.schemasDir, schemaId);
 
-		let deref;
-
-		try {
-			deref = await $RefParser.dereference(schemaPath, {
-				dereference: {
-					circular: false
-				}
-			});
-		} catch (err) {
-			if (err.name === "ReferenceError") {
-				deref = JSON.parse(fs.readFileSync(schemaPath).toString());
-				deref.sample = "json schema contains circular $ref pointers and cannot be dereferenced.";
-			}
-		}
-
-		return deref;
+		return await $RefParser.dereference(schemaPath);
 	}
 
 	async buildContext(bundle) {
