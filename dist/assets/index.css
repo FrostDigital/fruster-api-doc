@@ -203,3 +203,7 @@ h3.deprecated,
     margin-left: 5px;
     display: inline-block;
 }
+
+li {
+    margin-left: 14px;
+}
