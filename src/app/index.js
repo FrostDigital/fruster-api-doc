@@ -79,10 +79,10 @@ export default class App extends Component {
                                 <h1 id="header"></h1>
 
                                 <a href="#schema">
-                                    <div>Go to json Schema <span className="glyphicon glyphicon-chevron-right"></span></div>
+                                    <div>Go to json Schema<span className="glyphicon glyphicon-chevron-right"></span></div>
                                 </a>
                                 <a href="#sample">
-                                    <div>Go to sample <span className="glyphicon glyphicon-chevron-right"></span></div>
+                                    <div>Go to sample<span className="glyphicon glyphicon-chevron-right"></span></div>
                                 </a>
 
                                 <h2 id="schema">Json schema</h2>
