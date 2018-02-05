@@ -12,7 +12,7 @@ module.exports = {
     projectName: process.env.PROJECT_NAME || "",
 
     /** Words to be color coded in service endpoints. Uses the structure {cssClass}:{word},{word};{cssClass}:{word},{word}; */
-    colorCodedWords: parseColorCodedWords(process.env.COLOR_CODED_WORDS || "GET:get,find;DELETE:delete,remove;POST:create,post,add,generate;PUT:put,update")
+    colorCodedWords: parseColorCodedWords(process.env.COLOR_CODED_WORDS || "GET:get,find;DELETE:delete,remove,cancel,decline,unregister;POST:create,post,add,generate,approve,resend,send,set,validate,verify,authenticate,decode;PUT:put,update,change")
 
 };
 

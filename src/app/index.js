@@ -122,8 +122,8 @@ function tableOfContents(that, type) {
 
 function listEndpointDetails(endpointsJson, type) {
     return forEach(endpointsJson, (endpoints, serviceName) => {
-        return <div className={"service-container " + serviceName}>
-            <a href={"#" + serviceName + "-" + type}><h2 id={serviceName + "-" + (type || "service")}>{serviceName}</h2></a>
+        return <div id={serviceName + "-" + (type || "service")} className={"service-container " + serviceName}>
+            <a href={"#" + serviceName + "-" + (type || "service")}><h2>{serviceName}</h2></a>
 
             {forEach(endpoints, endpoint => {
                 const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
@@ -156,7 +156,7 @@ function listEndpointDetails(endpointsJson, type) {
                         }
                     </span>
 
-                    <table className="table table-hover">
+                    <table className="table table">
                         <thead>
                             <tr>
                                 <th>Subject</th>
@@ -175,8 +175,8 @@ function listEndpointDetails(endpointsJson, type) {
                                 {/* Required permissions */}
                                 <td>{endpoint.permissions ? forEach(endpoint.permissions, (permissions) => {
                                     return <span className="permission-group">
-                                        {permissions instanceof Array ? forEach(permissions, (permission) => { return <span className="permission">{permission}</span> }) : permissions}</span>
-                                }) : "none"}</td>
+                                        {permissions instanceof Array ? forEach(permissions, (permission) => { return <span className="permission">{permission}</span> }) : <span className="permission">{permissions}</span>}</span>
+                                }) : <span className="permission-group"><span className="permission">none</span></span>}</td>
                             </tr>
                         </tbody>
                         <thead>
@@ -203,7 +203,7 @@ function listEndpointDetails(endpointsJson, type) {
                             </tr>
                         </tbody>
                     </table>
-                    <table className="table table-hover">
+                    <table className="table table">
                         <thead>
                             <tr>
                                 <th>Documentation</th>

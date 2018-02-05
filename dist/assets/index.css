@@ -52,7 +52,6 @@ h1 {
 }
 
 h2 {
-    margin-top: 40px !important;
     font-weight: bold;
 }
 
@@ -225,7 +224,11 @@ li {
 a h4:hover::before,
 a h3:hover::before,
 a h2:hover::before,
-a h1:hover::before {
+a h1:hover::before,
+a h4:active::before,
+a h3:active::before,
+a h2:active::before,
+a h1:active::before {
     font-family: "Glyphicons Halflings";
     content: "\e144";
     line-height: 3px;
@@ -248,10 +251,11 @@ a h1:hover::before {
 .endpoint-container {
     background-color: #fff;
     margin-top: 10px;
+    width: 1120px !important;
 }
 
 .deprecated-container {
-    background-color: hsla(0, 87%, 91%, 0.2) !important;
+    background-color: hsla(0, 100%, 91%, 0.2) !important;
 }
 
 pre {
@@ -262,4 +266,18 @@ pre {
     -webkit-box-shadow: none;
     box-shadow: none;
     overflow: hidden;
+}
+
+.service-container {
+    padding: 5px;
+    padding-bottom: 15px;
+    background-color: hsla(0, 0%, 81%, 0.1) !important;
+    margin-top: 50px !important;
+    padding-top: 2px;
+    /* box-shadow: 0px 0px 5px hsla(0, 0%, 81.2%, 0.4); */
+}
+
+.service-container h2 {
+    padding-left: 10px;
+    margin-top: 10px;
 }
