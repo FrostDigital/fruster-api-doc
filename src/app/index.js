@@ -34,7 +34,7 @@ export default class App extends Component {
                         }
                     </div> : ""}
 
-                    <a href="#"><h1>{config.projectName} API</h1></a>
+                    <a href="#"><h1>{config.projectName ? config.projectName + " " : ""}API</h1></a>
 
                     <h4>Table of contents</h4>
                     <div className="row">
@@ -128,7 +128,7 @@ function listEndpointDetails(endpointsJson, type) {
             {forEach(endpoints, endpoint => {
                 const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
 
-                return <div className="container">
+                return <div className={(endpoint.deprecated ? "deprecated-container" : "") + " container"}>
                     <span>
                         {
                             type === "http"

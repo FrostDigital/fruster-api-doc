@@ -74,11 +74,13 @@ a h5 {
 }
 
 .true {
-    color: green;
+    color: #6d9f33;
+    font-weight: bold;
 }
 
 .false {
-    color: red;
+    color: #f34e4b;
+    font-weight: bold;
 }
 
 .GET {
@@ -95,6 +97,13 @@ a h5 {
 
 .PUT {
     color: #e9982f;
+}
+
+h3 .GET,
+h3 .POST,
+h3 .DELETE,
+h3 .PUT {
+    font-weight: bold;
 }
 
 .clearfix {
@@ -198,7 +207,7 @@ h3.deprecated,
 
 .deprecated::after {
     content: "deprecated";
-    font-size: 11px;
+    font-size: 12px;
     color: red;
     margin-left: 5px;
     display: inline-block;
@@ -208,6 +217,25 @@ h3.deprecated,
     font-weight: bold;
 }
 
+.deprecated-container {
+    background-color: hsla(0, 86%, 92%, 0.2);
+}
+
 li {
     margin-left: 14px;
+}
+
+a h4:hover::before,
+a h3:hover::before,
+a h2:hover::before,
+a h1:hover::before {
+    font-family: "Glyphicons Halflings";
+    content: "\e144";
+    line-height: 3px;
+    font-size: 14px;
+    display: inline-block;
+    margin-left: -14px;
+    text-align: center;
+    vertical-align: middle;
+    color: #4d5155;
 }
