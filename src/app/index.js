@@ -46,39 +46,17 @@ export default class App extends Component {
                                         <a href={"#" + serviceName + "-http"}><h4>{serviceName}</h4></a>
                                         {forEach(endpoints, (endpoint) => {
                                             const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
-                                            return <li><a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}><span className={parsedSubject.method}>{parsedSubject.method}</span> to {parsedSubject.url}</a></li>
+                                            return <li className={endpoint.deprecated ? "deprecated" : ""}><a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}><span className={parsedSubject.method}>{parsedSubject.method}</span> to {parsedSubject.url}</a></li>
                                         })}
 
                                     </span>
                                 })}
                             </ul>
                         </div>
-                        <div className="col-md-6">
-                            <ul className="service">
-                                <a href="#service-endpoints"><h3>Service endpoints</h3></a>
-                                {forEach(this.props.endpointsByType.service, (endpoints, serviceName) => {
-                                    return <span>
-                                        <a href={"#" + serviceName + "-service"}><h4>{serviceName}</h4></a>
-                                        {forEach(endpoints, (endpoint) => {
-                                            return <li><a dangerouslySetInnerHTML={{ __html: getColorCodedTitle(endpoint.subject) }} href={"#" + endpoint.subject}></a></li>
-                                        })}
-                                    </span>
-                                })}
-                            </ul>
-                        </div>
-                        <div className="col-md-6">
-                            <ul className="ws">
-                                <a href="#ws-endpoints"><h3>Ws endpoints</h3></a>
-                                {forEach(this.props.endpointsByType.ws, (endpoints, serviceName) => {
-                                    return <span>
-                                        <a href={"#" + serviceName + "-ws"}><h4>{serviceName}</h4></a>
-                                        {forEach(endpoints, (endpoint) => {
-                                            return <li><a dangerouslySetInnerHTML={{ __html: getColorCodedTitle(endpoint.subject) }} href={"#" + endpoint.subject}></a></li>
-                                        })}
-                                    </span>
-                                })}
-                            </ul>
-                        </div>
+
+                        {tableOfContents(this, "Service")}
+                        {tableOfContents(this, "Ws")}
+
                     </div>
 
                     <div className="clearfix"></div>
@@ -126,6 +104,22 @@ export default class App extends Component {
     }
 }
 
+function tableOfContents(that, type) {
+    return <div className="col-md-6">
+        <ul className={type.toLowerCase()}>
+            <a href={"#" + type.toLowerCase() + "-endpoints"}><h3>{type} endpoints</h3></a>
+            {forEach(that.props.endpointsByType[type.toLowerCase()], (endpoints, serviceName) => {
+                return <span>
+                    <a href={"#" + serviceName + "-" + type.toLowerCase()}><h4>{serviceName}</h4></a>
+                    {forEach(endpoints, (endpoint) => {
+                        return <li className={endpoint.deprecated ? "deprecated" : ""}><a dangerouslySetInnerHTML={{ __html: getColorCodedTitle(endpoint.subject) }} href={"#" + endpoint.subject}></a></li>
+                    })}
+                </span>
+            })}
+        </ul>
+    </div>;
+}
+
 function listEndpointDetails(endpointsJson, type) {
     return forEach(endpointsJson, (endpoints, serviceName) => {
         return <div className={"service-container " + serviceName}>
@@ -135,10 +129,33 @@ function listEndpointDetails(endpointsJson, type) {
                 const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
 
                 return <div className="container">
-                    {type === "http"
-                        ? <span><a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}><h3 id={parsedSubject.method + "-to-" + parsedSubject.url}>
-                            <span className={parsedSubject.method}>{parsedSubject.method}</span> to {parsedSubject.url}</h3></a>from {endpoint.instanceId}</span>
-                        : <span> <a href={"#" + endpoint.subject}><h3 id={endpoint.subject} dangerouslySetInnerHTML={{ __html: getColorCodedTitle(endpoint.subject) }}></h3></a> from {endpoint.instanceId}</span>}
+                    <span>
+                        {
+                            type === "http"
+                                ?
+                                <span>
+                                    <a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
+                                        <h3 className={endpoint.deprecated ? "deprecated" : ""} id={parsedSubject.method + "-to-" + parsedSubject.url}>
+                                            <span className={parsedSubject.method}>{parsedSubject.method}</span> to {parsedSubject.url}
+                                        </h3>
+                                    </a>
+                                </span>
+
+                                :
+                                <span>
+                                    <a href={"#" + endpoint.subject}>
+                                        <h3 className={endpoint.deprecated ? "deprecated" : ""} id={endpoint.subject} dangerouslySetInnerHTML={{ __html: getColorCodedTitle(endpoint.subject) }}></h3>
+                                    </a>
+                                </span>
+                        }
+
+                        from {endpoint.instanceId} {
+                            endpoint.deprecated && typeof endpoint.deprecated === "string" ?
+                                <span>| <span className="deprecated-description">Note:</span> {endpoint.deprecated} </span>
+                                : ""
+                        }
+                    </span>
+
 
                     <table className="table table-hover">
                         <thead>
@@ -174,12 +191,13 @@ function listEndpointDetails(endpointsJson, type) {
                             <tr>
                                 {/* Url */}
                                 <td>{type === "http" ? config.apiRoot + parsedSubject.url : "n/a"}</td>
+
                                 {/* Response body */}
                                 <td className={"response-schema" + " " + endpoint.serviceName + " " + endpoint.responseSchema + " " + (endpoint.responseSchema ? " " : "deactivated")}>
                                     <a href="" className={endpoint.responseSchema ? "" : "deactivated"} >{endpoint.responseSchema || "n/a"} {endpoint.responseSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
                                 </td>
-                                {/* Must be logged in */}
 
+                                {/* Must be logged in */}
                                 <td className={(endpoint.permissions && endpoint.permissions.length > 0) ? true.toString() : endpoint.mustBeLoggedIn.toString()}>
                                     {(endpoint.permissions && endpoint.permissions.length > 0) ? true.toString() : endpoint.mustBeLoggedIn.toString()}
                                 </td>

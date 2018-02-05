@@ -188,3 +188,26 @@ a:hover.deactivated {
 .alert-danger li {
     margin-left: 12px;
 }
+
+h3.deprecated,
+.deprecated a,
+.deprecated a:active,
+.deprecated a:hover {
+    text-decoration: line-through;
+}
+
+.deprecated::after {
+    content: "deprecated";
+    font-size: 11px;
+    color: red;
+    margin-left: 5px;
+    display: inline-block;
+}
+
+.deprecated-description {
+    font-weight: bold;
+}
+
+li {
+    margin-left: 14px;
+}
