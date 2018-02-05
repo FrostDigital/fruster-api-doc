@@ -204,6 +204,10 @@ h3.deprecated,
     display: inline-block;
 }
 
+.deprecated-description {
+    font-weight: bold;
+}
+
 li {
     margin-left: 14px;
 }
