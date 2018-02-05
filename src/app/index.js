@@ -37,7 +37,7 @@ export default class App extends Component {
                     <a href="#"><h1>{config.projectName ? config.projectName + " " : ""}API</h1></a>
 
                     <h4>Table of contents</h4>
-                    <div className="row">
+                    <div className="row table-of-contents">
                         <div className="col-md-6">
                             <ul className="http">
                                 <a href="#http-endpoints"><h3>Http endpoints</h3></a>

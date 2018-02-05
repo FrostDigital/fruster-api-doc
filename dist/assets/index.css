@@ -239,3 +239,11 @@ a h1:hover::before {
     vertical-align: middle;
     color: #4d5155;
 }
+
+.table-of-contents a h4:hover::before,
+.table-of-contents a h3:hover::before,
+.table-of-contents a h2:hover::before,
+.table-of-contents a h1:hover::before {
+    content: "" !important;
+    margin: 0;
+}
