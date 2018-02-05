@@ -151,7 +151,7 @@ function listEndpointDetails(endpointsJson, type) {
 
                         from {endpoint.instanceId} {
                             endpoint.deprecated && typeof endpoint.deprecated === "string" ?
-                                <span> - <span className="deprecated-description">Note:</span> {endpoint.deprecated} </span>
+                                <span>| <span className="deprecated-description">Note:</span> {endpoint.deprecated} </span>
                                 : ""
                         }
                     </span>
