@@ -128,7 +128,7 @@ function listEndpointDetails(endpointsJson, type) {
             {forEach(endpoints, endpoint => {
                 const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
 
-                return <div className={(endpoint.deprecated ? "deprecated-container" : "") + " container"}>
+                return <div className={(endpoint.deprecated ? "deprecated-container" : "") + " container endpoint-container"}>
                     <span>
                         {
                             type === "http"
@@ -155,7 +155,6 @@ function listEndpointDetails(endpointsJson, type) {
                                 : ""
                         }
                     </span>
-
 
                     <table className="table table-hover">
                         <thead>
@@ -227,7 +226,6 @@ function listEndpointDetails(endpointsJson, type) {
                     </table>
                 </div>
             })}
-
         </div>
     })
 }

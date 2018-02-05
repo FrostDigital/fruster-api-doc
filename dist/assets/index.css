@@ -30,6 +30,7 @@
 
 body {
     overflow-y: scroll;
+    background-color: #fafafa !important;
 }
 
 .toolbar {
@@ -217,10 +218,6 @@ h3.deprecated,
     font-weight: bold;
 }
 
-.deprecated-container {
-    background-color: hsla(0, 86%, 92%, 0.2);
-}
-
 li {
     margin-left: 14px;
 }
@@ -246,4 +243,13 @@ a h1:hover::before {
 .table-of-contents a h1:hover::before {
     content: "" !important;
     margin: 0;
+}
+
+.endpoint-container {
+    background-color: #fff;
+    margin-top: 10px;
+}
+
+.deprecated-container {
+    background-color: hsla(0, 87%, 91%, 0.2) !important;
 }
