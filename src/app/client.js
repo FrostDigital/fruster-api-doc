@@ -72,11 +72,19 @@ $(() => {
                 $("#modal").modal("hide");
             });
             $("#modal").modal();
+            $(".modal-backdrop").removeClass("fade");
+            $(".modal-backdrop").addClass("fade-in");
+            $("#modal").addClass("in");
+            $("#modal").css("display", "block");
 
             $("#modal").on("hide.bs.modal", () => {
                 $(header).empty();
                 $(jsonSchemaJson).empty();
                 $(sampleJson).empty();
+                $("body").removeClass("modal-open");
+                $("body").css("padding-right", "0px");
+                $(".modal-backdrop").hide();
+                $("#modal").hide();
             });
         }
     }
