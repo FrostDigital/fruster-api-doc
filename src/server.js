@@ -76,7 +76,7 @@ function startServer() {
             const promises = [];
 
             metadataResponses.forEach(response => {
-                const serviceName = response.from.service === "n/a" ? response.from.instanceId : response.from.service;
+                const serviceName = response.from && response.from.service === "n/a" ? response.from.instanceId : response.from ? response.from.service : "na";
                 const fixedServiceName = serviceName.replace("n/a", "na");
 
                 const promise = utils.derefJsonSchema(response.data.schemas, fixedServiceName)
