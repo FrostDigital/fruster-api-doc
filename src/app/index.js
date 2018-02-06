@@ -128,26 +128,21 @@ function listEndpointDetails(endpointsJson, type) {
             {forEach(endpoints, endpoint => {
                 const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
 
-                return <div className={(endpoint.deprecated ? "deprecated-container" : "") + " container endpoint-container"}>
-                    <span>
-                        {
-                            type === "http"
-                                ?
-                                <span>
-                                    <a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
-                                        <h3 className={endpoint.deprecated ? "deprecated" : ""} id={parsedSubject.method + "-to-" + parsedSubject.url}>
-                                            <span className={parsedSubject.method}>{parsedSubject.method}</span> to {parsedSubject.url}
-                                        </h3>
-                                    </a>
-                                </span>
+                if (type === "http") {
+                    endpoint.urlSubjectLink = `${parsedSubject.method}-to-${parsedSubject.url}`;
+                    endpoint.urlSubject = `<span class="${parsedSubject.method}">${parsedSubject.method}</span> to ${parsedSubject.url}`;
+                } else {
+                    endpoint.urlSubjectLink = endpoint.subject;
+                    endpoint.urlSubject = getColorCodedTitle(endpoint.subject);
+                }
 
-                                :
-                                <span>
-                                    <a href={"#" + endpoint.subject}>
-                                        <h3 className={endpoint.deprecated ? "deprecated" : ""} id={endpoint.subject} dangerouslySetInnerHTML={{ __html: getColorCodedTitle(endpoint.subject) }}></h3>
-                                    </a>
-                                </span>
-                        }
+                return <div id={endpoint.urlSubjectLink} className={(endpoint.deprecated ? "deprecated-container" : "") + " container endpoint-container"}>
+                    <span>
+                        <span>
+                            <a href={"#" + endpoint.urlSubjectLink}>
+                                <h3 className={endpoint.deprecated ? "deprecated" : ""} dangerouslySetInnerHTML={{ __html: endpoint.urlSubject }}></h3>
+                            </a>
+                        </span>
 
                         from {endpoint.instanceId} {
                             endpoint.deprecated && typeof endpoint.deprecated === "string" ?
