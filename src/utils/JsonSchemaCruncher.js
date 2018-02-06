@@ -26,11 +26,15 @@ class JsonSchemaCruncher {
 		await fs.ensureDir(this.schemasDir);
 
 		await bundle.map(async (jsonSchema) => {
-			const filePath = path.join(this.schemasDir, jsonSchema.id);
+			if (this.schemasDir && jsonSchema.id) {
+				const filePath = path.join(this.schemasDir, jsonSchema.id);
 
-			log.debug(filePath);
-			return fs.writeJson(filePath, jsonSchema);
-		});
+				log.debug(filePath);
+				return fs.writeJson(filePath, jsonSchema);
+			} else {
+				log.error("Error while writing json; this.schemasDir:", this.schemasDir, ", jsonSchema.id:", jsonSchema.id);
+			}
+		}).filter(p => !!p);
 	}
 
 }
