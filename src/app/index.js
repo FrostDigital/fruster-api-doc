@@ -165,7 +165,7 @@ function listEndpointDetails(endpointsJson, type) {
                                 <td>{endpoint.subject}</td>
                                 {/* Request body */}
                                 <td className={"request-schema" + " " + endpoint.serviceName + " " + endpoint.requestSchema + " " + (endpoint.requestSchema ? " " : "deactivated")}>
-                                    <a href="" className={endpoint.requestSchema ? "" : "deactivated"}>{endpoint.requestSchema || "n/a"} {endpoint.requestSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
+                                    <a href="" className={endpoint.requestSchema ? "" : "deactivated"}>{endpoint.requestSchema || <span className="not-available">n/a</span>} {endpoint.requestSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
                                 </td>
                                 {/* Required permissions */}
                                 <td>{endpoint.permissions ? forEach(endpoint.permissions, (permissions) => {
@@ -184,11 +184,11 @@ function listEndpointDetails(endpointsJson, type) {
                         <tbody>
                             <tr>
                                 {/* Url */}
-                                <td>{type === "http" ? config.apiRoot + parsedSubject.url : "n/a"}</td>
+                                <td>{type === "http" ? config.apiRoot + parsedSubject.url : <span className="not-available">n/a</span>}</td>
 
                                 {/* Response body */}
                                 <td className={"response-schema" + " " + endpoint.serviceName + " " + endpoint.responseSchema + " " + (endpoint.responseSchema ? " " : "deactivated")}>
-                                    <a href="" className={endpoint.responseSchema ? "" : "deactivated"} >{endpoint.responseSchema || "n/a"} {endpoint.responseSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
+                                    <a href="" className={endpoint.responseSchema ? "" : "deactivated"} >{endpoint.responseSchema || <span className="not-available">n/a</span>} {endpoint.responseSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
                                 </td>
 
                                 {/* Must be logged in */}
@@ -210,11 +210,11 @@ function listEndpointDetails(endpointsJson, type) {
                                     {endpoint.docs ?
                                         <p>
                                             {endpoint.docs.description ? <div className="doc-entry-title">Description</div> : ""}
-                                            {endpoint.docs.description ? <span className="description-value"> {endpoint.docs.description}</span> : "n/a"}
+                                            {endpoint.docs.description ? <span className="description-value"> {endpoint.docs.description}</span> : <span className="not-available">n/a</span>}
                                             {endpoint.docs.params ? getDocEntry(endpoint.docs.params, "Url parameters") : ""}
                                             {endpoint.docs.query ? getDocEntry(endpoint.docs.query, "Query parameters") : ""}
                                             {endpoint.docs.errors ? getDocEntry(endpoint.docs.errors, "Errors") : ""}
-                                        </p> : "n/a"}
+                                        </p> : <span className="not-available">n/a</span>}
                                 </td>
                             </tr>
                         </tbody>
