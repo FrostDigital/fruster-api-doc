@@ -112,7 +112,6 @@ h3 .PUT {
 
 .modal-content {
     padding: 30px;
-    /* overflow-x: scroll; */
     border-radius: 0 !important;
     border: 0 !important;
 }
@@ -166,19 +165,6 @@ textarea {
 .permission-group:last-child .permission:last-child:after {
     font-weight: normal;
     color: #000;
-}
-
-.table>tbody>tr>td,
-.table>tbody>tr>th,
-.table>tfoot>tr>td,
-.table>tfoot>tr>th,
-.table>thead>tr>td,
-.table>thead>tr>th {
-    padding: 2px !important;
-}
-
-td {
-    max-width: 300px;
 }
 
 .glyphicon {
