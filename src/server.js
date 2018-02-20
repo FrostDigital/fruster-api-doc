@@ -82,8 +82,6 @@ function startServer() {
 
             if (!res.headersSent)
                 res.send(cachedHtml);
-
-            endpointsByType = Object.assign({}, emptyEndpointsByType);
         } catch (err) {
             log.error(err);
             res.json(err);
