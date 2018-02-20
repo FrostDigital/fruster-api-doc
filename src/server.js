@@ -134,28 +134,30 @@ function processMetadata(metadataResponses) {
         const serviceName = response.from && response.from.service === "n/a" ? response.from.instanceId : response.from ? response.from.service : "na";
         const fixedServiceName = serviceName.replace("n/a", "na");
 
-        const promise = utils.derefJsonSchema(response.data.schemas, fixedServiceName)
-            .then((derefResp) => {
-                const schemas = derefResp.schemas;
+        if (response.data) {
+            const promise = utils.derefJsonSchema(response.data.schemas, fixedServiceName)
+                .then((derefResp) => {
+                    const schemas = derefResp.schemas;
 
-                if (derefResp.errors && Object.keys(derefResp.errors).length > 0) {
-                    schemasWithErrors = {};
-                    schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
-                }
-                response.data.exposing.map((object, i) => {
-                    allEndpoints[object.subject] = object.subject;
-
-                    if (object.subject.includes("http")) {
-                        parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
-                    } else if (object.subject.includes("ws")) {
-                        parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
-                    } else {
-                        parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
+                    if (derefResp.errors && Object.keys(derefResp.errors).length > 0) {
+                        schemasWithErrors = {};
+                        schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
                     }
-                });
-            });
+                    response.data.exposing.map((object, i) => {
+                        allEndpoints[object.subject] = object.subject;
 
-        promises.push(promise);
+                        if (object.subject.includes("http")) {
+                            parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
+                        } else if (object.subject.includes("ws")) {
+                            parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
+                        } else {
+                            parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
+                        }
+                    });
+                });
+
+            promises.push(promise);
+        }
     }
 
     return [promises, schemasWithErrors, allEndpoints]
