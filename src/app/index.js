@@ -1,7 +1,8 @@
-import React, { Component, PropTypes } from "react";
+import React, { Component } from "react";
 const constants = require("../constants");
 const utils = require("../utils/utils");
 const config = require("../../config");
+
 
 export default class App extends Component {
 
@@ -22,9 +23,9 @@ export default class App extends Component {
                     {this.props.schemasWithErrors ? <div className="alert alert-danger" id="schemas-contains-errors">
                         <strong>Note:</strong>Errors were detected in the following json schemas:
                         {
-                            forEach(this.props.schemasWithErrors, (schemas, serviceName) => {
+                            this.forEach(this.props.schemasWithErrors, (schemas, serviceName) => {
 
-                                return forEach(schemas, (schemaWithError) => {
+                                return this.forEach(schemas, (schemaWithError) => {
 
                                     return <li className={"request-schema" + " " + serviceName + " " + schemaWithError}>
                                         <a href="" >{schemaWithError} <span className="glyphicon glyphicon-new-window"></span></a> from {serviceName}
@@ -41,10 +42,12 @@ export default class App extends Component {
                         <div className="col-md-6">
                             <ul className="http">
                                 <a href="#http-endpoints"><h3>Http endpoints</h3></a>
-                                {forEach(this.props.endpointsByType.http, (endpoints, serviceName) => {
+                                {this.forEach(this.props.endpointsByType.http, (endpoints, serviceName) => {
                                     return <span>
+
                                         <a href={"#" + serviceName + "-http"}><h4>{serviceName}</h4></a>
-                                        {forEach(endpoints, (endpoint) => {
+
+                                        {this.forEach(endpoints, (endpoint) => {
                                             const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
                                             return <li className={endpoint.deprecated ? "deprecated" : ""}><a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}><span className={parsedSubject.method}>{parsedSubject.method}</span> to {parsedSubject.url}</a></li>
                                         })}
@@ -54,21 +57,21 @@ export default class App extends Component {
                             </ul>
                         </div>
 
-                        {tableOfContents(this, "Service")}
-                        {tableOfContents(this, "Ws")}
+                        {this.tableOfContents("Service")}
+                        {this.tableOfContents("Ws")}
 
                     </div>
 
                     <div className="clearfix"></div>
 
                     <a href="#http-endpoints"><h1 id="http-endpoints">Http endpoints</h1></a>
-                    {listEndpointDetails(this.props.endpointsByType.http, "http")}
+                    {this.listEndpointDetails(this.props.endpointsByType.http, "http")}
 
                     <a href="#ws-endpoints"><h1 id="ws-endpoints">Ws endpoints</h1></a>
-                    {listEndpointDetails(this.props.endpointsByType.ws, "ws")}
+                    {this.listEndpointDetails(this.props.endpointsByType.ws, "ws")}
 
                     <a href="#service-endpoints"><h1 id="service-endpoints">Service endpoints</h1></a>
-                    {listEndpointDetails(this.props.endpointsByType.service)}
+                    {this.listEndpointDetails(this.props.endpointsByType.service)}
 
                     <br />
 
@@ -102,171 +105,239 @@ export default class App extends Component {
             </span>
         );
     }
-}
 
-function tableOfContents(that, type) {
-    return <div className="col-md-6">
-        <ul className={type.toLowerCase()}>
-            <a href={"#" + type.toLowerCase() + "-endpoints"}><h3>{type} endpoints</h3></a>
-            {forEach(that.props.endpointsByType[type.toLowerCase()], (endpoints, serviceName) => {
-                return <span>
-                    <a href={"#" + serviceName + "-" + type.toLowerCase()}><h4>{serviceName}</h4></a>
-                    {forEach(endpoints, (endpoint) => {
-                        return <li className={endpoint.deprecated ? "deprecated" : ""}><a dangerouslySetInnerHTML={{ __html: getColorCodedTitle(endpoint.subject) }} href={"#" + endpoint.subject}></a></li>
-                    })}
-                </span>
-            })}
-        </ul>
-    </div>;
-}
+    /**
+     * Renders table of contents for a type of endpoints.
+     * 
+     * @param {String} type 
+     */
+    tableOfContents(type) {
+        return <div className="col-md-6">
+            <ul className={type.toLowerCase()}>
+                <a href={"#" + type.toLowerCase() + "-endpoints"}><h3>{type} endpoints</h3></a>
+                {this.forEach(this.props.endpointsByType[type.toLowerCase()], (endpoints, serviceName) => {
+                    return <span>
+                        <a href={"#" + serviceName + "-" + type.toLowerCase()}><h4>{serviceName}</h4></a>
+                        {this.forEach(endpoints, (endpoint) => {
+                            return <li className={endpoint.deprecated ? "deprecated" : ""}>
+                                <a dangerouslySetInnerHTML={{ __html: this.getColorCodedTitle(endpoint.subject) }} href={"#" + endpoint.subject}></a>
+                            </li>
+                        })}
+                    </span>
+                })}
+            </ul>
+        </div>;
+    }
 
-function listEndpointDetails(endpointsJson, type) {
-    return forEach(endpointsJson, (endpoints, serviceName) => {
-        return <div id={serviceName + "-" + (type || "service")} className={"service-container " + serviceName}>
-            <a href={"#" + serviceName + "-" + (type || "service")}><h2>{serviceName}</h2></a>
+    /**
+     * Renders the details for an endpoint.
+     * 
+     * @param {Object} endpointsJson 
+     * @param {String=} type 
+     */
+    listEndpointDetails(endpointsJson, type) {
+        return this.forEach(endpointsJson, (endpoints, serviceName) => {
+            return <div id={serviceName + "-" + (type || "service")} className={"service-container " + serviceName}>
+                <a href={"#" + serviceName + "-" + (type || "service")}><h2>{serviceName}</h2></a>
 
-            {forEach(endpoints, endpoint => {
-                const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
+                {this.forEach(endpoints, endpoint => {
+                    const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
 
-                if (type === "http") {
-                    endpoint.urlSubjectLink = `${parsedSubject.method}-to-${parsedSubject.url}`;
-                    endpoint.urlSubject = `<span class="${parsedSubject.method}">${parsedSubject.method}</span> to ${parsedSubject.url}`;
-                } else {
-                    endpoint.urlSubjectLink = endpoint.subject;
-                    endpoint.urlSubject = getColorCodedTitle(endpoint.subject);
-                }
+                    if (type === "http") {
+                        endpoint.urlSubjectLink = `${parsedSubject.method}-to-${parsedSubject.url}`;
+                        endpoint.urlSubject = `<span class="${parsedSubject.method}">${parsedSubject.method}</span> to ${parsedSubject.url}`;
+                    } else {
+                        endpoint.urlSubjectLink = endpoint.subject;
+                        endpoint.urlSubject = this.getColorCodedTitle(endpoint.subject);
+                    }
 
-                return <div id={endpoint.urlSubjectLink} className={(endpoint.deprecated ? "deprecated-container" : "") + " container endpoint-container"}>
-                    <span>
+                    return <div id={endpoint.urlSubjectLink} className={(endpoint.deprecated ? "deprecated-container" : "") + " container endpoint-container"}>
                         <span>
-                            <a href={"#" + endpoint.urlSubjectLink}>
-                                <h3 className={endpoint.deprecated ? "deprecated" : ""} dangerouslySetInnerHTML={{ __html: endpoint.urlSubject }}></h3>
-                            </a>
+                            <span>
+                                <a href={"#" + endpoint.urlSubjectLink}>
+                                    <h3 className={endpoint.deprecated ? "deprecated" : ""} dangerouslySetInnerHTML={{ __html: endpoint.urlSubject }}></h3>
+                                </a>
+                            </span>
+
+                            from {endpoint.instanceId} {
+                                endpoint.deprecated && typeof endpoint.deprecated === "string" ?
+                                    // @ts-ignore
+                                    <span>| <span className="deprecated-description">Note:</span> <span className="deprecated-note" dangerouslySetInnerHTML={{ __html: this.getDeprecatedHtml(endpoint.deprecated) }} ></span></span>
+                                    : ""
+                            }
                         </span>
 
-                        from {endpoint.instanceId} {
-                            endpoint.deprecated && typeof endpoint.deprecated === "string" ?
-                                <span>| <span className="deprecated-description">Note:</span> {endpoint.deprecated} </span>
-                                : ""
-                        }
+                        <table className="table table">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Request body</th>
+                                    <th>Required permissions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    {/* Subject */}
+                                    <td>{endpoint.subject}</td>
+                                    {/* Request body */}
+                                    <td className={"request-schema" + " " + endpoint.serviceName + " " + endpoint.requestSchema + " " + (endpoint.requestSchema ? " " : "deactivated")}>
+                                        <a href="" className={endpoint.requestSchema ? "" : "deactivated"}>{endpoint.requestSchema || <span className="not-available">n/a</span>} {endpoint.requestSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
+                                    </td>
+                                    {/* Required permissions */}
+                                    <td>{endpoint.permissions ? this.forEach(endpoint.permissions, (permissions) => {
+                                        return <span className="permission-group">
+                                            {permissions instanceof Array ? this.forEach(permissions, (permission) => { return <span className="permission">{permission}</span> }) : <span className="permission">{permissions}</span>}</span>
+                                    }) : <span className="permission-group"><span className="permission">none</span></span>}</td>
+                                </tr>
+                            </tbody>
+                            <thead>
+                                <tr>
+                                    <th>Url</th>
+                                    <th>Response body</th>
+                                    <th>Must be logged in</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    {/* Url */}
+                                    <td>{type === "http" ? config.apiRoot + parsedSubject.url : <span className="not-available">n/a</span>}</td>
+
+                                    {/* Response body */}
+                                    <td className={"response-schema" + " " + endpoint.serviceName + " " + endpoint.responseSchema + " " + (endpoint.responseSchema ? " " : "deactivated")}>
+                                        <a href="" className={endpoint.responseSchema ? "" : "deactivated"} >{endpoint.responseSchema || <span className="not-available">n/a</span>} {endpoint.responseSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
+                                    </td>
+
+                                    {/* Must be logged in */}
+                                    <td className={(endpoint.permissions && endpoint.permissions.length > 0) ? true.toString() : endpoint.mustBeLoggedIn.toString()}>
+                                        {(endpoint.permissions && endpoint.permissions.length > 0) ? true.toString() : endpoint.mustBeLoggedIn.toString()}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <table className="table table">
+                            <thead>
+                                <tr>
+                                    <th>Documentation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td className="description">
+                                        {endpoint.docs ?
+                                            <div>
+                                                {endpoint.docs.description ? <div className="doc-entry-title">Description</div> : ""}
+                                                {endpoint.docs.description ? <span className="description-value"> {endpoint.docs.description}</span> : <span className="not-available">n/a</span>}
+                                                {endpoint.docs.params ? this.getDocEntry(endpoint.docs.params, "Url parameters") : ""}
+                                                {endpoint.docs.query ? this.getDocEntry(endpoint.docs.query, "Query parameters") : ""}
+                                                {endpoint.docs.errors ? this.getDocEntry(endpoint.docs.errors, "Errors") : ""}
+                                            </div> : <span className="not-available">n/a</span>}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                })}
+            </div>
+        })
+    }
+
+    /**
+     * Renders documentation entry.
+     * 
+     * @param {Object|Array} input 
+     * @param {String} title 
+     */
+    getDocEntry(input, title) {
+        if (Object.keys(input).length > 0) {
+            return <div>
+                <div className="doc-entry-title">{title}</div>
+                {this.forEach(input, (value, key) => {
+                    return <span>
+                        <div className="description-item"><span className="description-key">{key}</span>: <span className="description-value">{value}</span></div>
                     </span>
-
-                    <table className="table table">
-                        <thead>
-                            <tr>
-                                <th>Subject</th>
-                                <th>Request body</th>
-                                <th>Required permissions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                {/* Subject */}
-                                <td>{endpoint.subject}</td>
-                                {/* Request body */}
-                                <td className={"request-schema" + " " + endpoint.serviceName + " " + endpoint.requestSchema + " " + (endpoint.requestSchema ? " " : "deactivated")}>
-                                    <a href="" className={endpoint.requestSchema ? "" : "deactivated"}>{endpoint.requestSchema || <span className="not-available">n/a</span>} {endpoint.requestSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
-                                </td>
-                                {/* Required permissions */}
-                                <td>{endpoint.permissions ? forEach(endpoint.permissions, (permissions) => {
-                                    return <span className="permission-group">
-                                        {permissions instanceof Array ? forEach(permissions, (permission) => { return <span className="permission">{permission}</span> }) : <span className="permission">{permissions}</span>}</span>
-                                }) : <span className="permission-group"><span className="permission">none</span></span>}</td>
-                            </tr>
-                        </tbody>
-                        <thead>
-                            <tr>
-                                <th>Url</th>
-                                <th>Response body</th>
-                                <th>Must be logged in</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                {/* Url */}
-                                <td>{type === "http" ? config.apiRoot + parsedSubject.url : <span className="not-available">n/a</span>}</td>
-
-                                {/* Response body */}
-                                <td className={"response-schema" + " " + endpoint.serviceName + " " + endpoint.responseSchema + " " + (endpoint.responseSchema ? " " : "deactivated")}>
-                                    <a href="" className={endpoint.responseSchema ? "" : "deactivated"} >{endpoint.responseSchema || <span className="not-available">n/a</span>} {endpoint.responseSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
-                                </td>
-
-                                {/* Must be logged in */}
-                                <td className={(endpoint.permissions && endpoint.permissions.length > 0) ? true.toString() : endpoint.mustBeLoggedIn.toString()}>
-                                    {(endpoint.permissions && endpoint.permissions.length > 0) ? true.toString() : endpoint.mustBeLoggedIn.toString()}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <table className="table table">
-                        <thead>
-                            <tr>
-                                <th>Documentation</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td className="description">
-                                    {endpoint.docs ?
-                                        <p>
-                                            {endpoint.docs.description ? <div className="doc-entry-title">Description</div> : ""}
-                                            {endpoint.docs.description ? <span className="description-value"> {endpoint.docs.description}</span> : <span className="not-available">n/a</span>}
-                                            {endpoint.docs.params ? getDocEntry(endpoint.docs.params, "Url parameters") : ""}
-                                            {endpoint.docs.query ? getDocEntry(endpoint.docs.query, "Query parameters") : ""}
-                                            {endpoint.docs.errors ? getDocEntry(endpoint.docs.errors, "Errors") : ""}
-                                        </p> : <span className="not-available">n/a</span>}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            })}
-        </div>
-    })
-}
-
-/**
- * @param {Object|Array} input 
- * @param {String} title 
- */
-function getDocEntry(input, title) {
-    if (Object.keys(input).length > 0) {
-        return <p>
-            <div className="doc-entry-title">{title}</div>
-            {forEach(input, (value, key) => {
-                return <span>
-                    <div className="description-item"><span className="description-key">{key}</span>: <span className="description-value">{value}</span></div>
-                </span>
-            })}
-        </p>
+                })}
+            </div>
+        }
     }
-}
 
-/**
- * @param {Object|Array} toLoop 
- * @param {Function} handler 
- */
-function forEach(toLoop, handler) {
-    if (!toLoop || Object.keys(toLoop).length === 0)
-        return `No endpoints`;
+    /**
+     * Loops through an object or array.
+     * 
+     * @param {Object|Array} toLoop 
+     * @param {Function} handler 
+     */
+    forEach(toLoop, handler) {
+        if (!toLoop || Object.keys(toLoop).length === 0)
+            return `No endpoints`;
 
-    return Object.keys(toLoop)
-        .sort()
-        .map(index => {
-            return handler(toLoop[index], index);
+        return Object.keys(toLoop)
+            .sort()
+            .map(index => {
+                return handler(toLoop[index], index);
+            });
+    }
+
+    /**
+     * Adds colors to selected words, defined in the config.
+     * 
+     * @param {String} string 
+     */
+    getColorCodedTitle(string) {
+        const colorCodedWords = Object.keys(config.colorCodedWords);
+
+        for (let i = 0; i < colorCodedWords.length; i++) {
+            string = utils.replaceAll(string, colorCodedWords[i],
+                `<span class="${config.colorCodedWords[colorCodedWords[i]]}">${colorCodedWords[i]}</span>`);
+        }
+
+        return string;
+    }
+
+    /**
+     * Adds links to endpoints referenced in the deprecated text.
+     * 
+     * @param {String} description 
+     */
+    getDeprecatedHtml(description) {
+        const parts = description.split(" ");
+        const partsWithEndpoint = {};
+        let endpoint = "";
+        let endpointsExists = false;
+
+        for (let i = 0; i < parts.length; i++) {
+            if (this.props.allEndpoints[parts[i]]) {
+                endpointsExists = true;
+                partsWithEndpoint[parts[i]] = parts[i];
+            }
+        }
+
+        if (!endpointsExists)
+            return description;
+
+        Object.keys(partsWithEndpoint).
+            forEach(key => {
+                if (parts[1].includes("http")) {
+                    const parsedHttpEndpoint = utils.parseSubjectToAPIUrl(parts[1]);
+                    partsWithEndpoint[key] = `
+                    <a href="#${parsedHttpEndpoint.method}-to-${parsedHttpEndpoint.url}">
+                    <span class="${parsedHttpEndpoint.method}">${parsedHttpEndpoint.method}</span>
+                     to ${parsedHttpEndpoint.url}
+                    </a>`;
+
+                } else
+                    partsWithEndpoint[key] = `<a href="#${parts[1]}">${this.getColorCodedTitle(parts[1])}</a>`;
+            });
+
+        let output = [];
+
+        parts.forEach(pt => {
+            if (partsWithEndpoint[pt])
+                output.push(partsWithEndpoint[pt]);
+            else
+                output.push(pt);
         });
-}
 
-/**
- * @param {String} string 
- */
-function getColorCodedTitle(string) {
-    const colorCodedWords = Object.keys(config.colorCodedWords);
-
-    for (let i = 0; i < colorCodedWords.length; i++) {
-        string = utils.replaceAll(string, colorCodedWords[i],
-            `<span class="${config.colorCodedWords[colorCodedWords[i]]}">${colorCodedWords[i]}</span>`);
+        return `<span>${output.join(" ")}</span>`;
     }
 
-    return string;
 }

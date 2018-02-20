@@ -99,6 +99,10 @@ a h5 {
     color: #e9982f;
 }
 
+.deprecated-note .GET,
+.deprecated-note .POST,
+.deprecated-note .DELETE,
+.deprecated-note .PUT,
 h3 .GET,
 h3 .POST,
 h3 .DELETE,

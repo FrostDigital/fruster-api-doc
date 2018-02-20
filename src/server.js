@@ -28,26 +28,17 @@ const port = config.port || 3100;
 
 }());
 
+const emptyEndpointsByType = { http: {}, service: {}, ws: {} };
+
 let schemasPerService = {};
-let endpointsByType = {
-    http: {},
-    service: {},
-    ws: {}
-};
+let endpointsByType = { http: {}, service: {}, ws: {} };
+let cachedHtml;
 
 function startServer() {
-
     app.use("/assets", express.static(path.resolve(`${__dirname}/assets`)));
 
     app.post("/reset-cache", (req, res) => {
-        console.log("Resetting cache");
-
-        schemasPerService = {};
-        endpointsByType = {
-            http: {},
-            service: {},
-            ws: {}
-        };
+        resetCache();
 
         res.status(200);
         res.end();
@@ -55,87 +46,30 @@ function startServer() {
 
     app.get("/", async (req, res) => {
         try {
-            if (req.query.resetCache) {
-                schemasPerService = {};
-                endpointsByType = {
-                    http: {},
-                    service: {},
-                    ws: {}
-                };
-            }
+            if (req.query.resetCache)
+                resetCache();
+
+            /** If there is cached html we send this right away but let the server process the rest, this will speed up avarage load times. */
+            if (cachedHtml)
+                res.send(cachedHtml);
 
             const metadataResponses = await bus.requestMany({
                 subject: "metadata",
                 maxResponses: 10000,
-                message: {
-                    reqId: uuid.v4()
-                }
-            });
-            /**@type {Object<String, Array>} serviceName: [JsonSchemaId]*/
-            let schemasWithErrors;
-            const promises = [];
-
-            metadataResponses.forEach(response => {
-                const serviceName = response.from && response.from.service === "n/a" ? response.from.instanceId : response.from ? response.from.service : "na";
-                const fixedServiceName = serviceName.replace("n/a", "na");
-
-                const promise = utils.derefJsonSchema(response.data.schemas, fixedServiceName)
-                    .then((derefResp) => {
-                        const schemas = derefResp.schemas;
-
-                        if (derefResp.errors && Object.keys(derefResp.errors).length > 0) {
-                            schemasWithErrors = {};
-                            schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
-                        }
-                        response.data.exposing.map((object, i) => {
-                            if (object.subject.includes("http")) {
-                                parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
-                            } else if (object.subject.includes("ws")) {
-                                parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
-                            } else {
-                                parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
-                            }
-                        });
-                    });
-
-                promises.push(promise);
+                message: { reqId: uuid.v4() }
             });
 
+            let [promises, schemasWithErrors, allEndpoints] = processMetadata(metadataResponses);
+
+            // @ts-ignore
             await Promise.all(promises);
-
-            /**
-             * @param {Object} object response object
-             * @param {Number} splitIndex index of endpoint identifier (http.post.>>user<< for http and >>user-service<<.create-user for service).
-             * @param {String} type type of endpoint 
-             * @param {Array<Object>} schemas schemas for response
-             * @param {String} serviceName name of service
-             * @param {String} instanceId 
-             */
-            function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
-                const splits = object.subject.split(".");
-
-                if (splits[splitIndex] === "health")
-                    return;
-
-                object.instanceId = instanceId;
-                object.serviceName = serviceName;
-
-                if (!endpointsByType[type][splits[splitIndex]])
-                    endpointsByType[type][splits[splitIndex]] = [];
-
-                endpointsByType[type][splits[splitIndex]] = utils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
-
-                if (!schemasPerService[serviceName])
-                    schemasPerService[serviceName] = schemas;
-            }
 
             Object.keys(endpointsByType).forEach(endpointType => {
                 sortAfterEndpointName(endpointsByType[endpointType]);
             });
 
-            const state = {
-                endpointsByType, schemasPerService, schemasWithErrors
-            };
+            const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints };
+
             const appString = renderToString(<App {...state} />);
 
             const renderedHtml = template({
@@ -144,7 +78,12 @@ function startServer() {
                 initialState: JSON.stringify(state)
             });
 
-            res.send(renderedHtml);
+            cachedHtml = renderedHtml;
+
+            if (!res.headersSent)
+                res.send(cachedHtml);
+
+            endpointsByType = Object.assign({}, emptyEndpointsByType);
         } catch (err) {
             log.error(err);
             res.json(err);
@@ -154,10 +93,8 @@ function startServer() {
     app.listen(port);
     console.log("listening");
 
-    if (process.send) {
+    if (process.send)
         process.send({ event: "online", url: `http://localhost:${port}/` });
-    }
-
 }
 
 /**
@@ -182,4 +119,80 @@ function sortAfterEndpointName(endpoints) {
                 });
             });
     }
+}
+
+/**
+ * @param {Array} metadataResponses 
+ */
+function processMetadata(metadataResponses) {
+    let schemasWithErrors;
+    const promises = [];
+    const allEndpoints = {};
+
+    let i = metadataResponses.length;
+
+    while (i--) {
+        const response = metadataResponses[i];
+        const serviceName = response.from && response.from.service === "n/a" ? response.from.instanceId : response.from ? response.from.service : "na";
+        const fixedServiceName = serviceName.replace("n/a", "na");
+
+        const promise = utils.derefJsonSchema(response.data.schemas, fixedServiceName)
+            .then((derefResp) => {
+                const schemas = derefResp.schemas;
+
+                if (derefResp.errors && Object.keys(derefResp.errors).length > 0) {
+                    schemasWithErrors = {};
+                    schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
+                }
+                response.data.exposing.map((object, i) => {
+                    allEndpoints[object.subject] = object.subject;
+
+                    if (object.subject.includes("http")) {
+                        parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
+                    } else if (object.subject.includes("ws")) {
+                        parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
+                    } else {
+                        parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
+                    }
+                });
+            });
+
+        promises.push(promise);
+    }
+
+    return [promises, schemasWithErrors, allEndpoints]
+}
+
+/**
+ * @param {Object} object response object
+ * @param {Number} splitIndex index of endpoint identifier (http.post.>>user<< for http and >>user-service<<.create-user for service).
+ * @param {String} type type of endpoint 
+ * @param {Array<Object>} schemas schemas for response
+ * @param {String} serviceName name of service
+ * @param {String} instanceId 
+ */
+function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
+    const splits = object.subject.split(".");
+
+    if (splits[splitIndex] === "health")
+        return;
+
+    object.instanceId = instanceId;
+    object.serviceName = serviceName;
+
+    if (!endpointsByType[type][splits[splitIndex]])
+        endpointsByType[type][splits[splitIndex]] = [];
+
+    endpointsByType[type][splits[splitIndex]] = utils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
+
+    if (!schemasPerService[serviceName])
+        schemasPerService[serviceName] = schemas;
+}
+
+function resetCache() {
+    console.log("Resetting cache");
+
+    schemasPerService = {};
+    endpointsByType = Object.assign({}, emptyEndpointsByType);
+    cachedHtml = undefined;
 }
