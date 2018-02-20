@@ -12,9 +12,10 @@ class JsonSchemaCruncher {
 	}
 
 	async getSchema(schemaId) {
-		log.debug("derefing", schemaId);
+		log.silly("derefing", schemaId);
 		const schemaPath = path.join(this.schemasDir, schemaId);
 
+		// @ts-ignore
 		return await $RefParser.dereference(schemaPath);
 	}
 
@@ -29,7 +30,7 @@ class JsonSchemaCruncher {
 			if (this.schemasDir && jsonSchema.id) {
 				const filePath = path.join(this.schemasDir, jsonSchema.id);
 
-				log.debug(filePath);
+				log.silly(filePath);
 				return fs.writeJson(filePath, jsonSchema);
 			} else {
 				log.error("Error while writing json; this.schemasDir:", this.schemasDir, ", jsonSchema.id:", jsonSchema.id);
