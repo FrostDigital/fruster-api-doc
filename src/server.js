@@ -59,10 +59,65 @@ function startServer() {
                 message: { reqId: uuid.v4() }
             });
 
-            let [promises, schemasWithErrors, allEndpoints] = processMetadata(metadataResponses);
+            let schemasWithErrors;
+            const promises = [];
+            const allEndpoints = {};
 
-            // @ts-ignore
+            metadataResponses.forEach(response => {
+                const serviceName = response.from && response.from.service === "n/a" ? response.from.instanceId : response.from ? response.from.service : "na";
+                const fixedServiceName = serviceName.replace("n/a", "na");
+
+                const promise = utils.derefJsonSchema(response.data.schemas, fixedServiceName)
+                    .then((derefResp) => {
+                        const schemas = derefResp.schemas;
+
+                        if (derefResp.errors && Object.keys(derefResp.errors).length > 0) {
+                            schemasWithErrors = {};
+                            schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
+                        }
+                        response.data.exposing.map((object, i) => {
+                            allEndpoints[object.subject] = object.subject;
+                            if (object.subject.includes("http")) {
+                                parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
+                            } else if (object.subject.includes("ws")) {
+                                parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
+                            } else {
+                                parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
+                            }
+                        });
+                    });
+
+                promises.push(promise);
+            });
+
             await Promise.all(promises);
+
+            /**
+             * @param {Object} object response object
+             * @param {Number} splitIndex index of endpoint identifier (http.post.>>user<< for http and >>user-service<<.create-user for service).
+             * @param {String} type type of endpoint 
+             * @param {Array<Object>} schemas schemas for response
+             * @param {String} serviceName name of service
+             * @param {String} instanceId 
+             */
+            function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
+                const splits = object.subject.split(".");
+
+                if (splits[splitIndex] === "health")
+                    return;
+
+                object.instanceId = instanceId;
+                object.serviceName = serviceName;
+
+                if (!endpointsByType[type][splits[splitIndex]])
+                    endpointsByType[type][splits[splitIndex]] = [];
+
+                endpointsByType[type][splits[splitIndex]] = utils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
+
+                if (!schemasPerService[serviceName])
+                    schemasPerService[serviceName] = schemas;
+            }
+
 
             Object.keys(endpointsByType).forEach(endpointType => {
                 sortAfterEndpointName(endpointsByType[endpointType]);
@@ -117,76 +172,6 @@ function sortAfterEndpointName(endpoints) {
                 });
             });
     }
-}
-
-/**
- * @param {Array} metadataResponses 
- */
-function processMetadata(metadataResponses) {
-    let schemasWithErrors;
-    const promises = [];
-    const allEndpoints = {};
-
-    let i = metadataResponses.length;
-
-    while (i--) {
-        const response = metadataResponses[i];
-        const serviceName = response.from && response.from.service === "n/a" ? response.from.instanceId : response.from ? response.from.service : "na";
-        const fixedServiceName = serviceName.replace("n/a", "na");
-
-        if (response.data) {
-            const promise = utils.derefJsonSchema(response.data.schemas, fixedServiceName)
-                .then((derefResp) => {
-                    const schemas = derefResp.schemas;
-
-                    if (derefResp.errors && Object.keys(derefResp.errors).length > 0) {
-                        schemasWithErrors = {};
-                        schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
-                    }
-                    response.data.exposing.map((object, i) => {
-                        allEndpoints[object.subject] = object.subject;
-
-                        if (object.subject.includes("http")) {
-                            parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
-                        } else if (object.subject.includes("ws")) {
-                            parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
-                        } else {
-                            parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
-                        }
-                    });
-                });
-
-            promises.push(promise);
-        }
-    }
-
-    return [promises, schemasWithErrors, allEndpoints]
-}
-
-/**
- * @param {Object} object response object
- * @param {Number} splitIndex index of endpoint identifier (http.post.>>user<< for http and >>user-service<<.create-user for service).
- * @param {String} type type of endpoint 
- * @param {Array<Object>} schemas schemas for response
- * @param {String} serviceName name of service
- * @param {String} instanceId 
- */
-function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
-    const splits = object.subject.split(".");
-
-    if (splits[splitIndex] === "health")
-        return;
-
-    object.instanceId = instanceId;
-    object.serviceName = serviceName;
-
-    if (!endpointsByType[type][splits[splitIndex]])
-        endpointsByType[type][splits[splitIndex]] = [];
-
-    endpointsByType[type][splits[splitIndex]] = utils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
-
-    if (!schemasPerService[serviceName])
-        schemasPerService[serviceName] = schemas;
 }
 
 function resetCache() {
