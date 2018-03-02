@@ -85,11 +85,11 @@ function startServer() {
                         response.data.exposing.map(async (object, i) => {
                             allEndpoints[object.subject] = object.subject;
                             if (object.subject.includes("http")) {
-                                await parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
+                                parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
                             } else if (object.subject.includes("ws")) {
-                                await parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
+                                parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
                             } else {
-                                await parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
+                                parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
                             }
                         });
                     });
@@ -107,7 +107,7 @@ function startServer() {
              * @param {String} serviceName name of service
              * @param {String} instanceId 
              */
-            async function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
+            function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
                 const splits = object.subject.split(".");
 
                 if (splits[splitIndex] === "health")
