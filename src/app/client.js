@@ -14,6 +14,21 @@ $(() => {
         });
     }
 
+    $(".copy-as-curl").click(event => {
+        copyToClipboard(event.currentTarget);
+    });
+
+    function copyToClipboard(target) {
+        const inputToCopy = $(target).find("input");
+
+        inputToCopy.show();
+        inputToCopy[0].select();
+
+        document.execCommand("copy");
+
+        inputToCopy.hide();
+    }
+
     console.log(window._APP_STATE_);
 
     if (window._APP_STATE_.schemasContainErrors)
@@ -21,9 +36,6 @@ $(() => {
 
     $(".request-schema").click(clickEvent);
     $(".response-schema").click(clickEvent);
-    $(copyJsonSchemaJson).click(() => $(jsonSchemaJson).toggle());
-    $(copySampleJson).click(() => $(sampleJson).toggle());
-
     $("#reset-cache").click(resetCache);
 
     /**
@@ -59,18 +71,24 @@ $(() => {
             const header = "#modal #header";
 
             $(header).text(schema.id);
-            $(jsonSchemaJson).append(JSON.stringify(schemaToJson, null, 2));
-            $(sampleJson).append(JSON.stringify(schema.sample, null, 2));
+
+            const schemaToJsonString = JSON.stringify(schemaToJson, null, 2);
+            $(jsonSchemaJson).append(schemaToJsonString);
+            $(copyJsonSchemaJson).val(schemaToJsonString);
+
+            const schemaSampleString = JSON.stringify(schema.sample, null, 2);
+            $(sampleJson).append(schemaSampleString);
+            $(copySampleJson).val(schemaSampleString);
+
+            $("#modal button").click((event) => {
+                copyToClipboard(event.currentTarget);
+            });
 
             hljs.configure({ languages: ["json"] });
 
-            $("pre code").each(function (i, block) {
-                hljs.highlightBlock(block);
-            });
+            $("pre code").each((i, block) => hljs.highlightBlock(block));
 
-            $("#close-btn").click(event => {
-                $("#modal").modal("hide");
-            });
+            $("#close-btn").click(event => $("#modal").modal("hide"));
             $("#modal").modal();
             $(".modal-backdrop").removeClass("fade");
             $(".modal-backdrop").addClass("fade-in");
@@ -81,6 +99,10 @@ $(() => {
                 $(header).empty();
                 $(jsonSchemaJson).empty();
                 $(sampleJson).empty();
+
+                $(copyJsonSchemaJson).val("");
+                $(copySampleJson).val("");
+
                 $("body").removeClass("modal-open");
                 $("body").css("padding-right", "0px");
                 $(".modal-backdrop").hide();

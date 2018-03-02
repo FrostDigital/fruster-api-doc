@@ -16,8 +16,6 @@ const utils = require("./utils/utils");
 const config = require("../config");
 const port = config.port || 3100;
 
-const curl = require('curlrequest');
-
 (async function () {
 
     await bus.connect({
@@ -119,34 +117,20 @@ function startServer() {
 
                 const cUrlPromises = [];
 
-                schemas.forEach(async s => {
-                    if (!s.cUrl && object.subject.includes("http")) {
-                        const parsedSubject = utils.parseSubjectToAPIUrl(object.subject);
-                        const body = JSON.stringify(s.sample);
+                if (!object.cUrl && object.subject.includes("http")) {
+                    const requestSchema = schemas.find(s => s.id === object.requestSchema);
+                    const parsedSubject = utils.parseSubjectToAPIUrl(object.subject);
 
-                        if (parsedSubject.method === "*")
-                            parsedSubject.method = "GET";
+                    let body;
 
-                        const options = {
-                            url: config.apiRoot + parsedSubject.url,
-                            method: parsedSubject.method,
-                            include: true,
-                            pretend: true,
-                            data: body,
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Content-Length": body.length
-                            }
-                        };
+                    if (requestSchema)
+                        body = JSON.stringify(requestSchema.sample);
 
-                        cUrlPromises.push(asyncCurl(options).then(cUrl => {
-                            s.cUrl = utils.replaceAll(cUrl, "\"", "\"");
-                            console.log(cUrl);
-                        }));
-                    }
-                });
+                    if (parsedSubject.method === "*")
+                        parsedSubject.method = "GET";
 
-                await Promise.all(cUrlPromises);
+                    object.cUrl = `curl  -X ${parsedSubject.method} ${body ? `-H "Content-Type: application/json" -d '${body}'` : ""} ${config.apiRoot + parsedSubject.url}`;
+                }
 
                 if (!schemasPerService[serviceName])
                     schemasPerService[serviceName] = schemas;

@@ -12,7 +12,6 @@
     },
     "license": "MIT",
     "dependencies": {
-        "curlrequest": "^1.0.1",
         "express": "^4.14.0",
         "fruster-bus": "^0.2.20",
         "fruster-health": "^0.0.12",
