@@ -16,6 +16,8 @@ const utils = require("./utils/utils");
 const config = require("../config");
 const port = config.port || 3100;
 
+const curl = require('curlrequest');
+
 (async function () {
 
     await bus.connect({
@@ -75,14 +77,15 @@ function startServer() {
                             schemasWithErrors = {};
                             schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
                         }
-                        response.data.exposing.map((object, i) => {
+
+                        response.data.exposing.map(async (object, i) => {
                             allEndpoints[object.subject] = object.subject;
                             if (object.subject.includes("http")) {
-                                parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
+                                await parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
                             } else if (object.subject.includes("ws")) {
-                                parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
+                                await parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
                             } else {
-                                parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
+                                await parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
                             }
                         });
                     });
@@ -100,7 +103,7 @@ function startServer() {
              * @param {String} serviceName name of service
              * @param {String} instanceId 
              */
-            function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
+            async function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
                 const splits = object.subject.split(".");
 
                 if (splits[splitIndex] === "health")
@@ -114,10 +117,40 @@ function startServer() {
 
                 endpointsByType[type][splits[splitIndex]] = utils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
 
+                const cUrlPromises = [];
+
+                schemas.forEach(async s => {
+                    if (!s.cUrl && object.subject.includes("http")) {
+                        const parsedSubject = utils.parseSubjectToAPIUrl(object.subject);
+                        const body = JSON.stringify(s.sample);
+
+                        if (parsedSubject.method === "*")
+                            parsedSubject.method = "GET";
+
+                        const options = {
+                            url: config.apiRoot + parsedSubject.url,
+                            method: parsedSubject.method,
+                            include: true,
+                            pretend: true,
+                            data: body,
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Content-Length": body.length
+                            }
+                        };
+
+                        cUrlPromises.push(asyncCurl(options).then(cUrl => {
+                            s.cUrl = utils.replaceAll(cUrl, "\"", "\"");
+                            console.log(cUrl);
+                        }));
+                    }
+                });
+
+                await Promise.all(cUrlPromises);
+
                 if (!schemasPerService[serviceName])
                     schemasPerService[serviceName] = schemas;
             }
-
 
             Object.keys(endpointsByType).forEach(endpointType => {
                 sortAfterEndpointName(endpointsByType[endpointType]);
@@ -148,6 +181,15 @@ function startServer() {
 
     if (process.send)
         process.send({ event: "online", url: `http://localhost:${port}/` });
+}
+
+function asyncCurl(options) {
+    return new Promise(resolve => {
+        curl.request(options, (err, stdout, meta) => {
+            const string = `${meta.cmd} ${meta.args.join(" ")}`.replace("--silent", "");
+            resolve(string);
+        });
+    });
 }
 
 /**
