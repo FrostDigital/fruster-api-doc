@@ -173,15 +173,6 @@ function startServer() {
         process.send({ event: "online", url: `http://localhost:${port}/` });
 }
 
-function asyncCurl(options) {
-    return new Promise(resolve => {
-        curl.request(options, (err, stdout, meta) => {
-            const string = `${meta.cmd} ${meta.args.join(" ")}`.replace("--silent", "");
-            resolve(string);
-        });
-    });
-}
-
 /**
  * @param {Object} endpoints 
  */
