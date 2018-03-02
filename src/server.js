@@ -67,8 +67,14 @@ function startServer() {
                 const serviceName = response.from && response.from.service === "n/a" ? response.from.instanceId : response.from ? response.from.service : "na";
                 const fixedServiceName = serviceName.replace("n/a", "na");
 
+                if (!response.data)
+                    return;
+
                 const promise = utils.derefJsonSchema(response.data.schemas, fixedServiceName)
                     .then((derefResp) => {
+                        if (!derefResp)
+                            return;
+
                         const schemas = derefResp.schemas;
 
                         if (derefResp.errors && Object.keys(derefResp.errors).length > 0) {
