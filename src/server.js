@@ -81,7 +81,8 @@ function startServer() {
                             schemasWithErrors = {};
                             schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
                         }
-                        response.data.exposing.map((object, i) => {
+
+                        response.data.exposing.map(async (object, i) => {
                             allEndpoints[object.subject] = object.subject;
                             if (object.subject.includes("http")) {
                                 parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
@@ -120,10 +121,26 @@ function startServer() {
 
                 endpointsByType[type][splits[splitIndex]] = utils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
 
+                const cUrlPromises = [];
+
+                if (!object.cUrl && object.subject.includes("http")) {
+                    const requestSchema = schemas.find(s => s.id === object.requestSchema);
+                    const parsedSubject = utils.parseSubjectToAPIUrl(object.subject);
+
+                    let body;
+
+                    if (requestSchema)
+                        body = JSON.stringify(requestSchema.sample);
+
+                    if (parsedSubject.method === "*")
+                        parsedSubject.method = "GET";
+
+                    object.cUrl = `curl  -X ${parsedSubject.method} ${body ? `-H "Content-Type: application/json" -d '${body}'` : ""} ${config.apiRoot + parsedSubject.url}`;
+                }
+
                 if (!schemasPerService[serviceName])
                     schemasPerService[serviceName] = schemas;
             }
-
 
             Object.keys(endpointsByType).forEach(endpointType => {
                 sortAfterEndpointName(endpointsByType[endpointType]);

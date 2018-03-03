@@ -82,18 +82,34 @@ export default class App extends Component {
                                 <h1 id="header"></h1>
 
                                 <a href="#schema">
-                                    <div>Go to json Schema<span className="glyphicon glyphicon-chevron-right"></span></div>
+                                    <div>Go to json Schema</div>
                                 </a>
                                 <a href="#sample">
-                                    <div>Go to sample<span className="glyphicon glyphicon-chevron-right"></span></div>
+                                    <div>Go to sample</div>
                                 </a>
 
+                                <br />
+
                                 <h2 id="schema">Json schema</h2>
+
+                                <button className="action btn-copy" id="copy-json-schema">
+                                    <input id="copy-json-schema-json" type="text" value="" hidden /> Copy to clipboard <span className="glyphicon glyphicon-copy"></span>
+                                </button>
+
+                                <div className="clearfix" />
+
                                 <pre>
                                     <code id="json-schema-json"></code>
                                 </pre>
 
                                 <h2 id="sample">Sample</h2>
+
+                                <button className="action btn-copy" id="copy-sample">
+                                    <input id="copy-sample-json" type="text" value="" hidden /> Copy to clipboard <span className="glyphicon glyphicon-copy"></span>
+                                </button>
+
+                                <div className="clearfix" />
+
                                 <pre>
                                     <code id="sample-json"></code>
                                 </pre>
@@ -158,13 +174,22 @@ export default class App extends Component {
                                     <h3 className={endpoint.deprecated ? "deprecated" : ""} dangerouslySetInnerHTML={{ __html: endpoint.urlSubject }}></h3>
                                 </a>
                             </span>
-
-                            from {endpoint.instanceId} {
-                                endpoint.deprecated && typeof endpoint.deprecated === "string" ?
-                                    // @ts-ignore
-                                    <span>| <span className="deprecated-description">Note:</span> <span className="deprecated-note" dangerouslySetInnerHTML={{ __html: this.getDeprecatedHtml(endpoint.deprecated) }} ></span></span>
-                                    : ""
-                            }
+                            <span className="endpoint-second-row">
+                                from {endpoint.instanceId} {
+                                    endpoint.deprecated && typeof endpoint.deprecated === "string" ?
+                                        // @ts-ignore
+                                        <span>| <span className="deprecated-description">Note:</span> <span className="deprecated-note" dangerouslySetInnerHTML={{ __html: this.getDeprecatedHtml(endpoint.deprecated) }} ></span></span>
+                                        : ""
+                                }
+                                {endpoint.cUrl ?
+                                    <span>
+                                        <button className="action copy-as-curl btn-copy">
+                                            <input type="text" className="curl-data" value={endpoint.cUrl} hidden /> Copy as cUrl <span className="glyphicon glyphicon-copy"></span>
+                                        </button>
+                                        <div className="clearfix" />
+                                    </span>
+                                    : ""}
+                            </span>
                         </span>
 
                         <table className="table table">

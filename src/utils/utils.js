@@ -72,8 +72,8 @@ module.exports = {
      * @return {Array}
      */
     addUnique: (object, array) => {
-        let objectExists = array.find((e, i, a) => {
-            let isObject = e.subject === object.subject;
+        const objectExists = array.find((e, i, a) => {
+            const isObject = e.subject === object.subject;
 
             if (isObject)
                 a[i] = object;
@@ -105,6 +105,7 @@ module.exports = {
             jsonSchemaCruncher.getSchema(schema.id)
                 .then(schema => {
                     setFakerSpecificAttrs(schema);
+
                     if (!schema.sample)
                         schema.sample = jsf(schema);
 
