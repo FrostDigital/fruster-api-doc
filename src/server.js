@@ -182,10 +182,10 @@ function getCUrlFromEndpoint(endpoint, schemas) {
     let authHeader = " ";
 
     /** Adds a cookie field if authentication is needed to access endpoint */
-    if ((endpoint.permissions && endpoint.permissions.length > 0) ? true.toString() : endpoint.mustBeLoggedIn.toString())
+    if ((endpoint.permissions && endpoint.permissions.length > 0) || endpoint.mustBeLoggedIn)
         authHeader = " --cookie jwt={{JWT_TOKEN}} ";
 
-    let cUrl = `curl -X ${parsedSubject.method} ${authHeader ? `${authHeader}` : ""}${body ? `-H "Content-Type: application/json" -d '${body}'` : ""} ${config.apiRoot + parsedSubject.url}`;
+    let cUrl = `curl -X ${parsedSubject.method} ${authHeader ? `${authHeader}` : ""} ${body ? `-H "Content-Type: application/json" -d '${body}'` : ""} ${config.apiRoot + parsedSubject.url}`;
 
     return utils.replaceAll(cUrl, "  ", " ");
 }
@@ -203,12 +203,9 @@ function sortAfterEndpointName(endpoints) {
                     const aU = a.subject.toUpperCase();
                     const bU = b.subject.toUpperCase();
 
-                    if (aU > bU)
-                        return 1;
-                    else if (aU < bU)
-                        return -1;
-                    else
-                        return 0;
+                    if (aU > bU) return 1;
+                    else if (aU < bU) return -1;
+                    else return 0;
                 });
             });
     }
