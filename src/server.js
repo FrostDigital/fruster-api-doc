@@ -65,6 +65,9 @@ function startServer() {
             const allEndpoints = {};
 
             metadataResponses.forEach(response => {
+                if (!response.from) /** Just in case this happens we don't want the whole page to not load. */
+                    response.from = { service: "", instanceId: "" };
+
                 const serviceName = response.from && response.from.service === "n/a" ? response.from.instanceId : response.from ? response.from.service : "na";
                 const fixedServiceName = serviceName.replace("n/a", "na");
 
