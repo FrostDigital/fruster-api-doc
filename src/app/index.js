@@ -153,7 +153,7 @@ export default class App extends Component {
      */
     listEndpointDetails(endpointsJson, type) {
         return this.forEach(endpointsJson, (endpoints, serviceName) => {
-            return <div id={serviceName + "-" + (type || "service")} className={"service-container " + serviceName}>
+            return <div id={serviceName + "-" + (type || "service")} className={"service-container " + serviceName + "-"}>
                 <a href={"#" + serviceName + "-" + (type || "service")}><h2>{serviceName}</h2></a>
 
                 {this.forEach(endpoints, endpoint => {
