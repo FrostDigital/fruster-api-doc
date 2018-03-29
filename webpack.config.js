@@ -21,7 +21,7 @@ var commonLoaders = [
 
 module.exports = [
     {
-        entry: "./src/server.js",
+        entry: ["babel-polyfill", "./src/server.js"],
         output: {
             path: "./dist",
             filename: "server.js",
@@ -49,7 +49,7 @@ module.exports = [
         }
     },
     {
-        entry: "./src/app/client.js",
+        entry: ["babel-polyfill", "./src/app/client.js"],
         output: {
             path: "./dist/assets",
             publicPath: "/",

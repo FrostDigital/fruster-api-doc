@@ -13,6 +13,7 @@ const path = require("path");
 const bus = require("fruster-bus");
 const log = require("fruster-log");
 const utils = require("./utils/utils");
+const SharedUtils = require("./utils/SharedUtils");
 const config = require("../config");
 const port = config.port || 3100;
 
@@ -153,7 +154,7 @@ function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceI
     if (!endpointsByType[type][splits[splitIndex]])
         endpointsByType[type][splits[splitIndex]] = [];
 
-    endpointsByType[type][splits[splitIndex]] = utils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
+    endpointsByType[type][splits[splitIndex]] = SharedUtils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
 
     if (!object.cUrl && object.subject.includes("http"))
         object.cUrl = getCUrlFromEndpoint(object, schemas);
@@ -170,7 +171,7 @@ function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceI
  */
 function getCUrlFromEndpoint(endpoint, schemas) {
     const requestSchema = schemas.find(s => s.id === endpoint.requestSchema);
-    const parsedSubject = utils.parseSubjectToAPIUrl(endpoint.subject);
+    const parsedSubject = SharedUtils.parseSubjectToAPIUrl(endpoint.subject);
 
     let body;
 
@@ -188,9 +189,9 @@ function getCUrlFromEndpoint(endpoint, schemas) {
     if ((endpoint.permissions && endpoint.permissions.length > 0) || endpoint.mustBeLoggedIn)
         authHeader = " --cookie jwt={{JWT_TOKEN}} ";
 
-    let cUrl = `curl -X ${parsedSubject.method} ${authHeader ? `${authHeader}` : ""} ${body ? `-H "Content-Type: application/json" -d '${body}'` : ""} ${config.apiRoot + parsedSubject.url}`;
+    const cUrl = `curl -X ${parsedSubject.method} ${authHeader ? `${authHeader}` : ""} ${body ? `-H "Content-Type: application/json" -d '${body}'` : ""} ${config.apiRoot + parsedSubject.url}`;
 
-    return utils.replaceAll(cUrl, "  ", " ");
+    return SharedUtils.replaceAll(cUrl, "  ", " ");
 }
 
 /**
