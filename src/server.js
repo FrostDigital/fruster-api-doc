@@ -150,6 +150,7 @@ function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceI
 
     object.instanceId = instanceId;
     object.serviceName = serviceName;
+    object.schemas = schemas;
 
     if (!endpointsByType[type][splits[splitIndex]])
         endpointsByType[type][splits[splitIndex]] = [];

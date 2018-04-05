@@ -6,7 +6,7 @@ import config from "../../config";
 import ToolbarComponent from "./components/toolbar/ToolbarComponent";
 import EndpointDetailsComponent from "./components/endpoint-details/EndpointDetailsComponent";
 import EndpointContainer from "./components/endpoint-container/EndpointContainer";
-
+import ScrollToTopComponent from "./components/scroll-to-top/ScrollToTopComponent";
 
 require("babel-core/register");
 require("babel-polyfill");
@@ -136,15 +136,18 @@ export default class App extends Component {
                     </div>
 
                 </div>
+
+                <ScrollToTopComponent />
+
             </span>
         );
     }
 
     /**
      * Renders table of contents for a type of endpoints.
-     * 
-     * @param {String} type 
-     */
+     *
+ * @param {String} type
+            */
     tableOfContents(type) {
         return (
             <div className="col-md-6">
@@ -176,10 +179,10 @@ export default class App extends Component {
 
     /**
      * Renders the details for an endpoint.
-     * 
-     * @param {Object} endpointsJson 
-     * @param {String=} type 
-     */
+     *
+* @param {Object} endpointsJson
+* @param {String =} type
+        */
     listEndpointDetails(endpointsJson, type) {
         return this.forEach(endpointsJson, (endpoints, serviceName) => {
             return <EndpointContainer
@@ -192,10 +195,10 @@ export default class App extends Component {
 
     /**
      * Loops through an object or array.
-     * 
-     * @param {Object|Array} toLoop 
-     * @param {Function} handler 
-     */
+     *
+     * @param {Object | Array} toLoop
+     * @param {Function} handler
+                */
     forEach(toLoop, handler) {
         if (!toLoop || Object.keys(toLoop).length === 0)
             return `No endpoints`;

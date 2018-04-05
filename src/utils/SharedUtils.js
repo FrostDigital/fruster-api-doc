@@ -88,6 +88,52 @@ class SharedUtils {
         return string;
     }
 
+    /**
+     * Goes through keys in object (as well as its sub objects and arrays), sorts the keys and reinserts data in sorted order.
+     * 
+     * @param {Object} obj object to sort keys for
+     */
+    static sortObject(obj) {
+        if ((obj instanceof Array) || !(obj instanceof Object))
+            return obj;
+
+        return sortLayer(obj);
+
+        function sortLayer(layer) {
+            const output = {};
+
+            Object.keys(layer).sort().forEach(key => {
+                if (!!layer[key] && typeof layer[key] === "object" && !(layer[key] instanceof Array)) {
+                    /** If object, loop through another layer */
+                    output[key] = sortLayer(layer[key]);
+                } else if (!!layer[key] && (layer[key] instanceof Array)) {
+                    /**If array; sort array */
+                    layer[key].sort();
+
+                    if (typeof layer[key][0] === "object") {
+                        /** If array contains objects; loop through and sort each object */
+                        const sortedObj = sortLayer(layer[key]);
+                        output[key] = [];
+
+                        Object.keys(sortedObj).forEach(sortedObjkey => {
+                            /** Add back objects in an array (To prevent result being converted from array to object while using Object.keys) */
+                            if (!output[key])
+                                output[key] = [];
+
+                            output[key].push(sortedObj[sortedObjkey]);
+                        });
+                    } else {
+                        output[key] = layer[key];
+                    }
+                } else {
+                    output[key] = layer[key];
+                }
+            });
+
+            return output;
+        }
+    }
+
 }
 
 module.exports = SharedUtils;

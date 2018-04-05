@@ -7,6 +7,7 @@ const log = require("fruster-log");
 const util = require("util");
 const os = require("os");
 
+//TODO: CHANGE BACK!!!!!!!!!!!!!!!!!!!!!!!!
 // const filePath = path.resolve(`${__dirname}/json-schemas`);
 const filePath = path.resolve(`c:/json-schemas`);
 const JsonSchemaCruncher = require("../utils/JsonSchemaCruncher");
@@ -19,17 +20,16 @@ jsf.option({
     failOnInvalidTypes: false
 });
 
-module.exports = {
-
+class Utils {
 
     /**
-     * derefs json schemas
-     * 
-     * @param {Array<Object>} schemas schemas to save to folder
-     * 
-     * @return {Promise<Object>}
-     */
-    derefJsonSchema: async (schemas, serviceName) => {
+        * derefs json schemas
+        * 
+        * @param {Array<Object>} schemas schemas to save to folder
+        * 
+        * @return {Promise<Object>}
+        */
+    static async  derefJsonSchema(schemas, serviceName) {
         const jsonSchemaCruncher = new JsonSchemaCruncher(filePath, serviceName);
         await jsonSchemaCruncher.buildContext(schemas);
 
@@ -71,7 +71,10 @@ module.exports = {
                 return { schemas, errors };
             });
     }
-};
+
+}
+
+module.exports = Utils;
 
 /**
  * Searches json objects and adds faker specifics.

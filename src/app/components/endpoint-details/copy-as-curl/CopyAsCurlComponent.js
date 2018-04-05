@@ -1,5 +1,5 @@
 import React from "react";
-
+import CopyToClipboardComponent from "../../copy-to-clipboard/CopyToClipboardComponent";
 
 export default class CopyAsCurlComponent extends React.Component {
 
@@ -10,11 +10,9 @@ export default class CopyAsCurlComponent extends React.Component {
                     className="action copy-as-curl btn-copy"
                     onClick={(e) => this.copyAsCurl()}>
 
-                    <input
-                        type="text"
-                        className="curl-data"
-                        ref={ref => { this.input = ref; }}
-                        value={this.props.cUrl} hidden />
+                    <CopyToClipboardComponent
+                        ref={ref => this.copyToClipboard = ref}
+                        copyData={this.props.cUrl} />
 
                     Copy as cUrl <span className="glyphicon glyphicon-copy"></span>
                 </button>
@@ -24,11 +22,8 @@ export default class CopyAsCurlComponent extends React.Component {
         );
     }
 
-    async copyAsCurl() {
-        this.input.hidden = false;
-        this.input.select();
-        document.execCommand("copy");
-        this.input.hidden = true;
+    copyAsCurl() {
+        this.copyToClipboard.copyToClipboard();
     }
 
 }
