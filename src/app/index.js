@@ -318,6 +318,7 @@ export default class App extends Component {
         return string;
     }
 
+
     /**
      * Adds links to endpoints referenced in the deprecated text.
      * 
@@ -330,9 +331,22 @@ export default class App extends Component {
         let endpointsExists = false;
 
         for (let i = 0; i < parts.length; i++) {
-            if (this.props.allEndpoints[parts[i]]) {
+            let partToCompare = parts[i];
+            let partHasDot = false;
+
+            if (partToCompare[partToCompare.length - 1] === ".") {
+                partToCompare = partToCompare.substring(0, partToCompare.length - 1);
+                partHasDot = true;
+            }
+
+            if (this.props.allEndpoints[partToCompare]) {
                 endpointsExists = true;
+                parts[i] = partToCompare;
+
                 partsWithEndpoint[parts[i]] = parts[i];
+
+                if (partHasDot)
+                    parts.splice(i + 1, 0, ".");
             }
         }
 
@@ -341,8 +355,8 @@ export default class App extends Component {
 
         Object.keys(partsWithEndpoint).
             forEach(key => {
-                if (parts[1].includes("http")) {
-                    const parsedHttpEndpoint = utils.parseSubjectToAPIUrl(parts[1]);
+                if (key.includes("http")) {
+                    const parsedHttpEndpoint = utils.parseSubjectToAPIUrl(key);
                     partsWithEndpoint[key] = `
                     <a href="#${parsedHttpEndpoint.method}-to-${parsedHttpEndpoint.url}">
                     <span class="${parsedHttpEndpoint.method}">${parsedHttpEndpoint.method}</span>
@@ -350,10 +364,10 @@ export default class App extends Component {
                     </a>`;
 
                 } else
-                    partsWithEndpoint[key] = `<a href="#${parts[1]}">${this.getColorCodedTitle(parts[1])}</a>`;
+                    partsWithEndpoint[key] = `<a href="#${key}">${this.getColorCodedTitle(key)}</a>`;
             });
 
-        let output = [];
+        const output = [];
 
         parts.forEach(pt => {
             if (partsWithEndpoint[pt])
