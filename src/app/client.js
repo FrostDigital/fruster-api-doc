@@ -15,12 +15,12 @@ $(() => {
     //     const copyJsonSchemaJson = "#modal #copy-json-schema-json";
     //     const copySampleJson = "#modal #copy-sample-json";
 
-    if ($(".service-container").length === 0) {
-        $("#try-again-warning").show();
-        $("#refresh-page").click(event => {
-            location.reload();
-        });
-    }
+    // if ($(".service-container").length === 0) {
+    //     $("#try-again-warning").show();
+    //     $("#refresh-page").click(event => {
+    //         location.reload();
+    //     });
+    // }
 
     //     function copyToClipboard(target) {
     //         const inputToCopy = $(target).find("input");
@@ -36,8 +36,8 @@ $(() => {
     //     console.log(window._APP_STATE_);
 
     // @ts-ignore
-    if (window._APP_STATE_.schemasContainErrors)
-        $("#try-again-warning").show();
+    // if (window._APP_STATE_.schemasContainErrors)
+    // $("#try-again-warning").show();
 
     //     $(".request-schema").click(clickEvent);
     //     $(".response-schema").click(clickEvent);

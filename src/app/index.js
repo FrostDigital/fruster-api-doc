@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import constants from "../constants";
 import SharedUtils from "../utils/SharedUtils";
 import config from "../../config";
@@ -7,11 +7,21 @@ import ToolbarComponent from "./components/toolbar/ToolbarComponent";
 import EndpointDetailsComponent from "./components/endpoint-details/EndpointDetailsComponent";
 import EndpointContainer from "./components/endpoint-container/EndpointContainer";
 import ScrollToTopComponent from "./components/scroll-to-top/ScrollToTopComponent";
+import JsonSchemaModalComponent from "./components/modal/JsonSchemaModalComponent";
+import ErrorMessageComponent from "./components/error-message/ErrorMessageComponent";
 
 require("babel-core/register");
 require("babel-polyfill");
 
-export default class App extends Component {
+export default class App extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.numberOfEndpoints = Object.keys(this.props.endpointsByType.http).length
+            + Object.keys(this.props.endpointsByType.service).length
+            + Object.keys(this.props.endpointsByType.ws).length;
+    }
 
     render() {
         return (
@@ -20,28 +30,7 @@ export default class App extends Component {
                 <ToolbarComponent />
 
                 <div className="container">
-                    <div className="alert alert-danger" id="try-again-warning" hidden>
-                        <strong>Note:</strong> Something went wrong or there are no endpoints registered; <a id="refresh-page" href="#">please refresh the page.</a>
-                    </div>
-
-                    {this.props.schemasWithErrors
-                        ? <div className="alert alert-danger" id="schemas-contains-errors">
-                            <strong>Note:</strong>Errors were detected in the following json schemas:
-                        {
-                                this.forEach(this.props.schemasWithErrors, (schemas, serviceName) => {
-
-                                    return this.forEach(schemas, (schemaWithError) => {
-
-                                        return (
-                                            <li className={"request-schema" + " " + serviceName + " " + schemaWithError}>
-                                                <a href="" >{schemaWithError} <span className="glyphicon glyphicon-new-window"></span></a> from {serviceName}
-                                            </li>
-                                        );
-                                    })
-                                })
-                            }
-                        </div>
-                        : ""}
+                    <ErrorMessageComponent numberOfEndpoints={this.numberOfEndpoints} schemasWithErrors={this.props.schemasWithErrors} schemasPerService={this.props.schemasPerService} />
 
                     <a href="#"><h1>{config.projectName ? config.projectName + " " : ""}API</h1></a>
 
@@ -51,12 +40,12 @@ export default class App extends Component {
                         <div className="col-md-6">
                             <ul className="http">
                                 <a href="#http-endpoints"><h3>Http endpoints</h3></a>
-                                {this.forEach(this.props.endpointsByType.http, (endpoints, serviceName) => {
+                                {SharedUtils.forEach(this.props.endpointsByType.http, (endpoints, serviceName) => {
                                     return (
                                         <span>
                                             <a href={"#" + serviceName + "-http"}><h4>{serviceName}</h4></a>
 
-                                            {this.forEach(endpoints, (endpoint) => {
+                                            {SharedUtils.forEach(endpoints, (endpoint) => {
                                                 const parsedSubject = SharedUtils.parseSubjectToAPIUrl(endpoint.subject);
 
                                                 return (
@@ -154,7 +143,7 @@ export default class App extends Component {
                 <ul className={type.toLowerCase()}>
                     <a href={"#" + type.toLowerCase() + "-endpoints"}><h3>{type} endpoints</h3></a>
 
-                    {this.forEach(this.props.endpointsByType[type.toLowerCase()], (endpoints, serviceName) => {
+                    {SharedUtils.forEach(this.props.endpointsByType[type.toLowerCase()], (endpoints, serviceName) => {
                         endpoints = endpoints.sort();
 
                         return (
@@ -184,7 +173,7 @@ export default class App extends Component {
 * @param {String =} type
         */
     listEndpointDetails(endpointsJson, type) {
-        return this.forEach(endpointsJson, (endpoints, serviceName) => {
+        return SharedUtils.forEach(endpointsJson, (endpoints, serviceName) => {
             return <EndpointContainer
                 serviceName={serviceName}
                 type={type}
@@ -193,21 +182,5 @@ export default class App extends Component {
         })
     }
 
-    /**
-     * Loops through an object or array.
-     *
-     * @param {Object | Array} toLoop
-     * @param {Function} handler
-                */
-    forEach(toLoop, handler) {
-        if (!toLoop || Object.keys(toLoop).length === 0)
-            return `No endpoints`;
-
-        return Object.keys(toLoop)
-            .sort()
-            .map(index => {
-                return handler(toLoop[index], index);
-            });
-    }
 
 }

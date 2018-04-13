@@ -134,6 +134,23 @@ class SharedUtils {
         }
     }
 
+    /**
+     * Loops through an object or array.
+     *
+     * @param {Object | Array} toLoop
+     * @param {Function} handler
+    */
+    static forEach(toLoop, handler) {
+        if (!toLoop || Object.keys(toLoop).length === 0)
+            return `No endpoints`;
+
+        return Object.keys(toLoop)
+            .sort()
+            .map(index => {
+                return handler(toLoop[index], index);
+            });
+    }
+
 }
 
 module.exports = SharedUtils;

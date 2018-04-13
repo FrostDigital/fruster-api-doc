@@ -217,20 +217,32 @@ export default class EndpointDetailsComponent extends React.Component {
     }
 
     /**
-     * Adds links to endpoints referenced in the deprecated text.
-     * 
-     * @param {String} description 
-     */
+  * Adds links to endpoints referenced in the deprecated text.
+  * 
+  * @param {String} description 
+  */
     getDeprecatedHtml(description) {
         const parts = description.split(" ");
         const partsWithEndpoint = {};
-        let endpoint = "";
         let endpointsExists = false;
 
         for (let i = 0; i < parts.length; i++) {
-            if (this.props.allEndpoints[parts[i]]) {
+            let partToCompare = parts[i];
+            let partHasDot = false;
+
+            if (partToCompare[partToCompare.length - 1] === ".") {
+                partToCompare = partToCompare.substring(0, partToCompare.length - 1);
+                partHasDot = true;
+            }
+
+            if (this.props.allEndpoints[partToCompare]) {
                 endpointsExists = true;
+                parts[i] = partToCompare;
+
                 partsWithEndpoint[parts[i]] = parts[i];
+
+                if (partHasDot)
+                    parts.splice(i + 1, 0, ".");
             }
         }
 

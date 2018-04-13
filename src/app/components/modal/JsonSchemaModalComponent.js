@@ -28,6 +28,7 @@ export default class JsonSchemaModalComponent extends React.Component {
         if (this.props.schema)
             return (
                 <div
+                    style={{ cursor: "default" }}
                     ref={(ref) => { this.modal = ref; }}
                     className="modal bd-example-modal-lg"
                     role="dialog"
@@ -35,6 +36,7 @@ export default class JsonSchemaModalComponent extends React.Component {
                     aria-hidden="true" >
 
                     <div className="modal-dialog modal-lg">
+
                         <div className="modal-content">
                             <span
                                 className="glyphicon glyphicon-remove close"
@@ -46,20 +48,20 @@ export default class JsonSchemaModalComponent extends React.Component {
                                 {this.props.schema.id}
                             </h1>
 
-                            <a href={`#schema-${this.props.subject}-${this.props.schema.id}`}>
+                            <a hidden={this.props.isError} href={`#schema-${this.props.subject}-${this.props.schema.id}`}>
                                 <div>Go to json Schema</div>
                             </a>
-                            <a href={`#sample-${this.props.subject}-${this.props.schema.id}`}>
+                            <a hidden={this.props.isError} href={`#sample-${this.props.subject}-${this.props.schema.id}`}>
                                 <div>Go to sample</div>
                             </a>
 
                             <hr />
 
                             <h2
-                                style={{
-                                    display: "inline-block"
-                                }}
-                                id={`schema-${this.props.subject}-${this.props.schema.id}`}>Json schema</h2>
+                                style={{ display: "inline-block" }}
+                                id={`schema-${this.props.subject}-${this.props.schema.id}`}>
+                                {this.props.isError ? "Full error" : "Json schema"}
+                            </h2>
 
                             <button
                                 style={{
@@ -81,16 +83,17 @@ export default class JsonSchemaModalComponent extends React.Component {
                             <div className="clearfix" />
 
                             <pre ref={ref => { this.jsonSchemaElem = ref; }}>
-                                <code id="json-schema-json">{this.jsonSchema}</code>
+                                {/* Since errors have some HTML formatted elements: */}
+                                <code id="json-schema-json" dangerouslySetInnerHTML={{ __html: this.jsonSchema }} />
                             </pre>
 
                             <hr />
 
                             <h2
-                                style={{
-                                    display: "inline-block"
-                                }}
-                                id={`sample-${this.props.subject}-${this.props.schema.id}`}>Sample</h2>
+                                style={{ display: "inline-block" }}
+                                id={`sample-${this.props.subject}-${this.props.schema.id}`}>
+                                {this.props.isError ? "Error message" : "Sample"}
+                            </h2>
 
                             <button
                                 style={{
@@ -112,7 +115,8 @@ export default class JsonSchemaModalComponent extends React.Component {
                             <div className="clearfix" />
 
                             <pre ref={ref => { this.jsonSampleElem = ref; }}>
-                                <code id="sample-json">{this.jsonSample}</code>
+                                {/* Since errors have some HTML formatted elements: */}
+                                <code id="sample-json" dangerouslySetInnerHTML={{ __html: this.jsonSample }} />
                             </pre>
                         </div>
                     </div>
