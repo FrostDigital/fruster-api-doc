@@ -10,7 +10,6 @@ export default class EndpointContainer extends React.Component {
                 <a href={"#" + this.props.serviceName + "-" + (this.props.type || "service")}><h2>{this.props.serviceName}</h2></a>
 
                 {this.getEndpoints()}
-                WAS
             </div>
         );
     }

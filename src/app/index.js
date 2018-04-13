@@ -1,7 +1,6 @@
 import React from "react";
 import constants from "../constants";
 import SharedUtils from "../utils/SharedUtils";
-import config from "../../config";
 
 import ToolbarComponent from "./components/toolbar/ToolbarComponent";
 import EndpointDetailsComponent from "./components/endpoint-details/EndpointDetailsComponent";
@@ -9,6 +8,8 @@ import EndpointContainer from "./components/endpoint-container/EndpointContainer
 import ScrollToTopComponent from "./components/scroll-to-top/ScrollToTopComponent";
 import JsonSchemaModalComponent from "./components/modal/JsonSchemaModalComponent";
 import ErrorMessageComponent from "./components/error-message/ErrorMessageComponent";
+
+const config = Object.assign({}, require("../../config"));
 
 require("babel-core/register");
 require("babel-polyfill");
@@ -22,6 +23,7 @@ export default class App extends React.Component {
             + Object.keys(this.props.endpointsByType.service).length
             + Object.keys(this.props.endpointsByType.ws).length;
     }
+
 
     render() {
         return (
@@ -127,7 +129,7 @@ export default class App extends React.Component {
                 </div>
 
                 <ScrollToTopComponent />
-
+                {console.log("YOO")}
             </span>
         );
     }

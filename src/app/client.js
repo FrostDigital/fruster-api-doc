@@ -1,9 +1,9 @@
 import React from "react";
-import { render } from "react-dom";
+import { render, hydrate } from "react-dom";
 import App from "./index";
 
 // @ts-ignore
-render(<App {...window._APP_STATE_} />, document.getElementById("root"));
+hydrate(<App {...window._APP_STATE_} />, document.getElementById("root"));
 
 
 // // Client code goes here.
