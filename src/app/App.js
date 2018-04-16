@@ -1,6 +1,6 @@
 import React from "react";
 import constants from "../constants";
-import SharedUtils from "../utils/SharedUtils";
+import ViewUtils from "../utils/ViewUtils";
 
 import ToolbarComponent from "./components/toolbar/ToolbarComponent";
 import EndpointDetailsComponent from "./components/endpoint-details/EndpointDetailsComponent";
@@ -8,11 +8,11 @@ import EndpointContainer from "./components/endpoint-container/EndpointContainer
 import ScrollToTopComponent from "./components/scroll-to-top/ScrollToTopComponent";
 import JsonSchemaModalComponent from "./components/modal/JsonSchemaModalComponent";
 import ErrorMessageComponent from "./components/error-message/ErrorMessageComponent";
-
-const config = Object.assign({}, require("../../config"));
+import { ApiDocContext } from "./Context";
 
 require("babel-core/register");
 require("babel-polyfill");
+
 
 export default class App extends React.Component {
 
@@ -24,17 +24,23 @@ export default class App extends React.Component {
             + Object.keys(this.props.endpointsByType.ws).length;
     }
 
+    shouldComponentUpdate() {
+        return false;
+    }
 
     render() {
         return (
-            <span>
+            <ApiDocContext.Provider value={{ config: this.props.config }}>
 
                 <ToolbarComponent />
 
                 <div className="container">
-                    <ErrorMessageComponent numberOfEndpoints={this.numberOfEndpoints} schemasWithErrors={this.props.schemasWithErrors} schemasPerService={this.props.schemasPerService} />
+                    <ErrorMessageComponent
+                        numberOfEndpoints={this.numberOfEndpoints}
+                        schemasWithErrors={this.props.schemasWithErrors}
+                        schemasPerService={this.props.schemasPerService} />
 
-                    <a href="#"><h1>{config.projectName ? config.projectName + " " : ""}API</h1></a>
+                    <a href="#"><h1>{this.props.config.projectName ? this.props.config.projectName + " " : ""}API</h1></a>
 
                     <h4>Table of contents</h4>
 
@@ -42,16 +48,19 @@ export default class App extends React.Component {
                         <div className="col-md-6">
                             <ul className="http">
                                 <a href="#http-endpoints"><h3>Http endpoints</h3></a>
-                                {SharedUtils.forEach(this.props.endpointsByType.http, (endpoints, serviceName) => {
+                                {ViewUtils.sortedForEach(this.props.endpointsByType.http, (endpoints, serviceName, index) => {
                                     return (
-                                        <span>
+                                        <span
+                                            key={"endpointsByType.http" + index}>
                                             <a href={"#" + serviceName + "-http"}><h4>{serviceName}</h4></a>
 
-                                            {SharedUtils.forEach(endpoints, (endpoint) => {
-                                                const parsedSubject = SharedUtils.parseSubjectToAPIUrl(endpoint.subject);
+                                            {ViewUtils.sortedForEach(endpoints, (endpoint, key, index) => {
+                                                const parsedSubject = ViewUtils.parseSubjectToAPIUrl(endpoint.subject);
 
                                                 return (
-                                                    <li className={endpoint.deprecated ? "deprecated" : ""}>
+                                                    <li
+                                                        key={"endpoints" + index}
+                                                        className={endpoint.deprecated ? "deprecated" : ""}>
                                                         <a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
                                                             <span className={parsedSubject.method}>{parsedSubject.method}
                                                             </span> to {parsedSubject.url}
@@ -129,33 +138,41 @@ export default class App extends React.Component {
                 </div>
 
                 <ScrollToTopComponent />
-                {console.log("YOO")}
-            </span>
+
+            </ApiDocContext.Provider>
         );
     }
 
     /**
      * Renders table of contents for a type of endpoints.
      *
- * @param {String} type
-            */
+    * @param {String} type
+    */
     tableOfContents(type) {
         return (
             <div className="col-md-6">
                 <ul className={type.toLowerCase()}>
                     <a href={"#" + type.toLowerCase() + "-endpoints"}><h3>{type} endpoints</h3></a>
 
-                    {SharedUtils.forEach(this.props.endpointsByType[type.toLowerCase()], (endpoints, serviceName) => {
-                        endpoints = endpoints.sort();
+                    {ViewUtils.sortedForEach(this.props.endpointsByType[type.toLowerCase()], (endpoints, serviceName, index) => {
+                        endpoints = endpoints.sort((a, b) => {
+                            const aU = a.subject.toUpperCase();
+                            const bU = b.subject.toUpperCase();
+
+                            if (aU > bU) return 1;
+                            else if (aU < bU) return -1;
+                            else return 0;
+                        });
 
                         return (
-                            <span>
+                            <span
+                                key={type.toLowerCase() + index}>
                                 <a href={"#" + serviceName + "-" + type.toLowerCase()}><h4>{serviceName}</h4></a>
                                 {
-                                    endpoints.map(endpoint => {
+                                    endpoints.map((endpoint, index) => {
                                         return (
-                                            <li className={endpoint.deprecated ? "deprecated" : ""}>
-                                                <a dangerouslySetInnerHTML={{ __html: SharedUtils.getColorCodedTitle(endpoint.subject) }} href={"#" + endpoint.subject}></a>
+                                            <li key={"tableOfContents" + index} className={endpoint.deprecated ? "deprecated" : ""}>
+                                                <a dangerouslySetInnerHTML={{ __html: ViewUtils.getColorCodedTitle(endpoint.subject) }} href={"#" + endpoint.subject}></a>
                                             </li>
                                         )
                                     })
@@ -175,12 +192,15 @@ export default class App extends React.Component {
 * @param {String =} type
         */
     listEndpointDetails(endpointsJson, type) {
-        return SharedUtils.forEach(endpointsJson, (endpoints, serviceName) => {
-            return <EndpointContainer
-                serviceName={serviceName}
-                type={type}
-                endpoints={endpoints}
-                allEndpoints={this.props.allEndpoints} />;
+        return ViewUtils.sortedForEach(endpointsJson, (endpoints, serviceName, index) => {
+            return (
+                <EndpointContainer
+                    key={"listEndpointDetails" + index}
+                    serviceName={serviceName}
+                    type={type}
+                    endpoints={endpoints}
+                    allEndpoints={this.props.allEndpoints} />
+            );
         })
     }
 

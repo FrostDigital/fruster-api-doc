@@ -1,18 +1,23 @@
-var webpack = require("webpack");
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
-var nodeExternals = require("webpack-node-externals");
+const webpack = require("webpack");
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const nodeExternals = require("webpack-node-externals");
 
-var isProduction = process.env.NODE_ENV === "production";
-var productionPluginDefine = isProduction ? [
+// const isProduction = process.env.NODE_ENV === "production";
+const isProduction = true;
+
+const productionPluginDefine = [
     new webpack.DefinePlugin({ "process.env": { "NODE_ENV": JSON.stringify("production") } })
-] : [];
-var clientLoaders = isProduction ? productionPluginDefine.concat([
+];
+
+new webpack.optimize.UglifyJsPlugin();
+
+const clientLoaders = isProduction ? productionPluginDefine.concat([
     new webpack.optimize.DedupePlugin(),
     new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false }, sourceMap: false })
 ]) : [];
 
-var commonLoaders = [
+const commonLoaders = [
     {
         test: /\.json$/,
         loader: "json-loader"

@@ -1,7 +1,7 @@
 const config = require("../../config");
 
 
-class SharedUtils {
+class ViewUtils {
 
     constructor() { }
 
@@ -81,7 +81,7 @@ class SharedUtils {
         const colorCodedWords = Object.keys(config.colorCodedWords);
 
         for (let i = 0; i < colorCodedWords.length; i++) {
-            string = SharedUtils.replaceAll(string, colorCodedWords[i],
+            string = ViewUtils.replaceAll(string, colorCodedWords[i],
                 `<span class="${config.colorCodedWords[colorCodedWords[i]]}">${colorCodedWords[i]}</span>`);
         }
 
@@ -140,17 +140,20 @@ class SharedUtils {
      * @param {Object | Array} toLoop
      * @param {Function} handler
     */
-    static forEach(toLoop, handler) {
+    static sortedForEach(toLoop, handler) {
         if (!toLoop || Object.keys(toLoop).length === 0)
-            return `No endpoints`;
+            return ``;
+
+        let i = 0;
 
         return Object.keys(toLoop)
             .sort()
             .map(index => {
-                return handler(toLoop[index], index);
+                i++;
+                return handler(toLoop[index], index, i);
             });
     }
 
 }
 
-module.exports = SharedUtils;
+module.exports = ViewUtils;

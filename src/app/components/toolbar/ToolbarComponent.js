@@ -26,4 +26,8 @@ export default class ToolbarComponent extends React.Component {
         }
     }
 
+    shouldComponentUpdate() {
+        return false;
+    }
+
 }

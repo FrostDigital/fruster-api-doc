@@ -26,4 +26,8 @@ export default class CopyAsCurlComponent extends React.Component {
         this.copyToClipboard.copyToClipboard();
     }
 
+    shouldComponentUpdate() {
+        return false;
+    }
+
 }

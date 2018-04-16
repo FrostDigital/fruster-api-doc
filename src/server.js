@@ -2,7 +2,7 @@ require("babel-polyfill");
 
 import React from "react";
 import { renderToString } from "react-dom/server";
-import App from "./app";
+import App from "./app/App";
 import template from "./template";
 
 const express = require("express");
@@ -13,9 +13,11 @@ const path = require("path");
 const bus = require("fruster-bus");
 const log = require("fruster-log");
 const utils = require("./utils/utils");
-const SharedUtils = require("./utils/SharedUtils");
+const ViewUtils = require("./utils/ViewUtils");
 const config = require("../config");
 const port = config.port || 3100;
+
+const opn = require("opn");
 
 (async function () {
 
@@ -105,7 +107,7 @@ function startServer() {
                 sortAfterEndpointName(endpointsByType[endpointType]);
             });
 
-            const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints };
+            const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints, config };
 
             const appString = renderToString(<App {...state} />);
 
@@ -126,10 +128,21 @@ function startServer() {
     });
 
     app.listen(port);
-    console.log("listening");
+    console.log(` 
 
-    if (process.send)
-        process.send({ event: "online", url: `http://localhost:${port}/` });
+================================================
+    Fruster
+================================================
+     ##  ###  ###    ###   ##   ##  
+    #  # #  #  #     #  # #  # #  # 
+    #### ###   #     #  # #  # #    
+    #  # #     #     #  # #  # #  # 
+    #  # #    ###    ###   ##   ##  
+================================================
+    Server running at http://localhost:${port}/
+================================================
+    `);
+    console.log(`Server running at http://localhost:${port}/`);
 }
 
 /**
@@ -155,7 +168,7 @@ function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceI
     if (!endpointsByType[type][splits[splitIndex]])
         endpointsByType[type][splits[splitIndex]] = [];
 
-    endpointsByType[type][splits[splitIndex]] = SharedUtils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
+    endpointsByType[type][splits[splitIndex]] = ViewUtils.addUnique(object, endpointsByType[type][splits[splitIndex]]);
 
     if (!object.cUrl && object.subject.includes("http"))
         object.cUrl = getCUrlFromEndpoint(object, schemas);
@@ -172,7 +185,7 @@ function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceI
  */
 function getCUrlFromEndpoint(endpoint, schemas) {
     const requestSchema = schemas.find(s => s.id === endpoint.requestSchema);
-    const parsedSubject = SharedUtils.parseSubjectToAPIUrl(endpoint.subject);
+    const parsedSubject = ViewUtils.parseSubjectToAPIUrl(endpoint.subject);
 
     let body;
 
@@ -192,7 +205,7 @@ function getCUrlFromEndpoint(endpoint, schemas) {
 
     const cUrl = `curl -X ${parsedSubject.method} ${authHeader ? `${authHeader}` : ""} ${body ? `-H "Content-Type: application/json" -d '${body}'` : ""} ${config.apiRoot + parsedSubject.url}`;
 
-    return SharedUtils.replaceAll(cUrl, "  ", " ");
+    return ViewUtils.replaceAll(cUrl, "  ", " ");
 }
 
 /**

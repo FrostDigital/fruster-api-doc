@@ -2,7 +2,7 @@ import React from "react";
 import CopyToClipboardComponent from "../copy-to-clipboard/CopyToClipboardComponent"
 import ScrollToTopComponent from "../scroll-to-top/ScrollToTopComponent"
 import hljs from "highlight.js";
-import SharedUtils from "../../../utils/SharedUtils";
+import ViewUtils from "../../../utils/ViewUtils";
 
 hljs.configure({ languages: ["json"] });
 
@@ -15,13 +15,17 @@ export default class JsonSchemaModalComponent extends React.Component {
             const schemaToJson = Object.assign({}, this.props.schema);
             delete schemaToJson.sample;
 
-            this.jsonSchema = JSON.stringify(SharedUtils.sortObject(schemaToJson), null, 2);
+            this.jsonSchema = JSON.stringify(ViewUtils.sortObject(schemaToJson), null, 2);
             this.jsonSample = JSON.stringify(this.props.schema.sample, null, 2);
         }
 
         this.colorized = false;
 
         this.modal = {};
+    }
+
+    shouldComponentUpdate() {
+        return false;
     }
 
     render() {

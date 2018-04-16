@@ -30732,9 +30732,9 @@
 
 	var _constants2 = _interopRequireDefault(_constants);
 
-	var _SharedUtils = __webpack_require__(513);
+	var _ViewUtils = __webpack_require__(513);
 
-	var _SharedUtils2 = _interopRequireDefault(_SharedUtils);
+	var _ViewUtils2 = _interopRequireDefault(_ViewUtils);
 
 	var _config = __webpack_require__(514);
 
@@ -30875,7 +30875,7 @@
 	                                            )
 	                                        ),
 	                                        _this2.forEach(endpoints, function (endpoint) {
-	                                            var parsedSubject = _SharedUtils2.default.parseSubjectToAPIUrl(endpoint.subject);
+	                                            var parsedSubject = _ViewUtils2.default.parseSubjectToAPIUrl(endpoint.subject);
 
 	                                            return _react2.default.createElement(
 	                                                "li",
@@ -31049,7 +31049,7 @@
 	                                return _react2.default.createElement(
 	                                    "li",
 	                                    { className: endpoint.deprecated ? "deprecated" : "" },
-	                                    _react2.default.createElement("a", { dangerouslySetInnerHTML: { __html: _SharedUtils2.default.getColorCodedTitle(endpoint.subject) }, href: "#" + endpoint.subject })
+	                                    _react2.default.createElement("a", { dangerouslySetInnerHTML: { __html: _ViewUtils2.default.getColorCodedTitle(endpoint.subject) }, href: "#" + endpoint.subject })
 	                                );
 	                            })
 	                        );
@@ -31122,9 +31122,9 @@
 
 	var config = __webpack_require__(514);
 
-	var SharedUtils = function () {
-	    function SharedUtils() {
-	        _classCallCheck(this, SharedUtils);
+	var ViewUtils = function () {
+	    function ViewUtils() {
+	        _classCallCheck(this, ViewUtils);
 	    }
 
 	    /**
@@ -31142,7 +31142,7 @@
 	     */
 
 
-	    _createClass(SharedUtils, null, [{
+	    _createClass(ViewUtils, null, [{
 	        key: "parseSubjectToAPIUrl",
 	        value: function parseSubjectToAPIUrl(subject) {
 	            var outputURL = subject;
@@ -31215,17 +31215,17 @@
 	            var colorCodedWords = Object.keys(config.colorCodedWords);
 
 	            for (var i = 0; i < colorCodedWords.length; i++) {
-	                string = SharedUtils.replaceAll(string, colorCodedWords[i], "<span class=\"" + config.colorCodedWords[colorCodedWords[i]] + "\">" + colorCodedWords[i] + "</span>");
+	                string = ViewUtils.replaceAll(string, colorCodedWords[i], "<span class=\"" + config.colorCodedWords[colorCodedWords[i]] + "\">" + colorCodedWords[i] + "</span>");
 	            }
 
 	            return string;
 	        }
 	    }]);
 
-	    return SharedUtils;
+	    return ViewUtils;
 	}();
 
-	module.exports = SharedUtils;
+	module.exports = ViewUtils;
 
 /***/ }),
 /* 514 */
@@ -41776,9 +41776,9 @@
 
 	var _react2 = _interopRequireDefault(_react);
 
-	var _SharedUtils = __webpack_require__(513);
+	var _ViewUtils = __webpack_require__(513);
 
-	var _SharedUtils2 = _interopRequireDefault(_SharedUtils);
+	var _ViewUtils2 = _interopRequireDefault(_ViewUtils);
 
 	var _config = __webpack_require__(514);
 
@@ -41804,14 +41804,14 @@
 
 	        var _this = _possibleConstructorReturn(this, (EndpointDetailsComponent.__proto__ || Object.getPrototypeOf(EndpointDetailsComponent)).call(this, props));
 
-	        _this.parsedSubject = _SharedUtils2.default.parseSubjectToAPIUrl(_this.props.endpoint.subject);
+	        _this.parsedSubject = _ViewUtils2.default.parseSubjectToAPIUrl(_this.props.endpoint.subject);
 
 	        if (_this.props.type === "http") {
 	            _this.props.endpoint.urlSubjectLink = _this.parsedSubject.method + "-to-" + _this.parsedSubject.url;
 	            _this.props.endpoint.urlSubject = "<span class=\"" + _this.parsedSubject.method + "\">" + _this.parsedSubject.method + "</span> to " + _this.parsedSubject.url;
 	        } else {
 	            _this.props.endpoint.urlSubjectLink = _this.props.endpoint.subject;
-	            _this.props.endpoint.urlSubject = _SharedUtils2.default.getColorCodedTitle(_this.props.endpoint.subject);
+	            _this.props.endpoint.urlSubject = _ViewUtils2.default.getColorCodedTitle(_this.props.endpoint.subject);
 	        }
 	        return _this;
 	    }
@@ -42149,9 +42149,9 @@
 
 	            Object.keys(partsWithEndpoint).forEach(function (key) {
 	                if (parts[1].includes("http")) {
-	                    var parsedHttpEndpoint = _SharedUtils2.default.parseSubjectToAPIUrl(parts[1]);
+	                    var parsedHttpEndpoint = _ViewUtils2.default.parseSubjectToAPIUrl(parts[1]);
 	                    partsWithEndpoint[key] = "\n                    <a href=\"#" + parsedHttpEndpoint.method + "-to-" + parsedHttpEndpoint.url + "\">\n                    <span class=\"" + parsedHttpEndpoint.method + "\">" + parsedHttpEndpoint.method + "</span>\n                     to " + parsedHttpEndpoint.url + "\n                    </a>";
-	                } else partsWithEndpoint[key] = "<a href=\"#" + parts[1] + "\">" + _SharedUtils2.default.getColorCodedTitle(parts[1]) + "</a>";
+	                } else partsWithEndpoint[key] = "<a href=\"#" + parts[1] + "\">" + _ViewUtils2.default.getColorCodedTitle(parts[1]) + "</a>";
 	            });
 
 	            var output = [];

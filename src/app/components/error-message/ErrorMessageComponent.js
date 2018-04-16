@@ -1,6 +1,6 @@
 import React from "react";
 import JsonSchemaModalComponent from "../modal/JsonSchemaModalComponent";
-import SharedUtils from "../../../utils/SharedUtils";
+import ViewUtils from "../../../utils/ViewUtils";
 
 export default class ErrorMessageComponent extends React.Component {
 
@@ -27,6 +27,13 @@ export default class ErrorMessageComponent extends React.Component {
                 {this.getSchemasWithErrors()}
             </span>
         )
+    }
+
+    /**
+     * Since errors are from the server we don't want the frontend to try to update these.
+     */
+    shouldComponentUpdate() {
+        return false;
     }
 
     /**
@@ -57,9 +64,9 @@ export default class ErrorMessageComponent extends React.Component {
                     id="schemas-contains-errors">
                     <strong>Note:</strong> Error(s) were detected in the following json schemas:
 {
-                        SharedUtils.forEach(this.props.schemasWithErrors, (schemas, serviceName) => {
+                        ViewUtils.sortedForEach(this.props.schemasWithErrors, (schemas, serviceName) => {
 
-                            return SharedUtils.forEach(schemas, (schemaWithError) => {
+                            return ViewUtils.sortedForEach(schemas, (schemaWithError) => {
 
                                 return (
                                     <li className={"request-schema" + " " + serviceName + " " + schemaWithError}>
