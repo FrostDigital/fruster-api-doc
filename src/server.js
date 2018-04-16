@@ -10,7 +10,7 @@ const uuid = require("uuid");
 const app = express();
 const path = require("path");
 
-const bus = require("fruster-bus");
+const bus = process.env.BUS || "nats://localhost:4222";
 const log = require("fruster-log");
 const utils = require("./utils/utils");
 const ViewUtils = require("./utils/ViewUtils");
