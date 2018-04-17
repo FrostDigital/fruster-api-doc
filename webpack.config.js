@@ -2,15 +2,10 @@ const webpack = require("webpack");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const nodeExternals = require("webpack-node-externals");
 
-// const isProduction = process.env.NODE_ENV === "production";
-const isProduction = true;
-
+const isProduction = process.env.NODE_ENV === "production";
 const productionPluginDefine = [
     new webpack.DefinePlugin({ "process.env": { "NODE_ENV": JSON.stringify("production") } })
 ];
-
-new webpack.optimize.UglifyJsPlugin();
-
 const clientLoaders = isProduction ? productionPluginDefine.concat([
     new webpack.optimize.DedupePlugin(),
     new webpack.optimize.OccurrenceOrderPlugin(),
@@ -23,6 +18,7 @@ const commonLoaders = [
         loader: "json-loader"
     }
 ];
+
 
 module.exports = [
     {

@@ -10,7 +10,7 @@ const uuid = require("uuid");
 const app = express();
 const path = require("path");
 
-const bus = process.env.BUS || "nats://localhost:4222";
+const bus = require("fruster-bus");
 const log = require("fruster-log");
 const utils = require("./utils/utils");
 const ViewUtils = require("./utils/ViewUtils");
@@ -22,7 +22,7 @@ const opn = require("opn");
 (async function () {
 
     await bus.connect({
-        address: config.bus
+        address: process.env.BUS || "nats://localhost:4222"
     });
 
     require("fruster-health").start();

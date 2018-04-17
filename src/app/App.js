@@ -10,9 +10,8 @@ import JsonSchemaModalComponent from "./components/modal/JsonSchemaModalComponen
 import ErrorMessageComponent from "./components/error-message/ErrorMessageComponent";
 import { ApiDocContext } from "./Context";
 
-require("babel-core/register");
-require("babel-polyfill");
-
+import "babel-core/register";
+import "babel-polyfill";
 
 export default class App extends React.Component {
 
