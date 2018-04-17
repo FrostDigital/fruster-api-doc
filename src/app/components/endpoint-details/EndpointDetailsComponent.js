@@ -136,7 +136,11 @@ export default class EndpointDetailsComponent extends React.Component {
                         {/* Response body */}
                         <td onClick={e => this.openResponseBodyModal(e)}
                             className={`response-schema ${this.props.endpoint.serviceName} ${this.props.endpoint.responseSchema} ${(this.props.endpoint.responseSchema ? " " : "deactivated")}`}>
-                            <a href="" className={this.props.endpoint.responseSchema ? "" : "deactivated"} >{this.props.endpoint.responseSchema || <span className="not-available">n/a</span>} {this.props.endpoint.responseSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}</a>
+                            <a href=""
+                                className={this.props.endpoint.responseSchema ? "" : "deactivated"}>
+                                {this.props.endpoint.responseSchema || <span className="not-available">n/a</span>}
+                                {this.props.endpoint.responseSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}
+                            </a>
                         </td>
 
                         {/* Must be logged in */}
