@@ -177,6 +177,7 @@ textarea {
 
 .glyphicon {
     font-size: 12px !important;
+    margin-left: 2px;
 }
 
 a.deactivated,
