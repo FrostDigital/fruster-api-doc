@@ -3,14 +3,12 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const nodeExternals = require("webpack-node-externals");
 
 const isProduction = process.env.NODE_ENV === "production";
-const productionPluginDefine = [
-    new webpack.DefinePlugin({ "process.env": { "NODE_ENV": JSON.stringify("production") } })
-];
-const clientLoaders = isProduction ? productionPluginDefine.concat([
+const productionPluginDefine = [];
+const clientLoaders =  productionPluginDefine.concat([
     new webpack.optimize.DedupePlugin(),
     new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false }, sourceMap: false })
-]) : [];
+]);
 
 const commonLoaders = [
     {

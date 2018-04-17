@@ -22,7 +22,7 @@ const opn = require("opn");
 (async function () {
 
     await bus.connect({
-        address: process.env.BUS || "nats://localhost:4222"
+        address: config.bus
     });
 
     require("fruster-health").start();
