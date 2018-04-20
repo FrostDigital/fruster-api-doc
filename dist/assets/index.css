@@ -269,7 +269,6 @@ pre {
     background-color: hsla(0, 0%, 81%, 0.1) !important;
     margin-top: 50px !important;
     padding-top: 2px;
-    /* box-shadow: 0px 0px 5px hsla(0, 0%, 81.2%, 0.4); */
 }
 
 .service-container h2 {
@@ -288,6 +287,8 @@ pre {
 .table>thead>tr>td,
 .table>thead>tr>th {
     line-height: 25px !important;
+    width: 30%;
+    word-break: break-all;
 }
 
 .btn-copy {
