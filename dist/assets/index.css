@@ -177,6 +177,7 @@ textarea {
 
 .glyphicon {
     font-size: 12px !important;
+    margin-left: 2px;
 }
 
 a.deactivated,
@@ -268,7 +269,6 @@ pre {
     background-color: hsla(0, 0%, 81%, 0.1) !important;
     margin-top: 50px !important;
     padding-top: 2px;
-    /* box-shadow: 0px 0px 5px hsla(0, 0%, 81.2%, 0.4); */
 }
 
 .service-container h2 {
@@ -287,6 +287,8 @@ pre {
 .table>thead>tr>td,
 .table>thead>tr>th {
     line-height: 25px !important;
+    width: 30%;
+    word-break: break-all;
 }
 
 .btn-copy {
@@ -308,4 +310,14 @@ button.action:hover {
     width: 100%;
     display: block;
     box-shadow: 0px 1px 1px #eee;
+}
+
+.toc {
+    position: fixed;
+    bottom: 20px;
+    margin-left: 590px;
+    border-radius: 300px !important;
+    width: 40px !important;
+    height: 40px !important;
+    box-shadow: 0px 2px 5px #c2c2c2;
 }

@@ -1,27 +1,26 @@
-var webpack = require("webpack");
-var ExtractTextPlugin = require("extract-text-webpack-plugin");
-var nodeExternals = require("webpack-node-externals");
+const webpack = require("webpack");
+const ExtractTextPlugin = require("extract-text-webpack-plugin");
+const nodeExternals = require("webpack-node-externals");
 
-var isProduction = process.env.NODE_ENV === "production";
-var productionPluginDefine = isProduction ? [
-    new webpack.DefinePlugin({ "process.env": { "NODE_ENV": JSON.stringify("production") } })
-] : [];
-var clientLoaders = isProduction ? productionPluginDefine.concat([
+const isProduction = process.env.NODE_ENV === "production";
+const productionPluginDefine = [];
+const clientLoaders =  productionPluginDefine.concat([
     new webpack.optimize.DedupePlugin(),
     new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false }, sourceMap: false })
-]) : [];
+]);
 
-var commonLoaders = [
+const commonLoaders = [
     {
         test: /\.json$/,
         loader: "json-loader"
     }
 ];
 
+
 module.exports = [
     {
-        entry: "./src/server.js",
+        entry: ["babel-polyfill", "./src/server.js"],
         output: {
             path: "./dist",
             filename: "server.js",
@@ -49,7 +48,7 @@ module.exports = [
         }
     },
     {
-        entry: "./src/app/client.js",
+        entry: ["babel-polyfill", "./src/app/client.js"],
         output: {
             path: "./dist/assets",
             publicPath: "/",
