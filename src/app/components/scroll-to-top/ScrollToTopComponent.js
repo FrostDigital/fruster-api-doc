@@ -2,14 +2,9 @@ import React from "react";
 
 export default class ScrollToTopComponent extends React.Component {
 
-    componentDidMount() {
-        this.handleScroll();
-        window.addEventListener("scroll", () => this.handleScroll());
-    }
-
     render() {
         return (
-            <span hidden={this.isHidden}>
+            <span>
                 <center>
                     <button
                         onClick={e => this.scrollToTop()}
@@ -20,15 +15,6 @@ export default class ScrollToTopComponent extends React.Component {
                 </center>
             </span>
         );
-    }
-
-    handleScroll() {
-        if (document.documentElement.scrollTop === 0)
-            this.isHidden = true;
-        else
-            this.isHidden = false;
-
-        this.forceUpdate();
     }
 
     scrollToTop() {
