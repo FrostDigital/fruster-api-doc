@@ -103,6 +103,11 @@ a h5 {
     color: #e9982f;
 }
 
+.PUB {
+    color: #333;
+}
+
+.deprecated-note .PUB,
 .deprecated-note .GET,
 .deprecated-note .POST,
 .deprecated-note .DELETE,

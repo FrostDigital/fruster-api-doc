@@ -80,7 +80,7 @@ class ViewUtils {
     static getColorCodedTitle(string) {
         const colorCodedWords = Object.keys(config.colorCodedWords);
 
-        for (let i = 0; i < colorCodedWords.length; i++) {
+        for (let i = colorCodedWords.length; i > 0; i--) {
             string = ViewUtils.replaceAll(string, colorCodedWords[i],
                 `<span class="${config.colorCodedWords[colorCodedWords[i]]}">${colorCodedWords[i]}</span>`);
         }

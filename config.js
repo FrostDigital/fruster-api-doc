@@ -11,8 +11,12 @@ module.exports = {
     /** Project name in order to display the name in the header and title of the page */
     projectName: process.env.PROJECT_NAME || "",
 
-    /** Words to be color coded in service endpoints. Uses the structure {cssClass}:{word},{word};{cssClass}:{word},{word}; */
-    colorCodedWords: parseColorCodedWords(process.env.COLOR_CODED_WORDS || "GET:get,find;DELETE:delete,remove,cancel,decline,unregister;POST:create,post,add,generate,approve,resend,send,set,validate,verify,authenticate,decode;PUT:put,update,change")
+    /** 
+     * Words to be color coded in service endpoints. Uses the structure {cssClass}:{word},{word};{cssClass}:{word},{word}; 
+     * Note: It goes through this list in reverse order so any extension words should be latter; e.g. `create,created` = it will look for created first and then created. 
+    */
+    colorCodedWords: parseColorCodedWords(process.env.COLOR_CODED_WORDS ||
+        "GET:get,find;DELETE:delete,deleted,remove,removed,cancel,canceled,cancelled,decline,declined,unregister,unregistered;POST:create,created,post,posted,add,added,generate,generated,approve,approved,resend,resent,send,sent,set,validate,validated,verify,verified,authenticate,authenticated,decode,decode;PUT:put,update,updated,change,changed;PUB:pub")
 
 };
 

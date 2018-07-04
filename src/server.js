@@ -17,8 +17,6 @@ const ViewUtils = require("./utils/ViewUtils");
 const config = require("../config");
 const port = config.port || 3100;
 
-const opn = require("opn");
-
 (async function () {
 
     await bus.connect({
