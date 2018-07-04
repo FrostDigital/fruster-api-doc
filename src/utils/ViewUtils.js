@@ -56,18 +56,18 @@ class ViewUtils {
      * @return {Array}
      */
     static addUnique(object, array) {
-        const objectExists = array.find((e, i, a) => {
-            const isObject = e.subject === object.subject;
+        const objectExists = array.find((endpoint, index, array) => {
+            /** Makes sure we do not add the same endpoint twice */
+            const isObject = endpoint.subject === object.subject && endpoint.serviceName.split(".")[0] === object.serviceName.split(".")[0];
 
             if (isObject)
-                a[i] = object;
+                array[index] = object;
 
             return isObject;
         });
 
-        if (!objectExists) {
+        if (!objectExists)
             array.push(object);
-        }
 
         return array;
     }
