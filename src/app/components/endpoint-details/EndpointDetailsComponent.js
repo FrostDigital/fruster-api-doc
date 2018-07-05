@@ -1,10 +1,10 @@
+import markdown from "markdown";
 import React from "react";
-import $ from "jquery";
 import ViewUtils from "../../../utils/ViewUtils";
 import { ApiDocContext } from "../../Context";
-
-import CopyAsCurlComponent from "./copy-as-curl/CopyAsCurlComponent";
 import JsonSchemaModalComponent from "../modal/JsonSchemaModalComponent";
+import CopyAsCurlComponent from "./copy-as-curl/CopyAsCurlComponent";
+
 
 export default class EndpointDetailsComponent extends React.Component {
 
@@ -23,27 +23,71 @@ export default class EndpointDetailsComponent extends React.Component {
 
         this.requestSchema = this.props.schemas.find(schema => schema.id === this.props.endpoint.requestSchema);
         this.responseSchema = this.props.schemas.find(schema => schema.id === this.props.endpoint.responseSchema);
+
+        this.isOpen = false;
+
+        this.lastLocationHash = "";
+        this.selected = false;
     }
 
-    shouldComponentUpdate() {
-        return false;
+    componentDidMount() {
+        addEventListener("hashchange", (e) => {
+            reactToHashChange();
+        }, false);
+
+        const reactToHashChange = () => {
+            if (decodeURI(window.location.hash) === `#${this.urlSubjectLink}`
+                && decodeURI(window.location.hash) !== this.lastLocationHash) {
+                this.selected = true;
+
+                if (!this.isOpen) {
+                    this.isOpen = true;
+                    this.forceUpdate();
+                }
+
+                setTimeout(() => {
+                    this.selected = false;
+                    this.forceUpdate();
+                }, 100);
+
+                if (this.markup)
+                    this.markup.scrollIntoView(true);
+            }
+
+            this.lastLocationHash = decodeURI(window.location.hash);
+        }
+
+        reactToHashChange();
     }
 
     render() {
         return (
             <ApiDocContext.Consumer>
                 {context => (
-
                     <span>
                         <div
+                            ref={ref => this.markup = ref}
                             id={this.urlSubjectLink}
-                            className={`${this.props.endpoint.deprecated ? "deprecated-container" : ""} container endpoint-container`}>
+                            className={`
+                                ${this.props.endpoint.deprecated ? "deprecated-container" : ""} container endpoint-container
+                                ${this.selected ? "selected-animated" : ""}
+                            `}>
                             <span>
                                 <span>
+                                    <span
+                                        className={`endpoint-fold-btn ${this.isOpen ? "open" : ""}`}
+                                        onClick={() => this.toggleFolded()}>
+                                        {this.isOpen ?
+                                            <i className="toggle-fold-btn glyphicon glyphicon-menu-down"></i>
+                                            : <i className="toggle-fold-btn glyphicon glyphicon-menu-right"></i>}
+                                    </span>
+
                                     <a href={"#" + this.urlSubjectLink}>
                                         <h3
-                                            className={this.props.endpoint.deprecated ? "deprecated" : ""}
-                                            dangerouslySetInnerHTML={{ __html: this.urlSubject, }}></h3>
+                                            style={{ display: "inline-block" }}
+                                            className={this.props.endpoint.deprecated ? "deprecated" : ""}>
+                                            <span dangerouslySetInnerHTML={{ __html: this.urlSubject, }}></span>
+                                        </h3>
                                     </a>
                                 </span>
 
@@ -54,27 +98,54 @@ export default class EndpointDetailsComponent extends React.Component {
                                 </span>
                             </span>
 
-                            {this.getEndpointDetailsTable(context)}
+                            <div hidden={!this.isOpen}>
+                                {this.getEndpointDetailsTable(context)}
 
-                            {this.getDocumentationTable(context)}
+                                {this.getDocumentationTable(context)}
+                            </div>
+
+                            {/* <div hidden={this.isOpen}>
+                                {
+                                    this.props.endpoint.docs ?
+
+                                        <span>
+                                            <br />
+                                            {this.props.endpoint.docs.description ?
+                                                <span
+                                                    className="description-value"
+                                                    dangerouslySetInnerHTML={{ __html: markdown.markdown.toHTML(this.props.endpoint.docs.description), }}>
+                                                </span>
+                                                : <span />}
+                                        </span>
+
+                                        : ""
+                                }
+                            </div> */}
 
                         </div>
 
-                        <JsonSchemaModalComponent
-                            ref={ref => { this.requestBodyModal = ref; }}
-                            subject={this.props.endpoint.subject}
-                            schema={this.requestSchema} />
+                        <div hidden={!this.isOpen}>
+                            <JsonSchemaModalComponent
+                                ref={ref => { this.requestBodyModal = ref; }}
+                                subject={this.props.endpoint.subject}
+                                schema={this.requestSchema} />
 
-                        <JsonSchemaModalComponent
-                            ref={ref => { this.responseBodyModal = ref; }}
-                            subject={this.props.endpoint.subject}
-                            schema={this.responseSchema} />
+                            <JsonSchemaModalComponent
+                                ref={ref => { this.responseBodyModal = ref; }}
+                                subject={this.props.endpoint.subject}
+                                schema={this.responseSchema} />
+                        </div>
 
                     </span>
 
                 )}
             </ApiDocContext.Consumer>
         );
+    }
+
+    toggleFolded() {
+        this.isOpen = !this.isOpen;
+        this.forceUpdate();
     }
 
     /**
@@ -176,7 +247,9 @@ export default class EndpointDetailsComponent extends React.Component {
                             {this.props.endpoint.docs ?
                                 <div>
                                     {this.props.endpoint.docs.description ? <div className="doc-entry-title">Description</div> : ""}
-                                    {this.props.endpoint.docs.description ? <span className="description-value"> {this.props.endpoint.docs.description}</span> : <span className="not-available">n/a</span>}
+                                    {this.props.endpoint.docs.description ?
+                                        <span className="description-value" dangerouslySetInnerHTML={{ __html: markdown.markdown.toHTML(this.props.endpoint.docs.description), }}></span>
+                                        : <span className="not-available">n/a</span>}
                                     {this.props.endpoint.docs.params ? this.getDocEntry(this.props.endpoint.docs.params, "Url parameters") : ""}
                                     {this.props.endpoint.docs.query ? this.getDocEntry(this.props.endpoint.docs.query, "Query parameters") : ""}
                                     {this.props.endpoint.docs.errors ? this.getDocEntry(this.props.endpoint.docs.errors, "Errors") : ""}

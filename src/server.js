@@ -17,6 +17,8 @@ const ViewUtils = require("./utils/ViewUtils");
 const config = require("../config");
 const port = config.port || 3100;
 
+const started = new Date();
+
 (async function () {
 
     await bus.connect({
@@ -38,6 +40,7 @@ let cachedHtml;
 function startServer() {
     app.use("/assets", express.static(path.resolve(`${__dirname}/assets`)));
 
+
     app.post("/reset-cache", (req, res) => {
         resetCache();
 
@@ -47,6 +50,8 @@ function startServer() {
 
     app.get("/", async (req, res) => {
         try {
+            res.setHeader("Cache-Control", "max-age=300");
+
             if (req.query.resetCache)
                 resetCache();
 
@@ -109,9 +114,9 @@ function startServer() {
 
             const appString = renderToString(<App {...state} />);
 
-            const renderedHtml = template({
+            let renderedHtml = template({
                 body: appString,
-                title: `${config.projectName} API documentation`,
+                title: `${config.projectName} API documentation ${started.getHours()}:${started.getMinutes()}:${started.getSeconds()}`,
                 initialState: JSON.stringify(state)
             });
 

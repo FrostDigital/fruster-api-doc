@@ -40,10 +40,13 @@ body {
 .toolbar {
     background-color: #313131;
     padding: 10px;
+    position: fixed;
+    width: 100%;
+    bottom: 0px;
 }
 
-#reset-cache {
-    float: right;
+.toolbar button {
+    margin-right: 5px;
 }
 
 .hljs-formula {
@@ -252,6 +255,13 @@ a h1:active::before {
     background-color: #fff;
     margin-top: 10px;
     width: 1120px !important;
+    padding-bottom: 20px;
+    transition: background-color 2s ease !important;
+}
+
+.endpoint-container.selected-animated {
+    transition: background-color 0s ease !important;
+    background-color: #fff7e1 !important;
 }
 
 .deprecated-container {
@@ -318,11 +328,37 @@ button.action:hover {
 }
 
 .toc {
-    position: fixed;
-    bottom: 20px;
-    margin-left: 590px;
-    border-radius: 300px !important;
+    /* position: fixed; */
+    /* bottom: 20px; */
+    /* margin-left: 590px; */
+    /* border-radius: 300px !important;
     width: 40px !important;
     height: 40px !important;
-    box-shadow: 0px 2px 5px #c2c2c2;
+    box-shadow: 0px 2px 5px #c2c2c2; */
+}
+
+.toggle-fold-btn {
+    font-size: 15px !important;
+    cursor: pointer;
+    margin-right: 20px;
+    border-right: 1px solid #ccc;
+    width: 28px;
+    color: #bbbbbb !important;
+    vertical-align: center;
+}
+
+.open .toggle-fold-btn {
+    color: #555 !important;
+}
+
+.toggle-fold-btn:hover {
+    color: #337ab7 !important;
+}
+
+.float-right {
+    float: right;
+}
+
+.btn {
+    border-radius: 0px !important;
 }

@@ -11,7 +11,7 @@ export default ({ body, title, initialState }) => {
         </head>
 
         <body>
-            <div id="root">${body}</div>
+            <div id="root" title="Documentation was generated on ${new Date().toJSON()}">${body}</div>
         </body>
 
         <script src="https://code.jquery.com/jquery-3.1.0.js" integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk=" crossorigin="anonymous"></script>

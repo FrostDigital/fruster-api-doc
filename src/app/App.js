@@ -1,18 +1,14 @@
-import React from "react";
-import constants from "../constants";
-import ViewUtils from "../utils/ViewUtils";
-
-import ToolbarComponent from "./components/toolbar/ToolbarComponent";
-import EndpointDetailsComponent from "./components/endpoint-details/EndpointDetailsComponent";
-import EndpointContainer from "./components/endpoint-container/EndpointContainer";
-import ScrollToTopComponent from "./components/scroll-to-top/ScrollToTopComponent";
-import JsonSchemaModalComponent from "./components/modal/JsonSchemaModalComponent";
-import ErrorMessageComponent from "./components/error-message/ErrorMessageComponent";
-import EndpointsTableOfContentsComponent from "./components/endpoints-table-of-contents/EndpointsTableOfContentsComponent";
-import { ApiDocContext } from "./Context";
-
 import "babel-core/register";
 import "babel-polyfill";
+import React from "react";
+import ViewUtils from "../utils/ViewUtils";
+import EndpointContainer from "./components/endpoint-container/EndpointContainer";
+import EndpointsTableOfContentsComponent from "./components/endpoints-table-of-contents/EndpointsTableOfContentsComponent";
+import ErrorMessageComponent from "./components/error-message/ErrorMessageComponent";
+import ToolbarComponent from "./components/toolbar/ToolbarComponent";
+import { ApiDocContext } from "./Context";
+
+
 
 export default class App extends React.Component {
 
@@ -22,6 +18,11 @@ export default class App extends React.Component {
         this.numberOfEndpoints = Object.keys(this.props.endpointsByType.http).length
             + Object.keys(this.props.endpointsByType.service).length
             + Object.keys(this.props.endpointsByType.ws).length;
+
+        this.state = {
+            config: this.props.config,
+            endpointsByType: this.props.endpointsByType
+        };
     }
 
     shouldComponentUpdate() {
@@ -31,12 +32,7 @@ export default class App extends React.Component {
     render() {
         return (
             <ApiDocContext.Provider
-                value={{
-                    config: this.props.config,
-                    endpointsByType: this.props.endpointsByType
-                }}>
-
-                <ToolbarComponent />
+                value={this.state}>
 
                 <div className="container">
                     <ErrorMessageComponent
@@ -77,9 +73,9 @@ export default class App extends React.Component {
 
                 </div>
 
-                <ScrollToTopComponent />
-
                 <br />
+
+                <ToolbarComponent />
 
             </ApiDocContext.Provider>
         );
