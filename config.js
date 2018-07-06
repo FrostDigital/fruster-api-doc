@@ -16,7 +16,7 @@ module.exports = {
      * Note: It goes through this list in reverse order so any extension words should be latter; e.g. `create,created` = it will look for created first and then created. 
     */
     colorCodedWords: parseColorCodedWords(process.env.COLOR_CODED_WORDS ||
-        "GET:get,find;DELETE:delete,deleted,remove,removed,cancel,canceled,cancelled,decline,declined,unregister,unregistered;POST:create,created,post,posted,add,added,generate,generated,approve,approved,resend,resent,send,sent,set,validate,validated,verify,verified,authenticate,authenticated,decode,decode;PUT:put,update,updated,change,changed;PUB:pub")
+        "GET:get,find;DELETE:delete,deleted,remove,removed,cancel,canceled,cancelled,decline,declined,unregister,unregistered;POST:create,created,post,posted,add,added,generate,generated,approve,approved,send,sent,resend,resent,set,validate,validated,verify,verified,authenticate,authenticated,decode,decode;PUT:put,update,updated,change,changed;PUB:pub")
 
 };
 

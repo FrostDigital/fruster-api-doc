@@ -358,7 +358,3 @@ button.action:hover {
 .float-right {
     float: right;
 }
-
-.btn {
-    border-radius: 0px !important;
-}

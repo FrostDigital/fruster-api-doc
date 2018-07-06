@@ -60,13 +60,13 @@ Are you sure you want to reset the cache?
     expandAll() {
         const foldButtons = document.querySelectorAll(".endpoint-fold-btn");
 
-        foldButtons.forEach(button => {
+        foldButtons.forEach((button, i) => {
             if (!this.allEndpointsOpen) {
                 if (!Array.from(button.classList).includes("open"))
-                    button.click();
+                    setTimeout(() => button.click()); /** Makes the process incremental instead of it waiting for everything to finish (Non blocking in other words)*/
             } else
                 if (Array.from(button.classList).includes("open"))
-                    button.click();
+                    setTimeout(() => button.click()); /** Makes the process incremental instead of it waiting for everything to finish (Non blocking in other words)*/
         });
 
         this.allEndpointsOpen = !this.allEndpointsOpen;
