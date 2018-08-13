@@ -20,12 +20,6 @@ export default class ToolbarComponent extends React.Component {
                     {/* Buttons to the left */}
                     <ScrollToTopComponent />
 
-                    <button
-                        className="btn btn-xs"
-                        onClick={() => this.expandAll()}>
-                        {this.allEndpointsOpen ? "Close" : "Expand"} all endpoints
-                    </button>
-
                     {/* Buttons to the right */}
                     <span className="float-right">
                         <button
@@ -55,22 +49,6 @@ Are you sure you want to reset the cache?
             await $.post("/reset-cache");
             location.reload();
         }
-    }
-
-    expandAll() {
-        const foldButtons = document.querySelectorAll(".endpoint-fold-btn");
-
-        foldButtons.forEach((button, i) => {
-            if (!this.allEndpointsOpen) {
-                if (!Array.from(button.classList).includes("open"))
-                    setTimeout(() => button.click()); /** Makes the process incremental instead of it waiting for everything to finish (Non blocking in other words)*/
-            } else
-                if (Array.from(button.classList).includes("open"))
-                    setTimeout(() => button.click()); /** Makes the process incremental instead of it waiting for everything to finish (Non blocking in other words)*/
-        });
-
-        this.allEndpointsOpen = !this.allEndpointsOpen;
-        this.forceUpdate();
     }
 
     shouldComponentUpdate() {
