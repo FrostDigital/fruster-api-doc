@@ -4,16 +4,12 @@ export default class ScrollToTopComponent extends React.Component {
 
     render() {
         return (
-            <span>
-                <center>
-                    <button
-                        onClick={e => this.scrollToTop()}
-                        type="button"
-                        className="toc btn btn-default btn-sm">
-                        <span className="glyphicon glyphicon-arrow-up"></span>
-                    </button>
-                </center>
-            </span>
+            <button
+                onClick={e => this.scrollToTop()}
+                type="button"
+                className="toc btn btn-xs btn-default">
+                <span className="glyphicon glyphicon-arrow-up"></span> Scroll to top
+            </button>
         );
     }
 

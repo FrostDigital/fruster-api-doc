@@ -13,7 +13,7 @@
     "license": "MIT",
     "dependencies": {
         "@types/react": "^16.3.11",
-        "express": "^4.14.0",
+        "express": "^4.16.3",
         "fruster-bus": "^0.2.26",
         "fruster-health": "^0.0.12",
         "fruster-log": "^0.0.16",
@@ -21,6 +21,7 @@
         "jquery": "^3.3.1",
         "json-schema-faker": "0.4.6",
         "json-schema-ref-parser": "4.0.4",
+        "markdown": "^0.5.0",
         "opn": "^5.3.0",
         "react": "^16.3.1",
         "react-dom": "^16.3.1",
