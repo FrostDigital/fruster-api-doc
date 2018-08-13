@@ -116,7 +116,7 @@ function startServer() {
 
             let renderedHtml = template({
                 body: appString,
-                title: `${config.projectName} API documentation ${started.getHours()}:${started.getMinutes()}:${started.getSeconds()}`,
+                title: `${config.projectName} API documentation`,
                 initialState: JSON.stringify(state)
             });
 
