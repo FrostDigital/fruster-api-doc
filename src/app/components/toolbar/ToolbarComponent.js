@@ -42,7 +42,7 @@ export default class ToolbarComponent extends React.Component {
   - Too many errors are showing up (Typically after a redeploy of fruster-api-doc).
   - No endpoints are showing up even after several normal refreshes.
 
-*This should not be used too much as it increases loading times severely, specially right after cache is reset* 
+*This should not be used too much as it increases loading times severely, especially right after cache is reset* 
 
 Are you sure you want to reset the cache?
         `)) {
