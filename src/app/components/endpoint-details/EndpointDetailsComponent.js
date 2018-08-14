@@ -95,46 +95,38 @@ export default class EndpointDetailsComponent extends React.Component {
                                     from {this.props.endpoint.instanceId} {this.getDeprecationNote()}
 
                                     <CopyAsCurlComponent cUrl={this.props.endpoint.cUrl} />
+
                                 </span>
+
                             </span>
 
-                            <div hidden={!this.isOpen}>
-                                {this.getEndpointDetailsTable(context)}
+                            {
+                                this.isOpen ? <span>
 
-                                {this.getDocumentationTable(context)}
-                            </div>
+                                    {this.getEndpointDetailsTable(context)}
 
-                            {/* <div hidden={this.isOpen}>
-                                {
-                                    this.props.endpoint.docs ?
+                                    {this.getDocumentationTable(context)}
 
-                                        <span>
-                                            <br />
-                                            {this.props.endpoint.docs.description ?
-                                                <span
-                                                    className="description-value"
-                                                    dangerouslySetInnerHTML={{ __html: markdown.markdown.toHTML(this.props.endpoint.docs.description), }}>
-                                                </span>
-                                                : <span />}
-                                        </span>
-
-                                        : ""
-                                }
-                            </div> */}
+                                </span> : ""
+                            }
 
                         </div>
 
-                        <div hidden={!this.isOpen}>
-                            <JsonSchemaModalComponent
-                                ref={ref => { this.requestBodyModal = ref; }}
-                                subject={this.props.endpoint.subject}
-                                schema={this.requestSchema} />
+                        {
+                            this.isOpen ? <span>
 
-                            <JsonSchemaModalComponent
-                                ref={ref => { this.responseBodyModal = ref; }}
-                                subject={this.props.endpoint.subject}
-                                schema={this.responseSchema} />
-                        </div>
+                                <JsonSchemaModalComponent
+                                    ref={ref => { this.requestBodyModal = ref; }}
+                                    subject={this.props.endpoint.subject}
+                                    schema={this.requestSchema} />
+
+                                <JsonSchemaModalComponent
+                                    ref={ref => { this.responseBodyModal = ref; }}
+                                    subject={this.props.endpoint.subject}
+                                    schema={this.responseSchema} />
+
+                            </span> : ""
+                        }
 
                     </span>
 

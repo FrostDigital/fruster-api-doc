@@ -220,6 +220,14 @@ h3.deprecated,
     font-weight: bold;
 }
 
+.description {
+    max-width: 1090px;
+}
+
+.description img {
+    max-width: 100%;
+}
+
 li {
     margin-left: 14px;
 }
