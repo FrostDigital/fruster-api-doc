@@ -20,6 +20,9 @@ export default class JsonSchemaModalComponent extends React.Component {
 
         this.colorized = false;
 
+        this.sampleSelected = false;
+        this.jsonSchemaSelected = false;
+
         this.modal = {};
 
         this.setOpenState();
@@ -146,7 +149,9 @@ export default class JsonSchemaModalComponent extends React.Component {
 
                     <div className="clearfix" />
 
-                    <pre ref={ref => { this.jsonSampleElem = ref; }}>
+                    <pre
+                        className={`${this.sampleSelected ? "selected-animated" : ""}`}
+                        ref={ref => { this.jsonSampleElem = ref; }}>
                         {/* Since errors have some HTML formatted elements: */}
                         <code id="sample-json" dangerouslySetInnerHTML={{ __html: this.jsonSample }} />
                     </pre>
@@ -181,7 +186,9 @@ export default class JsonSchemaModalComponent extends React.Component {
 
                     <div className="clearfix" />
 
-                    <pre ref={ref => { this.jsonSchemaElem = ref; }}>
+                    <pre
+                        className={`${this.jsonSchemaSelected ? "selected-animated" : ""}`}
+                        ref={ref => { this.jsonSchemaElem = ref; }}>
                         {/* Since errors have some HTML formatted elements: */}
                         <code id="json-schema-json" dangerouslySetInnerHTML={{ __html: this.jsonSchema }} />
                     </pre>
@@ -195,6 +202,14 @@ export default class JsonSchemaModalComponent extends React.Component {
         this.sampleIsOpen = true;
         this.forceUpdate();
         setTimeout(() => this.sampleHeader.scrollIntoView(true), 1);
+
+        this.sampleSelected = true;
+
+        setTimeout(() => {
+            this.sampleSelected = false;
+            /** There must be a better way than force updating here 🤔 */
+            this.forceUpdate();
+        }, 100);
     }
 
     goToJsonSchema() {
@@ -202,6 +217,14 @@ export default class JsonSchemaModalComponent extends React.Component {
         this.forceUpdate();
 
         setTimeout(() => this.jsonSchemaHeader.scrollIntoView(true), 1);
+
+        this.jsonSchemaSelected = true;
+
+        setTimeout(() => {
+            this.jsonSchemaSelected = false;
+            /** There must be a better way than force updating here 🤔 */
+            this.forceUpdate();
+        }, 100);
     }
 
     toggleJsonSchemaFolded() {

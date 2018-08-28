@@ -267,7 +267,12 @@ a h1:active::before {
     transition: background-color 2s ease !important;
 }
 
-.endpoint-container.selected-animated {
+.modal-content pre {
+    transition: background-color 2s ease !important;
+}
+
+.endpoint-container.selected-animated,
+pre.selected-animated {
     transition: background-color 0s ease !important;
     background-color: #fff7e1 !important;
 }
