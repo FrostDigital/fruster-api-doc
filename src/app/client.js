@@ -6,7 +6,3 @@ import registerServiceWorker from "./registerServiceWorker";
 registerServiceWorker();
 
 hydrate(<App {...window._APP_STATE_} />, document.getElementById("root"));
-// document.addEventListener("DOMContentLoaded", () => {
-//     console.log("DOMContentLoaded, hydrating react app");
-//     // @ts-ignore
-// });
