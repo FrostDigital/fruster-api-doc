@@ -345,6 +345,11 @@ button.action:hover {
     vertical-align: center;
 }
 
+.toggle-fold-btn.json-schema {
+    margin-right: 0px !important;
+    top: 0px !important;
+}
+
 .open .toggle-fold-btn {
     color: #555 !important;
 }
@@ -355,4 +360,8 @@ button.action:hover {
 
 .float-right {
     float: right;
+}
+
+.clickable {
+    cursor: pointer;
 }

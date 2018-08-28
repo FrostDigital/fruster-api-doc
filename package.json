@@ -49,5 +49,10 @@
     },
     "engines": {
         "node": "7.9.0"
+    },
+    "nodemonConfig": {
+        "ignore": [
+            "src"
+        ]
     }
 }

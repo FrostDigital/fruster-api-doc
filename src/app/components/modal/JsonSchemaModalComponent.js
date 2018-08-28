@@ -1,8 +1,7 @@
-import React from "react";
-import CopyToClipboardComponent from "../copy-to-clipboard/CopyToClipboardComponent"
-import ScrollToTopComponent from "../scroll-to-top/ScrollToTopComponent"
 import hljs from "highlight.js";
+import React from "react";
 import ViewUtils from "../../../utils/ViewUtils";
+import CopyToClipboardComponent from "../copy-to-clipboard/CopyToClipboardComponent";
 
 hljs.configure({ languages: ["json"] });
 
@@ -22,10 +21,13 @@ export default class JsonSchemaModalComponent extends React.Component {
         this.colorized = false;
 
         this.modal = {};
+
+        this.setOpenState();
     }
 
-    shouldComponentUpdate() {
-        return false;
+    setOpenState() {
+        this.jsonSchemaIsOpen = false;
+        this.sampleIsOpen = true;
     }
 
     render() {
@@ -52,76 +54,61 @@ export default class JsonSchemaModalComponent extends React.Component {
                                 {this.props.schema.id}
                             </h1>
 
-                            <a hidden={this.props.isError} href={`#schema-${this.props.subject}-${this.props.schema.id}`}>
-                                <div>Go to json Schema</div>
-                            </a>
-                            <a hidden={this.props.isError} href={`#sample-${this.props.subject}-${this.props.schema.id}`}>
+                            <a
+                                hidden={this.props.isError}
+                                className="clickable"
+                                onClick={() => this.goToSample()}>
                                 <div>Go to sample</div>
                             </a>
+                            <a
+                                hidden={this.props.isError}
+                                className="clickable"
+                                onClick={() => this.goToJsonSchema()}>
+                                <div>Go to json Schema</div>
+                            </a>
 
                             <hr />
 
-                            <h2
-                                style={{ display: "inline-block" }}
-                                id={`schema-${this.props.subject}-${this.props.schema.id}`}>
-                                {this.props.isError ? "Full error" : "Json schema"}
-                            </h2>
+                            <span className="modal-container">
+                                <span
+                                    className={`endpoint-fold-btn ${this.sampleIsOpen ? "open" : ""}`}
+                                    onClick={() => this.toggleSampleFolded()}>
+                                    {this.sampleIsOpen ?
+                                        <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-down"></i>
+                                        : <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-right"></i>}
+                                </span>
+                                <h2
+                                    ref={ref => this.sampleHeader = ref}
+                                    style={{ display: "inline-block" }}
+                                    id={`sample-${this.props.subject}-${this.props.schema.id}`}>
+                                    {this.props.isError ? "Error message" : "Sample"}
+                                </h2>
 
-                            <button
-                                style={{
-                                    display: "inline",
-                                    marginTop: "20px"
-                                }}
-                                className="action btn-copy"
-                                id="copy-json-schema"
-                                onClick={e => this.copyJsonSchemaToClipboard.copyToClipboard()}>
+                                {this.renderSample()}
 
-                                <CopyToClipboardComponent
-                                    ref={ref => this.copyJsonSchemaToClipboard = ref}
-                                    copyData={this.jsonSchema} />
-
-                                Copy to clipboard <span className="glyphicon glyphicon-copy"></span>
-
-                            </button>
-
-                            <div className="clearfix" />
-
-                            <pre ref={ref => { this.jsonSchemaElem = ref; }}>
-                                {/* Since errors have some HTML formatted elements: */}
-                                <code id="json-schema-json" dangerouslySetInnerHTML={{ __html: this.jsonSchema }} />
-                            </pre>
+                            </span>
 
                             <hr />
 
-                            <h2
-                                style={{ display: "inline-block" }}
-                                id={`sample-${this.props.subject}-${this.props.schema.id}`}>
-                                {this.props.isError ? "Error message" : "Sample"}
-                            </h2>
+                            <span className="modal-container">
+                                <span
+                                    className={`endpoint-fold-btn ${this.jsonSchemaIsOpen ? "open" : ""}`}
+                                    onClick={() => this.toggleJsonSchemaFolded()}>
+                                    {this.jsonSchemaIsOpen ?
+                                        <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-down"></i>
+                                        : <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-right"></i>}
+                                </span>
+                                <h2
+                                    ref={ref => this.jsonSchemaHeader = ref}
+                                    style={{ display: "inline-block" }}
+                                    id={`schema-${this.props.subject}-${this.props.schema.id}`}>
+                                    {this.props.isError ? "Full error" : "Json schema"}
+                                </h2>
 
-                            <button
-                                style={{
-                                    display: "inline",
-                                    marginTop: "20px"
-                                }}
-                                className="action btn-copy"
-                                id="copy-sample"
-                                onClick={e => this.copyJsonSampleToClipboard.copyToClipboard()}>
+                                {this.renderJsonSchema()}
 
-                                <CopyToClipboardComponent
-                                    ref={ref => this.copyJsonSampleToClipboard = ref}
-                                    copyData={this.jsonSample} />
+                            </span>
 
-                                Copy to clipboard <span className="glyphicon glyphicon-copy"></span>
-
-                            </button>
-
-                            <div className="clearfix" />
-
-                            <pre ref={ref => { this.jsonSampleElem = ref; }}>
-                                {/* Since errors have some HTML formatted elements: */}
-                                <code id="sample-json" dangerouslySetInnerHTML={{ __html: this.jsonSample }} />
-                            </pre>
                         </div>
                     </div>
                 </div>
@@ -130,7 +117,103 @@ export default class JsonSchemaModalComponent extends React.Component {
         else return <span />
     }
 
+    renderSample() {
+        return (
+            <span>
+
+                <button
+                    style={{
+                        display: "inline",
+                        marginTop: "20px"
+                    }}
+                    className="action btn-copy"
+                    id="copy-sample"
+                    onClick={e => this.copyJsonSampleToClipboard.copyToClipboard()}>
+
+                    <CopyToClipboardComponent
+                        ref={ref => this.copyJsonSampleToClipboard = ref}
+                        copyData={this.jsonSample} />
+
+                    Copy to clipboard <span className="glyphicon glyphicon-copy"></span>
+
+                </button>
+
+                <span hidden={!this.sampleIsOpen}>
+
+                    <div className="clearfix" />
+
+                    <pre ref={ref => { this.jsonSampleElem = ref; }}>
+                        {/* Since errors have some HTML formatted elements: */}
+                        <code id="sample-json" dangerouslySetInnerHTML={{ __html: this.jsonSample }} />
+                    </pre>
+
+                </span>
+
+            </span>);
+    }
+
+    renderJsonSchema() {
+        return (
+            <span>
+
+                <button
+                    style={{
+                        display: "inline",
+                        marginTop: "20px"
+                    }}
+                    className="action btn-copy"
+                    id="copy-json-schema"
+                    onClick={e => this.copyJsonSchemaToClipboard.copyToClipboard()}>
+
+                    <CopyToClipboardComponent
+                        ref={ref => this.copyJsonSchemaToClipboard = ref}
+                        copyData={this.jsonSchema} />
+
+                    Copy to clipboard <span className="glyphicon glyphicon-copy"></span>
+
+                </button>
+
+                <span hidden={!this.jsonSchemaIsOpen}>
+
+                    <div className="clearfix" />
+
+                    <pre ref={ref => { this.jsonSchemaElem = ref; }}>
+                        {/* Since errors have some HTML formatted elements: */}
+                        <code id="json-schema-json" dangerouslySetInnerHTML={{ __html: this.jsonSchema }} />
+                    </pre>
+
+                </span>
+
+            </span>);
+    }
+
+    goToSample() {
+        this.sampleIsOpen = true;
+        this.forceUpdate();
+        setTimeout(() => this.sampleHeader.scrollIntoView(true), 1);
+    }
+
+    goToJsonSchema() {
+        this.jsonSchemaIsOpen = true;
+        this.forceUpdate();
+
+        setTimeout(() => this.jsonSchemaHeader.scrollIntoView(true), 1);
+    }
+
+    toggleJsonSchemaFolded() {
+        this.jsonSchemaIsOpen = !this.jsonSchemaIsOpen;
+        this.forceUpdate();
+    }
+
+    toggleSampleFolded() {
+        this.sampleIsOpen = !this.sampleIsOpen;
+        this.forceUpdate();
+    }
+
     openModal() {
+        this.setOpenState();
+        this.forceUpdate();
+
         if (!this.colorized) {
             hljs.highlightBlock(this.jsonSchemaElem);
             hljs.highlightBlock(this.jsonSampleElem);
