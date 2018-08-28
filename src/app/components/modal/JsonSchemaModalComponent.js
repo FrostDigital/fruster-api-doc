@@ -78,6 +78,8 @@ export default class JsonSchemaModalComponent extends React.Component {
                                         : <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-right"></i>}
                                 </span>
                                 <h2
+                                    className="clickable"
+                                    onClick={() => this.goToSample()}
                                     ref={ref => this.sampleHeader = ref}
                                     style={{ display: "inline-block" }}
                                     id={`sample-${this.props.subject}-${this.props.schema.id}`}>
@@ -99,6 +101,8 @@ export default class JsonSchemaModalComponent extends React.Component {
                                         : <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-right"></i>}
                                 </span>
                                 <h2
+                                    className="clickable"
+                                    onClick={() => this.goToJsonSchema()}
                                     ref={ref => this.jsonSchemaHeader = ref}
                                     style={{ display: "inline-block" }}
                                     id={`schema-${this.props.subject}-${this.props.schema.id}`}>
