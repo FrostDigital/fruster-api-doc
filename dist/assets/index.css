@@ -267,7 +267,12 @@ a h1:active::before {
     transition: background-color 2s ease !important;
 }
 
-.endpoint-container.selected-animated {
+.modal-content pre {
+    transition: background-color 2s ease !important;
+}
+
+.endpoint-container.selected-animated,
+pre.selected-animated {
     transition: background-color 0s ease !important;
     background-color: #fff7e1 !important;
 }
@@ -345,6 +350,11 @@ button.action:hover {
     vertical-align: center;
 }
 
+.toggle-fold-btn.json-schema {
+    margin-right: 0px !important;
+    top: 0px !important;
+}
+
 .open .toggle-fold-btn {
     color: #555 !important;
 }
@@ -355,4 +365,8 @@ button.action:hover {
 
 .float-right {
     float: right;
+}
+
+.clickable {
+    cursor: pointer;
 }
