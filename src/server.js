@@ -31,8 +31,6 @@ const started = new Date();
 
 }());
 
-const emptyEndpointsByType = { http: {}, service: {}, ws: {} };
-
 let schemasPerService = {};
 let endpointsByType = { http: {}, service: {}, ws: {} };
 let cachedHtml;
@@ -236,6 +234,13 @@ function resetCache() {
     console.log("Resetting cache");
 
     schemasPerService = {};
-    endpointsByType = Object.assign({}, emptyEndpointsByType);
+    endpointsByType = { http: {}, service: {}, ws: {} };
     cachedHtml = undefined;
+
+    console.log("Reset result:",
+        "\n endpointsByType.http:", Object.keys(endpointsByType.http).length,
+        "\n endpointsByType.service:", Object.keys(endpointsByType.service).length,
+        "\n endpointsByType.ws:", Object.keys(endpointsByType.ws).length,
+        "\n schemasPerService:", Object.keys(schemasPerService).length,
+        "\n cachedHtml === undefined:", cachedHtml === undefined);
 }
