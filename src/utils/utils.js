@@ -18,6 +18,8 @@ jsf.option({
     failOnInvalidTypes: false
 });
 
+jsf.format("uuid", () => uuid.v4());
+
 class Utils {
 
     /**

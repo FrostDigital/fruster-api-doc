@@ -11,34 +11,41 @@ export default class JsonSchemaModalComponent extends React.Component {
         super(props);
 
         if (this.props.schema) {
-            const schemaToJson = Object.assign({}, this.props.schema);
-            delete schemaToJson.sample;
+            this.state = this.state || {};
+            this.state.schema = this.props.schema;
 
-            this.jsonSchema = JSON.stringify(ViewUtils.sortObject(schemaToJson), null, 2);
-            this.jsonSample = JSON.stringify(this.props.schema.sample, null, 2);
-        }
+            const schemaToJson = Object.assign({}, this.state.schema);
 
-        this.colorized = false;
-
-        this.sampleSelected = false;
-        this.jsonSchemaSelected = false;
-
-        this.modal = {};
-
-        this.setOpenState();
+            this.state.jsonSchema = JSON.stringify(ViewUtils.sortObject(schemaToJson), null, 2);
+            this.state.jsonSample = this.state.schema ? JSON.stringify(this.state.schema.sample, null, 2) : undefined;
+        } else
+            this.state.schema = {};
     }
 
-    setOpenState() {
-        this.jsonSchemaIsOpen = false;
-        this.sampleIsOpen = true;
+    // @ts-ignore
+    state = {
+        colorized: false,
+        sampleSelected: false,
+        jsonSchemaSelected: false,
+        jsonSchemaIsOpen: false,
+        sampleIsOpen: true,
+        modal: {}
+    };
+
+    setInitialOpenState() {
+        this.setState({
+            ...this.state,
+            jsonSchemaIsOpen: false,
+            sampleIsOpen: true
+        });
     }
 
     render() {
-        if (this.props.schema)
+        if (this.state.schema)
             return (
                 <div
                     style={{ cursor: "default" }}
-                    ref={(ref) => { this.modal = ref; }}
+                    ref={(ref) => { this.state.modal = ref; }}
                     className="modal bd-example-modal-lg"
                     role="dialog"
                     aria-labelledby="myLargeModalLabel"
@@ -54,7 +61,7 @@ export default class JsonSchemaModalComponent extends React.Component {
                             </span>
 
                             <h1 id="header">
-                                {this.props.schema.id}
+                                {this.state.schema.id}
                             </h1>
 
                             <a
@@ -74,9 +81,9 @@ export default class JsonSchemaModalComponent extends React.Component {
 
                             <span className="modal-container">
                                 <span
-                                    className={`endpoint-fold-btn ${this.sampleIsOpen ? "open" : ""}`}
+                                    className={`endpoint-fold-btn ${this.state.sampleIsOpen ? "open" : ""}`}
                                     onClick={() => this.toggleSampleFolded()}>
-                                    {this.sampleIsOpen ?
+                                    {this.state.sampleIsOpen ?
                                         <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-down"></i>
                                         : <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-right"></i>}
                                 </span>
@@ -85,7 +92,7 @@ export default class JsonSchemaModalComponent extends React.Component {
                                     onClick={() => this.goToSample()}
                                     ref={ref => this.sampleHeader = ref}
                                     style={{ display: "inline-block" }}
-                                    id={`sample-${this.props.subject}-${this.props.schema.id}`}>
+                                    id={`sample-${this.props.subject}-${this.state.schema.id}`}>
                                     {this.props.isError ? "Error message" : "Sample"}
                                 </h2>
 
@@ -97,18 +104,18 @@ export default class JsonSchemaModalComponent extends React.Component {
 
                             <span className="modal-container">
                                 <span
-                                    className={`endpoint-fold-btn ${this.jsonSchemaIsOpen ? "open" : ""}`}
+                                    className={`endpoint-fold-btn ${this.state.jsonSchemaIsOpen ? "open" : ""}`}
                                     onClick={() => this.toggleJsonSchemaFolded()}>
-                                    {this.jsonSchemaIsOpen ?
+                                    {this.state.jsonSchemaIsOpen ?
                                         <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-down"></i>
                                         : <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-right"></i>}
                                 </span>
                                 <h2
                                     className="clickable"
                                     onClick={() => this.goToJsonSchema()}
-                                    ref={ref => this.jsonSchemaHeader = ref}
+                                    ref={ref => { this.jsonSchemaHeader = ref; }}
                                     style={{ display: "inline-block" }}
-                                    id={`schema-${this.props.subject}-${this.props.schema.id}`}>
+                                    id={`schema-${this.props.subject}-${this.state.schema.id}`}>
                                     {this.props.isError ? "Full error" : "Json schema"}
                                 </h2>
 
@@ -139,21 +146,21 @@ export default class JsonSchemaModalComponent extends React.Component {
 
                     <CopyToClipboardComponent
                         ref={ref => this.copyJsonSampleToClipboard = ref}
-                        copyData={this.jsonSample} />
+                        copyData={this.state.jsonSample} />
 
                     Copy to clipboard <span className="glyphicon glyphicon-copy"></span>
 
                 </button>
 
-                <span hidden={!this.sampleIsOpen}>
+                <span hidden={!this.state.sampleIsOpen}>
 
                     <div className="clearfix" />
 
                     <pre
-                        className={`${this.sampleSelected ? "selected-animated" : ""}`}
-                        ref={ref => { this.jsonSampleElem = ref; }}>
+                        className={`${this.state.sampleSelected ? "selected-animated" : ""}`}
+                        ref={ref => { this.state.jsonSampleElem = ref; }}>
                         {/* Since errors have some HTML formatted elements: */}
-                        <code id="sample-json" dangerouslySetInnerHTML={{ __html: this.jsonSample }} />
+                        <code id="sample-json" dangerouslySetInnerHTML={{ __html: this.state.jsonSample }} />
                     </pre>
 
                 </span>
@@ -172,80 +179,85 @@ export default class JsonSchemaModalComponent extends React.Component {
                     }}
                     className="action btn-copy"
                     id="copy-json-schema"
-                    onClick={e => this.copyJsonSchemaToClipboard.copyToClipboard()}>
+                    onClick={() => this.copyJsonSchemaToClipboard.copyToClipboard()}>
 
                     <CopyToClipboardComponent
                         ref={ref => this.copyJsonSchemaToClipboard = ref}
-                        copyData={this.jsonSchema} />
+                        copyData={this.state.jsonSchema} />
 
                     Copy to clipboard <span className="glyphicon glyphicon-copy"></span>
 
                 </button>
 
-                <span hidden={!this.jsonSchemaIsOpen}>
+                <span hidden={!this.state.jsonSchemaIsOpen}>
 
                     <div className="clearfix" />
 
                     <pre
-                        className={`${this.jsonSchemaSelected ? "selected-animated" : ""}`}
-                        ref={ref => { this.jsonSchemaElem = ref; }}>
+                        className={`${this.state.jsonSchemaSelected ? "selected-animated" : ""}`}
+                        ref={ref => { this.state.jsonSchemaElem = ref; }}>
                         {/* Since errors have some HTML formatted elements: */}
-                        <code id="json-schema-json" dangerouslySetInnerHTML={{ __html: this.jsonSchema }} />
+                        <code id="json-schema-json" dangerouslySetInnerHTML={{ __html: this.state.jsonSchema }} />
                     </pre>
 
                 </span>
 
             </span>);
     }
-
     goToSample() {
-        this.sampleIsOpen = true;
+        this.state.sampleIsOpen = true;
         this.forceUpdate();
         setTimeout(() => this.sampleHeader.scrollIntoView(true), 1);
 
-        this.sampleSelected = true;
+        this.state.sampleSelected = true;
 
         setTimeout(() => {
-            this.sampleSelected = false;
-            /** There must be a better way than force updating here 🤔 */
+            this.state.sampleSelected = false;
+            /** for some reason this.setState doesn't work here 🤔 */
             this.forceUpdate();
         }, 100);
     }
 
     goToJsonSchema() {
-        this.jsonSchemaIsOpen = true;
+        this.state.jsonSchemaIsOpen = true;
         this.forceUpdate();
 
         setTimeout(() => this.jsonSchemaHeader.scrollIntoView(true), 1);
 
-        this.jsonSchemaSelected = true;
+        this.state.jsonSchemaSelected = true;
 
         setTimeout(() => {
-            this.jsonSchemaSelected = false;
-            /** There must be a better way than force updating here 🤔 */
+            this.state.jsonSchemaSelected = false;
+            /** for some reason this.setState doesn't work here  🤔*/
             this.forceUpdate();
         }, 100);
     }
 
     toggleJsonSchemaFolded() {
-        this.jsonSchemaIsOpen = !this.jsonSchemaIsOpen;
-        this.forceUpdate();
+        this.setState({
+            ...this.state,
+            jsonSchemaIsOpen: !this.state.jsonSchemaIsOpen
+        });
     }
 
     toggleSampleFolded() {
-        this.sampleIsOpen = !this.sampleIsOpen;
-        this.forceUpdate();
+        this.setState({
+            ...this.state,
+            sampleIsOpen: !this.state.sampleIsOpen
+        });
     }
 
     openModal() {
-        this.setOpenState();
-        this.forceUpdate();
+        this.setInitialOpenState();
 
-        if (!this.colorized) {
-            hljs.highlightBlock(this.jsonSchemaElem);
-            hljs.highlightBlock(this.jsonSampleElem);
+        if (!this.state.colorized) {
+            hljs.highlightBlock(this.state.jsonSchemaElem);
+            hljs.highlightBlock(this.state.jsonSampleElem);
 
-            this.colorized = true;
+            this.setState({
+                ...this.state,
+                colorized: true
+            });
         }
 
         /**
@@ -253,13 +265,13 @@ export default class JsonSchemaModalComponent extends React.Component {
          */
         if ($)
             // @ts-ignore 
-            $(this.modal).modal();
+            $(this.state.modal).modal();
     }
 
     closeModal() {
         if ($)
             // @ts-ignore
-            $(this.modal).modal("hide");
+            $(this.state.modal).modal("hide");
     }
 
 }
