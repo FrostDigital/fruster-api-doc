@@ -17,8 +17,6 @@ const ViewUtils = require("./utils/ViewUtils");
 const config = require("../config");
 const port = config.port || 3100;
 
-const started = new Date();
-
 (async function () {
 
     await bus.connect({
@@ -214,8 +212,6 @@ function getCUrlFromEndpoint(endpoint, schemas) {
  */
 function sortAfterEndpointName(endpoints) {
     if (endpoints) {
-        const array = [];
-
         Object.keys(endpoints)
             .forEach(serviceName => {
                 endpoints[serviceName] = endpoints[serviceName].sort((a, b) => {

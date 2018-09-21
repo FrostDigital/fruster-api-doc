@@ -8,56 +8,76 @@ import CopyAsCurlComponent from "./copy-as-curl/CopyAsCurlComponent";
 
 export default class EndpointDetailsComponent extends React.Component {
 
-    constructor(props) {
-        super(props);
+    state = {
+        parsedSubject: this.getParsedSubject(),
+        requestSchema: this.props.schemas.find(schema => schema.id === this.props.endpoint.requestSchema),
+        responseSchema: this.props.schemas.find(schema => schema.id === this.props.endpoint.responseSchema),
+        urlSubjectLink: this.getSubjectLink(),
+        urlSubject: this.getSubject(),
+        lastLocationHash: "",
+        isOpen: false,
+        selected: false
+    };
 
-        this.parsedSubject = ViewUtils.parseSubjectToAPIUrl(this.props.endpoint.subject);
+    getParsedSubject() {
+        if (this.parsedSubject)
+            return this.parsedSubject;
 
-        if (this.props.type === "http") {
-            this.urlSubjectLink = `${this.parsedSubject.method}-to-${this.parsedSubject.url}`;
-            this.urlSubject = `<span class="${this.parsedSubject.method}">${this.parsedSubject.method}</span> to ${this.parsedSubject.url}`;
-        } else {
-            this.urlSubjectLink = this.props.endpoint.subject;
-            this.urlSubject = ViewUtils.getColorCodedTitle(this.props.endpoint.subject);
-        }
+        const parsedSubject = ViewUtils.parseSubjectToAPIUrl(this.props.endpoint.subject);
+        this.parsedSubject = parsedSubject;
 
-        this.requestSchema = this.props.schemas.find(schema => schema.id === this.props.endpoint.requestSchema);
-        this.responseSchema = this.props.schemas.find(schema => schema.id === this.props.endpoint.responseSchema);
+        return parsedSubject;
+    }
 
-        this.isOpen = false;
+    getSubjectLink() {
+        const parsedSubject = this.getParsedSubject();
 
-        this.lastLocationHash = "";
-        this.selected = false;
+        if (this.props.type === "http")
+            return `${parsedSubject.method}-to-${parsedSubject.url}`;
+        else
+            return this.props.endpoint.subject;
+    }
+
+    getSubject() {
+        const parsedSubject = this.getParsedSubject();
+
+        if (this.props.type === "http")
+            return `<span class="${parsedSubject.method}">${parsedSubject.method}</span> to ${parsedSubject.url}`;
+        else
+            return ViewUtils.getColorCodedTitle(this.props.endpoint.subject);
     }
 
     componentDidMount() {
-        addEventListener("hashchange", (e) => {
-            reactToHashChange();
-        }, false);
+        addEventListener("hashchange", () => this.reactToHashChange(), false);
+        setTimeout(() => this.reactToHashChange());
+    }
 
-        const reactToHashChange = () => {
-            if (decodeURI(window.location.hash) === `#${this.urlSubjectLink}`
-                && decodeURI(window.location.hash) !== this.lastLocationHash) {
-                this.selected = true;
+    reactToHashChange() {
+        if (decodeURI(window.location.hash) === `#${this.state.urlSubjectLink}`)
+            this.reactToClickHash();
 
-                if (!this.isOpen) {
-                    this.isOpen = true;
-                    this.forceUpdate();
-                }
+        this.setState({
+            ...this.state,
+            lastLocationHash: decodeURI(window.location.hash)
+        });
+    }
 
-                setTimeout(() => {
-                    this.selected = false;
-                    this.forceUpdate();
-                }, 100);
+    reactToClickHash() {
+        this.setState({
+            ...this.state,
+            selected: true,
+            isOpen: true
+        });
 
-                if (this.markup)
-                    this.markup.scrollIntoView(true);
-            }
+        setTimeout(() => {
+            this.setState({
+                ...this.state,
+                selected: false
+            });
+        }, 100);
 
-            this.lastLocationHash = decodeURI(window.location.hash);
-        }
-
-        reactToHashChange();
+        if (this.markup)
+            this.markup.scrollIntoView(true);
     }
 
     render() {
@@ -67,26 +87,26 @@ export default class EndpointDetailsComponent extends React.Component {
                     <span>
                         <div
                             ref={ref => this.markup = ref}
-                            id={this.urlSubjectLink}
+                            id={this.state.urlSubjectLink}
                             className={`
                                 ${this.props.endpoint.deprecated ? "deprecated-container" : ""} container endpoint-container
-                                ${this.selected ? "selected-animated" : ""}
+                                ${this.state.selected ? "selected-animated" : ""}
                             `}>
                             <span>
                                 <span>
                                     <span
-                                        className={`endpoint-fold-btn ${this.isOpen ? "open" : ""}`}
+                                        className={`endpoint-fold-btn ${this.state.isOpen ? "open" : ""}`}
                                         onClick={() => this.toggleFolded()}>
-                                        {this.isOpen ?
+                                        {this.state.isOpen ?
                                             <i className="toggle-fold-btn glyphicon glyphicon-menu-down"></i>
                                             : <i className="toggle-fold-btn glyphicon glyphicon-menu-right"></i>}
                                     </span>
 
-                                    <a href={"#" + this.urlSubjectLink}>
+                                    <a href={"#" + this.state.urlSubjectLink} onClick={() => this.reactToClickHash()}>
                                         <h3
                                             style={{ display: "inline-block" }}
                                             className={this.props.endpoint.deprecated ? "deprecated" : ""}>
-                                            <span dangerouslySetInnerHTML={{ __html: this.urlSubject, }}></span>
+                                            <span dangerouslySetInnerHTML={{ __html: this.state.urlSubject, }}></span>
                                         </h3>
                                     </a>
                                 </span>
@@ -101,29 +121,31 @@ export default class EndpointDetailsComponent extends React.Component {
                             </span>
 
                             {
-                                this.isOpen ? <span>
+                                this.state.isOpen ?
 
-                                    {this.getEndpointDetailsTable(context)}
+                                    <span>
 
-                                    {this.getDocumentationTable(context)}
+                                        {this.getEndpointDetailsTable(context)}
 
-                                </span> : ""
+                                        {this.getDocumentationTable(context)}
+
+                                    </span> : ""
                             }
 
                         </div>
 
                         {
-                            this.isOpen ? <span>
+                            this.state.isOpen ? <span>
 
                                 <JsonSchemaModalComponent
                                     ref={ref => { this.requestBodyModal = ref; }}
                                     subject={this.props.endpoint.subject}
-                                    schema={this.requestSchema} />
+                                    schema={this.state.requestSchema} />
 
                                 <JsonSchemaModalComponent
                                     ref={ref => { this.responseBodyModal = ref; }}
                                     subject={this.props.endpoint.subject}
-                                    schema={this.responseSchema} />
+                                    schema={this.state.responseSchema} />
 
                             </span> : ""
                         }
@@ -136,8 +158,10 @@ export default class EndpointDetailsComponent extends React.Component {
     }
 
     toggleFolded() {
-        this.isOpen = !this.isOpen;
-        this.forceUpdate();
+        this.setState({
+            ...this.state,
+            isOpen: !this.state.isOpen
+        });
     }
 
     /**
@@ -192,7 +216,7 @@ export default class EndpointDetailsComponent extends React.Component {
                         {/* Url */}
                         <td>{
                             this.props.type === "http"
-                                ? context.config.apiRoot + this.parsedSubject.url
+                                ? context.config.apiRoot + this.state.parsedSubject.url
                                 : <span className="not-available">n/a</span>
                         }</td>
 
