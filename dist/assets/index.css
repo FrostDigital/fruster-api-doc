@@ -21,7 +21,11 @@
     max-width: 100% !important;
 }
 
-.collapsing, .modal-open, .modal, .in, .out {
+.collapsing, 
+.modal-open, 
+.modal,
+.in, 
+.out {
     -webkit-transition: none !important;
     transition: none !important;
     transition-duration: 0 !important;
@@ -62,15 +66,21 @@ h2 {
     font-weight: bold;
 }
 
-a h1, a h2, a h3, a h4, a h5 {
+a h1, 
+a h2, 
+a h3, 
+a h4, 
+a h5 {
     color: #0559a2;
 }
 
-.request-schema, .response-schema {
+.request-schema, 
+.response-schema {
     cursor: pointer;
 }
 
-.request-schema.deactivated, .response-schema.deactivated {
+.request-schema.deactivated,
+.response-schema.deactivated {
     cursor: default;
 }
 
@@ -104,7 +114,15 @@ a h1, a h2, a h3, a h4, a h5 {
     color: #333;
 }
 
-.deprecated-note .PUB, .deprecated-note .GET, .deprecated-note .POST, .deprecated-note .DELETE, .deprecated-note .PUT, h3 .GET, h3 .POST, h3 .DELETE, h3 .PUT {
+.deprecated-note .PUB, 
+.deprecated-note .GET, 
+.deprecated-note .POST, 
+.deprecated-note .DELETE, 
+.deprecated-note .PUT, 
+h3 .GET, 
+h3 .POST, 
+h3 .DELETE, 
+h3 .PUT {
     font-weight: bold;
 }
 
@@ -139,7 +157,8 @@ textarea {
     font-weight: bold;
 }
 
-.description-key, .permission {
+.description-key, 
+.permission {
     font-weight: bold;
     color: #727272;
 }
@@ -160,7 +179,10 @@ textarea {
     content: "";
 }
 
-.permission:after, .permission:last-child:after, .permission:nth-last-child(2):after, .permission-group:last-child .permission:last-child:after {
+.permission:after, 
+.permission:last-child:after, 
+.permission:nth-last-child(2):after, 
+.permission-group:last-child .permission:last-child:after {
     font-weight: normal;
     color: #000;
 }
@@ -170,7 +192,10 @@ textarea {
     margin-left: 2px;
 }
 
-a.deactivated, a:visited.deactivated, a:active.deactivated, a:hover.deactivated {
+a.deactivated, 
+a:visited.deactivated, 
+a:active.deactivated, 
+a:hover.deactivated {
     color: inherit !important;
     text-decoration: inherit !important;
     cursor: default !important;
@@ -180,7 +205,10 @@ a.deactivated, a:visited.deactivated, a:active.deactivated, a:hover.deactivated 
     margin-left: 12px;
 }
 
-h3.deprecated, .deprecated a, .deprecated a:active, .deprecated a:hover {
+h3.deprecated, 
+.deprecated a, 
+.deprecated a:active, 
+.deprecated a:hover {
     text-decoration: line-through;
 }
 
@@ -208,7 +236,14 @@ li {
     margin-left: 14px;
 }
 
-a h4:hover::before, a h3:hover::before, a h2:hover::before, a h1:hover::before, a h4:active::before, a h3:active::before, a h2:active::before, a h1:active::before {
+a h4:hover::before, 
+a h3:hover::before, 
+a h2:hover::before, 
+a h1:hover::before, 
+a h4:active::before, 
+a h3:active::before, 
+a h2:active::before, 
+a h1:active::before {
     font-family: "Glyphicons Halflings";
     content: "\e144";
     line-height: 3px;
@@ -220,7 +255,10 @@ a h4:hover::before, a h3:hover::before, a h2:hover::before, a h1:hover::before, 
     color: #4d5155;
 }
 
-.table-of-contents a h4:hover::before, .table-of-contents a h3:hover::before, .table-of-contents a h2:hover::before, .table-of-contents a h1:hover::before {
+.table-of-contents a h4:hover::before, 
+.table-of-contents a h3:hover::before, 
+.table-of-contents a h2:hover::before, 
+.table-of-contents a h1:hover::before {
     content: "" !important;
     margin: 0;
 }
@@ -237,7 +275,8 @@ a h4:hover::before, a h3:hover::before, a h2:hover::before, a h1:hover::before, 
     transition: background-color 2s ease !important;
 }
 
-.endpoint-container.selected-animated, pre.selected-animated {
+.endpoint-container.selected-animated, 
+pre.selected-animated {
     transition: background-color 0s ease !important;
     background-color: #fff7e1 !important;
 }
@@ -273,7 +312,11 @@ pre {
     color: #878787;
 }
 
-.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+.table>tbody>tr>td, .table>tbody>tr>th, 
+.table>tfoot>tr>td, 
+.table>tfoot>tr>th, 
+.table>thead>tr>td, 
+.table>thead>tr>th {
     line-height: 25px !important;
     width: 30%;
     word-break: break-all;
