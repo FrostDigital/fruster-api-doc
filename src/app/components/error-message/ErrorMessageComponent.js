@@ -1,6 +1,6 @@
 import React from "react";
-import JsonSchemaModalComponent from "../modal/JsonSchemaModalComponent";
 import ViewUtils from "../../../utils/ViewUtils";
+import JsonSchemaModalComponent from "../modal/JsonSchemaModalComponent";
 
 export default class ErrorMessageComponent extends React.Component {
 
@@ -48,7 +48,8 @@ export default class ErrorMessageComponent extends React.Component {
                     if (!this.preparedSchemasWithErrors[`${serviceName}-${schemaName}`])
                         this.preparedSchemasWithErrors[`${serviceName}-${schemaName}`] = {};
 
-                    this.preparedSchemasWithErrors[`${serviceName}-${schemaName}`].schema = this.props.schemasPerService[serviceName].find(schema => schema.id === schemaName);
+                    if (this.props.schemasPerService[serviceName])
+                        this.preparedSchemasWithErrors[`${serviceName}-${schemaName}`].schema = this.props.schemasPerService[serviceName].find(schema => schema.id === schemaName);
                 });
             });
     }
@@ -66,10 +67,12 @@ export default class ErrorMessageComponent extends React.Component {
 {
                         ViewUtils.sortedForEach(this.props.schemasWithErrors, (schemas, serviceName) => {
 
-                            return ViewUtils.sortedForEach(schemas, (schemaWithError) => {
+                            return ViewUtils.sortedForEach(schemas, (schemaWithError, index, i) => {
 
                                 return (
-                                    <li className={"request-schema" + " " + serviceName + " " + schemaWithError}>
+                                    <li
+                                        key={i}
+                                        className={"request-schema" + " " + serviceName + " " + schemaWithError}>
                                         <a href="" onClick={(e) => { this.openSchemaWithError(e, serviceName, schemaWithError) }}>
                                             {schemaWithError} <span className="glyphicon glyphicon-new-window"></span>
                                         </a> from {serviceName}

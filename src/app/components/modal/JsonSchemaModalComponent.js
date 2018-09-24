@@ -15,9 +15,11 @@ export default class JsonSchemaModalComponent extends React.Component {
             this.state.schema = this.props.schema;
 
             const schemaToJson = Object.assign({}, this.state.schema);
+            this.state.jsonSample = schemaToJson ? JSON.stringify(schemaToJson.sample, null, 2) : undefined;
+            delete schemaToJson.sample;
 
             this.state.jsonSchema = JSON.stringify(ViewUtils.sortObject(schemaToJson), null, 2);
-            this.state.jsonSample = this.state.schema ? JSON.stringify(this.state.schema.sample, null, 2) : undefined;
+
         } else
             this.state.schema = {};
     }
@@ -40,6 +42,7 @@ export default class JsonSchemaModalComponent extends React.Component {
         });
     }
 
+
     render() {
         if (this.state.schema)
             return (
@@ -53,7 +56,7 @@ export default class JsonSchemaModalComponent extends React.Component {
 
                     <div className="modal-dialog modal-lg">
 
-                        <div className="modal-content">
+                        <div className={`modal-content ${this.props.isError ? "alert alert-danger" : ""}`}>
                             <span
                                 className="glyphicon glyphicon-remove close"
                                 id="close-btn"
@@ -124,7 +127,9 @@ export default class JsonSchemaModalComponent extends React.Component {
                             </span>
 
                         </div>
+
                     </div>
+
                 </div>
             );
 
@@ -165,7 +170,8 @@ export default class JsonSchemaModalComponent extends React.Component {
 
                 </span>
 
-            </span>);
+            </span>
+        );
     }
 
     renderJsonSchema() {
@@ -202,8 +208,10 @@ export default class JsonSchemaModalComponent extends React.Component {
 
                 </span>
 
-            </span>);
+            </span>
+        );
     }
+
     goToSample() {
         this.state.sampleIsOpen = true;
         this.forceUpdate();
