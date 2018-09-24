@@ -19,7 +19,6 @@ export default class JsonSchemaModalComponent extends React.Component {
             delete schemaToJson.sample;
 
             this.state.jsonSchema = JSON.stringify(ViewUtils.sortObject(schemaToJson), null, 2);
-
         } else
             this.state.schema = {};
     }
@@ -41,7 +40,6 @@ export default class JsonSchemaModalComponent extends React.Component {
             sampleIsOpen: true
         });
     }
-
 
     render() {
         if (this.state.schema)

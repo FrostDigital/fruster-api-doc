@@ -1,5 +1,6 @@
 require("babel-polyfill");
 
+const constants = require("../constants");
 const uuid = require("uuid");
 const path = require("path");
 const log = require("fruster-log");
@@ -26,7 +27,7 @@ class Utils {
     * 
     * @return {Promise<Object>}
     */
-    static async  derefJsonSchema(schemas, serviceName) {
+    static async derefJsonSchema(schemas, serviceName) {
         const jsonSchemaCruncher = new JsonSchemaCruncher(filePath, serviceName);
         await jsonSchemaCruncher.buildContext(schemas);
 
@@ -34,7 +35,7 @@ class Utils {
 
         schemas.forEach(schema => schemaPromises.push(
             jsonSchemaCruncher.getSchema(schema.id)
-                .then(Utils._deCirlularizeObject)
+                .then(Utils._decirlularizeObject)
                 .then(prepareSchema)
                 .catch(err => {
                     let errorString = err;
@@ -57,6 +58,9 @@ class Utils {
                     }
                 })));
 
+        /**
+         * @param {Object} schema 
+         */
         function prepareSchema(schema) {
             try {
                 Utils._setFakerSpecificAttrs(schema);
@@ -90,23 +94,57 @@ class Utils {
      * 
      * @param {Object} schema 
      */
-    static _deCirlularizeObject(schema) {
-        const cache = [];
+    static _decirlularizeObject(schema) {
+        try {
+            /**
+             * If non circular, we can just return right away. 
+             * If json parse succeeds, we know it is a non-circular object
+            */
+            JSON.parse(JSON.stringify(schema));
+            return schema;
+        } catch (err) { }
 
-        const output = JSON.stringify(schema, function (key, value) {
-            if (typeof value === 'object' && value !== null) {
-                if (cache.indexOf(value) !== -1) {
-                    try {
-                        return JSON.parse(JSON.stringify(value));
-                    } catch (error) { return; }
-                }
-                cache.push(value);
-            }
+        const output = {};
+        output._circular = true;
 
-            return value;
+        Object.keys(schema).map(key => {
+            const resp = decircularize(schema[key]);
+            output[key] = resp;
         });
 
-        return JSON.parse(output);
+        return output;
+
+        /**
+         * @param {Object} value 
+         * @param {Number} depth 
+         */
+        function decircularize(value, depth = 0) {
+            if (depth > constants.MAX_DEPTH_FOR_CIRCULAR_JSON_SCHEMAS)
+                throw "MAX_DEPTH"; /** just a dummy exception to go to the next try/catch */
+
+            if (value &&
+                typeof value === "object" &&
+                value !== null) {
+                try {
+                    return JSON.parse(JSON.stringify(value));
+                } catch (err) {
+                    try {
+                        const d = depth + 1;
+                        const result = {};
+
+                        Object.keys(value).map(key => {
+                            const resp = decircularize(value[key], d);
+                            result[key] = resp;
+                        });
+
+                        return result;
+                    } catch (err) {
+                        return [];
+                    }
+                }
+            } else
+                return value;
+        }
     }
 
     /**
