@@ -103,23 +103,28 @@ a h5 {
     font-weight: bold;
 }
 
-.GET {
+.GET,
+.GET * {
     color: #786bc2;
 }
 
-.POST {
+.POST,
+.POST * {
     color: #6d9f33;
 }
 
-.DELETE {
+.DELETE,
+.DELETE * {
     color: #f34e4b;
 }
 
-.PUT {
+.PUT,
+.PUT * {
     color: #e9982f;
 }
 
-.PUB {
+.PUB,
+.PUB * {
     color: #333;
 }
 
