@@ -107,10 +107,8 @@ function startServer() {
             });
 
             const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints, config };
-
             const appString = renderToString(<App {...state} />);
-
-            let renderedHtml = template({
+            const renderedHtml = template({
                 body: appString,
                 title: `${config.projectName} API documentation`,
                 initialState: JSON.stringify(state)
@@ -183,7 +181,7 @@ function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceI
  * @param {Array<Object>} schemas 
  */
 function getCUrlFromEndpoint(endpoint, schemas) {
-    const requestSchema = schemas.find(s => s.id === endpoint.requestSchema);
+    const requestSchema = schemas.find(s => s && s.id === endpoint.requestSchema);
     const parsedSubject = ViewUtils.parseSubjectToAPIUrl(endpoint.subject);
 
     let body;

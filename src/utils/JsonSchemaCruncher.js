@@ -1,5 +1,4 @@
 const $RefParser = require("json-schema-ref-parser");
-const os = require("os");
 const fs = require("fs-extra");
 const path = require("path");
 const log = require("fruster-log");
@@ -16,7 +15,9 @@ class JsonSchemaCruncher {
 		const schemaPath = path.join(this.schemasDir, schemaId);
 
 		// @ts-ignore
-		return await $RefParser.dereference(schemaPath);
+		return await $RefParser.dereference(schemaPath, {
+			dereference: { circular: true }
+		});
 	}
 
 	async buildContext(bundle) {

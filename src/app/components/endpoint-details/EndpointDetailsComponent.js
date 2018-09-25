@@ -140,12 +140,16 @@ export default class EndpointDetailsComponent extends React.Component {
                                 <JsonSchemaModalComponent
                                     ref={ref => { this.requestBodyModal = ref; }}
                                     subject={this.props.endpoint.subject}
-                                    schema={this.state.requestSchema} />
+                                    schema={this.state.requestSchema}
+                                    isError={this.state.requestSchema ? this.state.requestSchema._error : false}
+                                />
 
                                 <JsonSchemaModalComponent
                                     ref={ref => { this.responseBodyModal = ref; }}
                                     subject={this.props.endpoint.subject}
-                                    schema={this.state.responseSchema} />
+                                    schema={this.state.responseSchema}
+                                    isError={this.state.responseSchema ? this.state.responseSchema._error : false}
+                                />
 
                             </span> : ""
                         }
@@ -189,7 +193,12 @@ export default class EndpointDetailsComponent extends React.Component {
                         {/* Request body */}
                         <td
                             onClick={e => this.openRequestBodyModal(e)}
-                            className={`request-schema ${this.props.endpoint.serviceName} ${this.props.endpoint.requestSchema} ${(this.props.endpoint.requestSchema ? " " : "deactivated")}`}>
+                            className={`
+                            request-schema
+                            ${this.props.endpoint.serviceName} 
+                            ${this.props.endpoint.requestSchema} 
+                            ${(this.props.endpoint.requestSchema ? " " : "deactivated")}
+                            ${this.state.requestSchema && this.state.requestSchema._error ? "has-error" : ""}`}>
                             <a href=""
                                 className={this.props.endpoint.requestSchema ? "" : "deactivated"}>
                                 {this.props.endpoint.requestSchema || <span className="not-available"> n/a</span>}
@@ -221,8 +230,14 @@ export default class EndpointDetailsComponent extends React.Component {
                         }</td>
 
                         {/* Response body */}
-                        <td onClick={e => this.openResponseBodyModal(e)}
-                            className={`response-schema ${this.props.endpoint.serviceName} ${this.props.endpoint.responseSchema} ${(this.props.endpoint.responseSchema ? " " : "deactivated")}`}>
+                        <td
+                            onClick={e => this.openResponseBodyModal(e)}
+                            className={`
+                            response-schema
+                            ${this.props.endpoint.serviceName} 
+                            ${this.props.endpoint.responseSchema} 
+                            ${(this.props.endpoint.responseSchema ? " " : "deactivated")}
+                            ${this.state.responseSchema && this.state.responseSchema._error ? "has-error" : ""}`}>
                             <a href=""
                                 className={this.props.endpoint.responseSchema ? "" : "deactivated"}>
                                 {this.props.endpoint.responseSchema || <span className="not-available">n/a</span>}
@@ -231,7 +246,8 @@ export default class EndpointDetailsComponent extends React.Component {
                         </td>
 
                         {/* Must be logged in */}
-                        <td className={(this.props.endpoint.permissions && this.props.endpoint.permissions.length > 0) ? true.toString() : this.props.endpoint.mustBeLoggedIn.toString()}>
+                        <td
+                            className={(this.props.endpoint.permissions && this.props.endpoint.permissions.length > 0) ? true.toString() : this.props.endpoint.mustBeLoggedIn.toString()}>
                             {(this.props.endpoint.permissions && this.props.endpoint.permissions.length > 0) ? true.toString() : this.props.endpoint.mustBeLoggedIn.toString()}
                         </td>
                     </tr>

@@ -3,7 +3,6 @@ import React from "react";
 export default class CopyToClipboardComponent extends React.Component {
 
     render() {
-
         return (
             <input
                 type="text"
@@ -12,7 +11,6 @@ export default class CopyToClipboardComponent extends React.Component {
                 onChange={() => { }}
                 value={this.props.copyData} hidden />
         );
-
     }
 
     copyToClipboard() {
