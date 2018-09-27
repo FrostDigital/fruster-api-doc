@@ -8,7 +8,8 @@
         "watch:server": "cd dist && nodemon server.js",
         "run": "cd dist && node server",
         "docker": "node_modules/.bin/webpack && cd dist && node server",
-        "build": "node_modules/.bin/webpack"
+        "build": "node_modules/.bin/webpack",
+        "test": "node ./spec/support/jasmine-runner.js"
     },
     "license": "MIT",
     "dependencies": {
@@ -45,7 +46,10 @@
         "rollup-plugin-replace": "^2.0.0",
         "rollup-plugin-uglify": "^3.0.0",
         "webpack": "^1.13.1",
-        "webpack-node-externals": "^1.2.0"
+        "webpack-node-externals": "^1.2.0",
+        "@types/jasmine": "^2.8.6",
+        "jasmine": "^2.8.0",
+        "jasmine-spec-reporter": "^4.2.1"
     },
     "engines": {
         "node": "7.9.0"

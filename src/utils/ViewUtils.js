@@ -78,9 +78,9 @@ class ViewUtils {
      * @param {String} string 
      */
     static getColorCodedTitle(string) {
-        const colorCodedWords = Object.keys(config.colorCodedWords);
+        const colorCodedWords = Object.keys(config.colorCodedWords).reverse();
 
-        for (let i = colorCodedWords.length; i > 0; i--) {
+        for (let i = 0; i < colorCodedWords.length; i++) {
             string = ViewUtils.replaceAll(string, colorCodedWords[i],
                 `<span class="${config.colorCodedWords[colorCodedWords[i]]}">${colorCodedWords[i]}</span>`);
         }
@@ -148,9 +148,9 @@ class ViewUtils {
 
         return Object.keys(toLoop)
             .sort()
-            .map(index => {
+            .map(key => {
                 i++;
-                return handler(toLoop[index], index, i);
+                return handler(toLoop[key], key, i);
             });
     }
 
