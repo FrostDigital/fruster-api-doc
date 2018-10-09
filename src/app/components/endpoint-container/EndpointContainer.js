@@ -11,6 +11,14 @@ export default class EndpointContainer extends React.Component {
 
                 <a href={"#" + this.props.serviceName + "-" + (this.props.type || "service")}><h2>{this.props.serviceName}</h2></a>
 
+                {
+                    this.props.type === "service" ?
+                        <a href={"/service-client/" + this.props.serviceName}>
+                            <button className="action service-btn">Download service client <span className="glyphicon glyphicon-download"></span></button>
+                        </a>
+                        : ""
+                }
+
                 {this.getEndpoints()}
 
             </div>

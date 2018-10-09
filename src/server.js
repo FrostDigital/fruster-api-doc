@@ -17,6 +17,11 @@ const ViewUtils = require("./utils/ViewUtils");
 const config = require("../config");
 const port = config.port || 3100;
 
+const ServiceClientGenerator = require("./utils/ServiceClientGenerator");
+const fs = require("fs");
+const stream = require("stream");
+const _ = require("lodash");
+
 (async function () {
 
     await bus.connect({
@@ -42,6 +47,31 @@ function startServer() {
 
         res.status(200);
         res.end();
+    });
+
+    app.get("/service-client/:serviceName", async (req, res) => {
+        const options = {
+            serviceName: req.params.serviceName,
+            type: "service",
+            endpoints: endpointsByType.service[req.params.serviceName]
+        };
+
+        const className = ViewUtils.replaceAll(_.startCase(req.params.serviceName), " ", "") + "Client";
+
+        const serviceClientGenerator = new ServiceClientGenerator(options);
+        const clientCode = await serviceClientGenerator.generate();
+
+        var s = new stream.PassThrough()
+
+        s.write(clientCode)
+        s.end()
+
+        res.setHeader("Content-type", "application/javascript");
+        res.setHeader("Content-disposition", `attachment; filename=${className}.js`);
+        res.end(clientCode);
+        // s.pipe(res);
+
+        // res.end(clientCode);
     });
 
     app.get("/", async (req, res) => {

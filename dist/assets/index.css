@@ -388,3 +388,8 @@ button.action:hover {
 .clickable {
     cursor: pointer;
 }
+
+.service-btn {
+    margin-top: -10px;
+    float: right;
+}
