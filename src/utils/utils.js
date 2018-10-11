@@ -13,7 +13,8 @@ const jsf = require("json-schema-faker");
 jsf.option({
     requiredOnly: false,
     alwaysFakeOptionals: true,
-    failOnInvalidTypes: false
+    failOnInvalidTypes: false,
+    useDefaultValue: true
 });
 
 jsf.format("uuid", () => uuid.v4());
