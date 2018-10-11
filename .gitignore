@@ -70,3 +70,6 @@ typings/
 dist/json-schemas
 dist/assets/client.js
 dist/server.js
+
+#IntelliJ
+.idea
