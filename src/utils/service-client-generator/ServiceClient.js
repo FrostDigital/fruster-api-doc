@@ -35,14 +35,18 @@ class ServiceClient {
             const endpointParameters = this._getEndpointParameters(requestSchema);
             const returnType = this._getEndpointTypeDef(responseSchema);
             const constantNameCombined = `${this.className}.endpoints.${constant.constantName}`;
+            const description = endpoint.docs ? endpoint.docs.description : "";
 
             if (this.endpointConstants.find(c => c.constantName === constant.constantName))
                 constant.constantName = constant.constantName + "_2";
 
             this.endpointConstants.push(constant);
 
-            this.endpoints.push(new Endpoint(constantNameCombined, constant.functionVariableName, endpointParameters, endpoint.docs.description, returnType, endpoint.deprecated));
+            this.endpoints.push(new Endpoint(constantNameCombined, constant.functionVariableName, endpointParameters, description, returnType, endpoint.deprecated));
         });
+
+        //TODO: only keep the data for service endpoints! Currently typedefs for http endpoints are included.
+        // TODO: Convert Integer and Float types to Number
     }
 
     toJavascriptClass() {
@@ -108,12 +112,12 @@ module.exports = ${this.className};`;
         if (!schema.type || schema.type === "")
             type = "Object";
         else if (schema.type === "array") {
-            if (schema.items.type)
+            if (schema.items && schema.items.type)
                 type = schema.items.type;
             else
                 type = "Object";
 
-            description = schema.items.description;
+            description = schema.items ? schema.items.description : "";
         } else {
             type = schema.type;
             description = schema.description;
@@ -284,7 +288,7 @@ class TypeDefProperty {
         this.name = parameter.name;
         this.type = parameter.type;
         this.description = parameter.description;
-        this.required = !!parameter.required || parameter.type.toLowerCase && parameter.type.toLowerCase().includes("null");
+        this.required = !!parameter.required || parameter.type && parameter.type.toLowerCase && parameter.type.toLowerCase().includes("null");
         this._type = "_TypeDefProperty";
     }
 
@@ -295,7 +299,9 @@ class TypeDefProperty {
             typeString = this.type
                 .filter(type => type !== "null")
                 .map(type => Utils.toTitleCase(type)).join("|");
-        } else
+        } else if (!this.type || this.type === "")
+            typeString = "Object";
+        else
             typeString = Utils.toTitleCase(this.type);
 
         return `     * @property {${typeString}${!this.required ? "=" : ""}} ${this.name} ${this.description}`;
@@ -402,7 +408,7 @@ class Parameter {
         this.name = name;
         this.type = type;
         this.description = description;
-        this.required = !!required || type.toLowerCase && type.toLowerCase().includes("null");
+        this.required = !!required || type && type.toLowerCase && type.toLowerCase().includes("null");
         this._type = "_Paramter";
     }
 
@@ -451,15 +457,15 @@ class Utils {
 }
 
 
-// TODO: Temp tester
-const fs = require("fs");
-const options = JSON.parse(fs.readFileSync("test-data.json").toString());
-const serviceClient = new ServiceClient(options);
+// // TODO: Temp tester
+// const fs = require("fs");
+// const options = JSON.parse(fs.readFileSync("test-data.json").toString());
+// const serviceClient = new ServiceClient(options);
 
-console.log("==================");
-console.log("");
-// console.log(serviceClient.toJavascriptClass());
-console.log("");
+// console.log("==================");
+// console.log("");
+// // console.log(serviceClient.toJavascriptClass());
+// console.log("");
 
-fs.writeFileSync("../serviceClient.json", JSON.stringify(serviceClient));
-fs.writeFileSync("../serviceClient-to-string.js", serviceClient.toJavascriptClass());
+// fs.writeFileSync("../serviceClient.json", JSON.stringify(serviceClient));
+// fs.writeFileSync("../serviceClient-to-string.js", serviceClient.toJavascriptClass());

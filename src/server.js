@@ -59,12 +59,12 @@ function startServer() {
             endpoints: endpointsByType.service[req.params.serviceName]
         };
 
-        fs.writeFileSync("./metadataResponses.json", JSON.stringify({
-            serviceName: req.params.serviceName,
-            type: "service",
-            endpoints: endpointsByType.service[req.params.serviceName]
-        }
-        ));
+        // fs.writeFileSync("./metadataResponses.json", JSON.stringify({
+        //     serviceName: req.params.serviceName,
+        //     type: "service",
+        //     endpoints: endpointsByType.service[req.params.serviceName]
+        // }
+        // ));
 
         const ServiceClient = require("./utils/service-client-generator/ServiceClient");
         const serviceClient = new ServiceClient(options);
@@ -73,7 +73,7 @@ function startServer() {
         console.log(require("util").inspect(serviceClient, null, null, true));
         console.log("\n");
 
-        // const className = ViewUtils.replaceAll(_.startCase(req.params.serviceName), " ", "") + "Client";
+        const className = ViewUtils.replaceAll(_.startCase(req.params.serviceName), " ", "") + "Client";
 
         // const serviceClientGenerator = new ServiceClientGenerator(options);
         // const clientCode = await serviceClientGenerator.generate();
@@ -83,9 +83,9 @@ function startServer() {
         // s.write(clientCode)
         // s.end()
 
-        // res.setHeader("Content-type", "application/javascript");
-        // res.setHeader("Content-disposition", `attachment; filename=${className}.js`);
-        // res.end(clientCode);
+        res.setHeader("Content-type", "application/javascript");
+        res.setHeader("Content-disposition", `attachment; filename=${className}.js`);
+        res.end(serviceClient.toJavascriptClass());
 
 
         // res.end(clientCode);
