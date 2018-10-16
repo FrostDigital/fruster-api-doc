@@ -2,7 +2,7 @@ const bus = require("fruster-bus");
 const log = require("fruster-log");
 
 /**
- * Note: this service client was generated automatically by api doc @ 2018-10-16T17:35:59.676Z
+ * Note: this service client was generated automatically by api doc @ 2018-10-16T17:36:58.269Z
  */
 class UserServiceClient{
 

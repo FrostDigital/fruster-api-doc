@@ -29,21 +29,17 @@ class ServiceClient {
         this.className = ViewUtils.replaceAll(Utils.toTitleCase(this.serviceName), " ", "") + "Client";
 
         options.endpoints.forEach(endpoint => {
-            let constant = this._getEndpointConstant(endpoint);
+            const constant = this._getEndpointConstant(endpoint);
+            const requestSchema = endpoint.schemas.find(schema => schema.id === endpoint.requestSchema);
+            const responseSchema = endpoint.schemas.find(schema => schema.id === endpoint.responseSchema);
+            const endpointParameters = this._getEndpointParameters(requestSchema);
+            const returnType = this._getEndpointTypeDef(responseSchema);
+            const constantNameCombined = `${this.className}.endpoints.${constant.constantName}`;
 
             if (this.endpointConstants.find(c => c.constantName === constant.constantName))
                 constant.constantName = constant.constantName + "_2";
 
             this.endpointConstants.push(constant);
-
-
-
-            const requestSchema = endpoint.schemas.find(schema => schema.id === endpoint.requestSchema);
-            const responseSchema = endpoint.schemas.find(schema => schema.id === endpoint.responseSchema);
-            const endpointParameters = this._getEndpointParameters(requestSchema);
-            const returnType = this._getEndpointTypeDef(responseSchema);
-
-            const constantNameCombined = `${this.className}.endpoints.${constant.constantName}`;
 
             this.endpoints.push(new Endpoint(constantNameCombined, constant.functionVariableName, endpointParameters, endpoint.docs.description, returnType, endpoint.deprecated));
         });
