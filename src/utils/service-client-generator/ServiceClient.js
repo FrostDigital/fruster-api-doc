@@ -33,8 +33,42 @@ class ServiceClient {
             const endpointParameters = this._getEndpointParameters(requestSchema);
             const returnType = this._getEndpointTypeDef(responseSchema);
 
-            this.endpoints.push(new Endpoint(constant.constantName, functionVariableName, endpointParameters, endpoint.docs.description, returnType));
+            const constantNameCombined = `${this.className}.endpoints.${constant.constantName}`;
+
+            this.endpoints.push(new Endpoint(constantNameCombined, functionVariableName, endpointParameters, endpoint.docs.description, returnType));
         });
+    }
+
+    toString() {
+        const typDefs = Object.keys(this.customTypeDefs).map(key => this.customTypeDefs[key].toString());
+        const endpoints = this.endpoints.map(endpoint => endpoint.toString());
+
+        return `const bus = require("fruster-bus");
+
+/**
+ * Note: this service client was generated automatically by api doc @ ${new Date().toJSON()}
+ */
+class ${this.className}{
+
+    constructor(){ throw "service client shouldn't be instanced"; }
+
+    /**
+     * All endpoints
+     */
+    static get endpoints(){
+
+        return {
+
+${this.endpointConstants.map(endpointConstant => `            ${endpointConstant.constantName}: "${endpointConstant.subject}"`).join(",\n")}
+
+        };
+
+    }
+
+${typDefs.join("\n")}
+${endpoints.join("\n")}
+}   
+module.exports = ${this.className};`;
     }
 
     /**
@@ -172,6 +206,17 @@ class TypeDef {
         this._type = "_TypeDef";
     }
 
+    toString() {
+        const typeDefProperties = this.properties.map(typeDefProperty => typeDefProperty.toString());
+
+        return `    /**
+     * @typedef {${_.startCase(this.type)}} ${this.name} ${this.description}
+     *
+${typeDefProperties.length > 0 ? typeDefProperties.join("\n") : ""}
+     */
+`;
+    }
+
 }
 
 class TypeDefProperty {
@@ -189,6 +234,10 @@ class TypeDefProperty {
         this.description = parameter.description;
         this.required = !!parameter.required;
         this._type = "_TypeDefProperty";
+    }
+
+    toString() {
+        return `     * @property {${_.startCase(this.type)}${!this.required ? "=" : ""}} ${this.name} ${this.description}`;
     }
 
 }
@@ -211,6 +260,9 @@ class TypeDefArrayProperty extends TypeDefProperty {
         this._type = "_TypeDefArrayProperty";
     }
 
+    toString() {
+        return `     * @property {Array<${_.startCase(this.type)}${!this.required ? "=" : ""}>} ${this.name} ${this.description}`;
+    }
 }
 
 class Endpoint {
@@ -233,6 +285,28 @@ class Endpoint {
         this._type = "_Endpoint";
     }
 
+    toString() {
+        const functionParams = `${this.params.filter(param => !param.name.includes(".")).map((param, i) => `${i > 0 ? " " : ""}${param.name}`)}`;
+        const returnType = `Promise<${this.returnType ? this.returnType.name ? this.returnType.name : this.returnType : "Void"}>`;
+
+        return `    /**
+     * ${this.description}
+     * 
+${this.params.map(param => param.toString()).join("\n")}
+     *
+     * @return {${returnType}}
+     */
+    static async ${this.endpointName}(${functionParams}){
+        return (await bus.request({
+            subject: ${this.urlConstant},
+            message: {
+                ${functionParams}
+            }
+        })).data;
+    }
+    `;
+    }
+
 }
 
 class Parameter {
@@ -249,6 +323,10 @@ class Parameter {
         this.description = description;
         this.required = !!required;
         this._type = "_Paramter";
+    }
+
+    toString() {
+        return `     * @param {${_.startCase(this.type)}${!this.required ? "=" : ""}} ${this.name} ${this.description}`;
     }
 
 }
@@ -268,6 +346,10 @@ class ArrayParameter extends Parameter {
         this._type = "_ArrayParamter";
     }
 
+    toString() {
+        return `     * @param {Array<${_.startCase(this.type)}${!this.required ? "=" : ""}>} ${this.name} ${this.description}`;
+    }
+
 }
 
 
@@ -276,17 +358,10 @@ const fs = require("fs");
 const options = JSON.parse(fs.readFileSync("test-data.json").toString());
 const serviceClient = new ServiceClient(options);
 
-console.log("");
-console.log("");
-console.log("==================");
-serviceClient.endpoints.forEach(endpoint => {
-    endpoint.params.forEach(param => {
-        console.log("==================");
-        console.log(param.name, param.required);
-    });
-});
 console.log("==================");
 console.log("");
+console.log(serviceClient.toString());
 console.log("");
 
 fs.writeFileSync("../serviceClient.json", JSON.stringify(serviceClient));
+fs.writeFileSync("../serviceClient-to-string.js", serviceClient.toString());

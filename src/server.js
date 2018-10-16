@@ -50,26 +50,43 @@ function startServer() {
     });
 
     app.get("/service-client/:serviceName", async (req, res) => {
+        console.log("\n");
+        console.log(require("util").inspect(Object.keys(endpointsByType.service), null, null, true));
+        console.log("\n");
         const options = {
             serviceName: req.params.serviceName,
             type: "service",
             endpoints: endpointsByType.service[req.params.serviceName]
         };
 
-        const className = ViewUtils.replaceAll(_.startCase(req.params.serviceName), " ", "") + "Client";
+        fs.writeFileSync("./metadataResponses.json", JSON.stringify({
+            serviceName: req.params.serviceName,
+            type: "service",
+            endpoints: endpointsByType.service[req.params.serviceName]
+        }
+        ));
 
-        const serviceClientGenerator = new ServiceClientGenerator(options);
-        const clientCode = await serviceClientGenerator.generate();
+        const ServiceClient = require("./utils/service-client-generator/ServiceClient");
+        const serviceClient = new ServiceClient(options);
 
-        var s = new stream.PassThrough()
+        console.log("\n");
+        console.log(require("util").inspect(serviceClient, null, null, true));
+        console.log("\n");
 
-        s.write(clientCode)
-        s.end()
+        // const className = ViewUtils.replaceAll(_.startCase(req.params.serviceName), " ", "") + "Client";
 
-        res.setHeader("Content-type", "application/javascript");
-        res.setHeader("Content-disposition", `attachment; filename=${className}.js`);
-        res.end(clientCode);
-        // s.pipe(res);
+        // const serviceClientGenerator = new ServiceClientGenerator(options);
+        // const clientCode = await serviceClientGenerator.generate();
+
+        // var s = new stream.PassThrough()
+
+        // s.write(clientCode)
+        // s.end()
+
+        // res.setHeader("Content-type", "application/javascript");
+        // res.setHeader("Content-disposition", `attachment; filename=${className}.js`);
+        // res.end(clientCode);
+
 
         // res.end(clientCode);
     });
@@ -91,6 +108,7 @@ function startServer() {
                 maxResponses: 10000,
                 message: { reqId: uuid.v4() }
             });
+
 
             let schemasWithErrors;
             const promises = [];
