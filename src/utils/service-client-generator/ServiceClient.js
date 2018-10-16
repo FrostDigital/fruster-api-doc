@@ -4,17 +4,29 @@ const _ = require("lodash");
 class ServiceClient {
 
     /**
+     * @typedef {Object} EndpointConstant 
+     * 
+     * @property {String} constantName
+     * @property {String} subject
+     * @property {String} functionVariableName
+     */
+
+    /**
      * @param {Object} options 
      * @param {String} options.serviceName
      * @param {Array<Object>} options.endpoints
      */
     constructor(options) {
         this.customTypeDefs = {};
+
+        /** @type {Array<Endpoint>} */
         this.endpoints = [];
+
+        /** @type {Array<EndpointConstant>} */
         this.endpointConstants = [];
 
         this.serviceName = options.serviceName;
-        this.className = ViewUtils.replaceAll(_.startCase(this.serviceName), " ", "") + "Client";
+        this.className = ViewUtils.replaceAll(Utils.toTitleCase(this.serviceName), " ", "") + "Client";
 
         options.endpoints.forEach(endpoint => {
             let constant = this._getEndpointConstant(endpoint);
@@ -25,8 +37,6 @@ class ServiceClient {
             this.endpointConstants.push(constant);
 
 
-            let functionVariableName = _.camelCase(endpoint.subject).replace(_.camelCase(this.serviceName), "");
-            functionVariableName = functionVariableName[0].toLowerCase() + functionVariableName.substring(1);
 
             const requestSchema = endpoint.schemas.find(schema => schema.id === endpoint.requestSchema);
             const responseSchema = endpoint.schemas.find(schema => schema.id === endpoint.responseSchema);
@@ -35,15 +45,16 @@ class ServiceClient {
 
             const constantNameCombined = `${this.className}.endpoints.${constant.constantName}`;
 
-            this.endpoints.push(new Endpoint(constantNameCombined, functionVariableName, endpointParameters, endpoint.docs.description, returnType));
+            this.endpoints.push(new Endpoint(constantNameCombined, constant.functionVariableName, endpointParameters, endpoint.docs.description, returnType, endpoint.deprecated));
         });
     }
 
-    toJavascript() {
-        const typDefs = Object.keys(this.customTypeDefs).map(key => this.customTypeDefs[key].toJavascript());
-        const endpoints = this.endpoints.map(endpoint => endpoint.toJavascript());
+    toJavascriptClass() {
+        const typDefs = Object.keys(this.customTypeDefs).map(key => this.customTypeDefs[key].toJavascriptClass());
+        const endpoints = this.endpoints.map(endpoint => endpoint.toJavascriptClass());
 
         return `const bus = require("fruster-bus");
+const log = require("fruster-log");
 
 /**
  * Note: this service client was generated automatically by api doc @ ${new Date().toJSON()}
@@ -67,7 +78,8 @@ ${this.endpointConstants.map(endpointConstant => `            ${endpointConstant
 
 ${typDefs.join("\n")}
 ${endpoints.join("\n")}
-}   
+}
+
 module.exports = ${this.className};`;
     }
 
@@ -94,11 +106,35 @@ module.exports = ${this.className};`;
                 return new TypeDefProperty(param);
         });
 
-        const typeDef = new TypeDef(name, "Object", schema.description, typeDefs);
+        let type = "";
+        let description = "";
 
-        this.customTypeDefs[schema.id] = typeDef;
+        if (!schema.type || schema.type === "")
+            type = "Object";
+        else if (schema.type === "array") {
+            if (schema.items.type)
+                type = schema.items.type;
+            else
+                type = "Object";
 
-        return name;
+            description = schema.items.description;
+        } else {
+            type = schema.type;
+            description = schema.description;
+        }
+
+        const typeDef = new TypeDef(name, type, description, typeDefs);
+
+        let output = "";
+
+        if (typeDefs.length > 0) {
+            this.customTypeDefs[schema.id] = typeDef;
+            output = name;
+        }
+        else
+            output = typeDef.type;
+
+        return output;
     }
 
     /**
@@ -138,9 +174,12 @@ module.exports = ${this.className};`;
                         property.items.description,
                         false));
 
+                const propertySchema = { ...property, id: `${schema.id}${Utils.toTitleCase(propertyKeys[i])}` }
+                const type = this._getEndpointTypeDef(propertySchema);
+
                 parameter = new ArrayParameter(
                     propertyKeys[i],
-                    property.type,
+                    type.name ? type.name : type,
                     property.description,
                     subParams,
                     schema.required ? schema.required.includes(propertyKeys[i]) : true);
@@ -152,16 +191,27 @@ module.exports = ${this.className};`;
                     schema.required ? schema.required.includes(propertyKeys[i]) : false);
             }
 
-            parameters.push(parameter);
-
             if (property.type === "object") {
                 const subParams = this._getEndpointParameters(property);
 
-                subParams.forEach(param => {
-                    param.name = `${propertyKeys[i]}.${param.name}`;
-                    parameters.push(param);
-                });
+                if (!parameter.required && subParams.length > 0) {
+                    const propertySchema = { ...property, id: `${schema.id}${Utils.toTitleCase(parameter.name)}` }
+                    const type = this._getEndpointTypeDef(propertySchema);
+
+                    parameter = new Parameter(
+                        propertyKeys[i],
+                        type,
+                        property.description,
+                        schema.required ? schema.required.includes(propertyKeys[i]) : false);
+                } else {
+                    subParams.forEach(param => {
+                        param.name = `${propertyKeys[i]}.${param.name}`;
+                        parameters.push(param);
+                    });
+                }
             }
+
+            parameters.push(parameter);
         }
 
         return parameters;
@@ -172,6 +222,8 @@ module.exports = ${this.className};`;
      * 
      * @param {Object} endpoint 
      * @param {String} endpoint.subject
+     * 
+     * @return {EndpointConstant}
      */
     _getEndpointConstant(endpoint) {
         const constantsServiceName = ViewUtils.replaceAll(this.serviceName, "-", "_").toUpperCase();
@@ -180,9 +232,13 @@ module.exports = ${this.className};`;
         constantName = ViewUtils.replaceAll(constantName, ".", "_");
         constantName = constantName.replace(`${constantsServiceName}_`, "");
 
+        let functionVariableName = _.camelCase(endpoint.subject).replace(_.camelCase(this.serviceName), "");
+        functionVariableName = functionVariableName[0].toLowerCase() + functionVariableName.substring(1);
+
         return {
             constantName,
-            subject: endpoint.subject
+            subject: endpoint.subject,
+            functionVariableName
         };
     }
 
@@ -206,11 +262,11 @@ class TypeDef {
         this._type = "_TypeDef";
     }
 
-    toJavascript() {
-        const typeDefProperties = this.properties.map(typeDefProperty => typeDefProperty.toJavascript());
+    toJavascriptClass() {
+        const typeDefProperties = this.properties.map(typeDefProperty => typeDefProperty.toJavascriptClass());
 
         return `    /**
-     * @typedef {${_.startCase(this.type)}} ${this.name} ${this.description}
+     * @typedef {${Utils.toTitleCase(this.type)}} ${this.name} ${this.description} 
      *
 ${typeDefProperties.length > 0 ? typeDefProperties.join("\n") : ""}
      */
@@ -232,12 +288,21 @@ class TypeDefProperty {
         this.name = parameter.name;
         this.type = parameter.type;
         this.description = parameter.description;
-        this.required = !!parameter.required;
+        this.required = !!parameter.required || parameter.type.toLowerCase && parameter.type.toLowerCase().includes("null");
         this._type = "_TypeDefProperty";
     }
 
-    toJavascript() {
-        return `     * @property {${_.startCase(this.type)}${!this.required ? "=" : ""}} ${this.name} ${this.description}`;
+    toJavascriptClass() {
+        let typeString = "";
+
+        if (Array.isArray(this.type)) {
+            typeString = this.type
+                .filter(type => type !== "null")
+                .map(type => Utils.toTitleCase(type)).join("|");
+        } else
+            typeString = Utils.toTitleCase(this.type);
+
+        return `     * @property {${typeString}${!this.required ? "=" : ""}} ${this.name} ${this.description}`;
     }
 
 }
@@ -260,8 +325,22 @@ class TypeDefArrayProperty extends TypeDefProperty {
         this._type = "_TypeDefArrayProperty";
     }
 
-    toJavascript() {
-        return `     * @property {Array<${_.startCase(this.type)}${!this.required ? "=" : ""}>} ${this.name} ${this.description}`;
+    toJavascriptClass() {
+        let typeString = "";
+
+        if (Array.isArray(this.type)) {
+            typeString = this.type
+                .filter(type => type !== "null")
+                .map(type => Utils.toTitleCase(type)).join("|");
+        } else
+            typeString = Utils.toTitleCase(this.type);
+
+        let description = this.description;
+
+        if (description === "")
+            description = this.params[0].description;
+
+        return `     * @property {Array<${typeString}${!this.required ? "=" : ""}>} ${this.name} ${description}`;
     }
 }
 
@@ -273,30 +352,36 @@ class Endpoint {
      * @param {Array<Parameter>} params
      * @param {String} description
      * @param {String} returnType
+     * @param {String} deprecatedReason
      */
-    constructor(urlConstant, endpointName, params, description, returnType) {
+    constructor(urlConstant, endpointName, params, description, returnType, deprecatedReason) {
         this.endpointName = endpointName;
         this.urlConstant = urlConstant;
         this.description = description;
         this.returnType = returnType;
         this.params = [
-            new Parameter("reqId", "string", "the request id", false)
+            new Parameter("reqId", "string", "the request id", true)
         ].concat(params);
+        this.deprecatedReason = deprecatedReason;
         this._type = "_Endpoint";
     }
 
-    toJavascript() {
+    toJavascriptClass() {
         const functionParams = `${this.params.filter(param => !param.name.includes(".")).map((param, i) => `${i > 0 ? " " : ""}${param.name}`)}`;
-        const returnType = `Promise<${this.returnType ? this.returnType.name ? this.returnType.name : this.returnType : "Void"}>`;
+        const returnType = `Promise<${Utils.toTitleCase(this.returnType ? this.returnType.name ? this.returnType.name : this.returnType : "Void")}>`;
+        const deprecatedReasonString = this.deprecatedReason ? `     * @deprecated ${this.deprecatedReason}` : "";
 
         return `    /**
+${deprecatedReasonString}
+     *
      * ${this.description}
      * 
-${this.params.map(param => param.toJavascript()).join("\n")}
+${this.params.map(param => param.toJavascriptClass()).join("\n")}
      *
      * @return {${returnType}}
      */
     static async ${this.endpointName}(${functionParams}){
+        ${this.deprecatedReason ? `log.warn("Using deprecated endpoint ${this.endpointName}")` : ""}
         return (await bus.request({
             subject: ${this.urlConstant},
             message: {
@@ -321,12 +406,21 @@ class Parameter {
         this.name = name;
         this.type = type;
         this.description = description;
-        this.required = !!required;
+        this.required = !!required || type.toLowerCase && type.toLowerCase().includes("null");
         this._type = "_Paramter";
     }
 
-    toJavascript() {
-        return `     * @param {${_.startCase(this.type)}${!this.required ? "=" : ""}} ${this.name} ${this.description}`;
+    toJavascriptClass() {
+        let typeString = "";
+
+        if (Array.isArray(this.type)) {
+            typeString = this.type
+                .filter(type => type !== "null")
+                .map(type => Utils.toTitleCase(type)).join("|");
+        } else
+            typeString = Utils.toTitleCase(this.type);
+
+        return `     * @param {${typeString}${!this.required ? "=" : ""}} ${this.name} ${this.description}`;
     }
 
 }
@@ -346,8 +440,16 @@ class ArrayParameter extends Parameter {
         this._type = "_ArrayParamter";
     }
 
-    toJavascript() {
-        return `     * @param {Array<${_.startCase(this.type)}${!this.required ? "=" : ""}>} ${this.name} ${this.description}`;
+    toJavascriptClass() {
+        return `     * @param {Array<${Utils.toTitleCase(this.type)}${!this.required ? "=" : ""}>} ${this.name} ${this.description}`;
+    }
+
+}
+
+class Utils {
+
+    static toTitleCase(string) {
+        return _.startCase(string).split(" ").join("");
     }
 
 }
@@ -360,8 +462,8 @@ const serviceClient = new ServiceClient(options);
 
 console.log("==================");
 console.log("");
-console.log(serviceClient.toJavascript());
+// console.log(serviceClient.toJavascriptClass());
 console.log("");
 
 fs.writeFileSync("../serviceClient.json", JSON.stringify(serviceClient));
-fs.writeFileSync("../serviceClient-to-string.js", serviceClient.toJavascript());
+fs.writeFileSync("../serviceClient-to-string.js", serviceClient.toJavascriptClass());
