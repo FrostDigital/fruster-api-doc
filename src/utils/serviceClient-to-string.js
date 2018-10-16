@@ -1,7 +1,7 @@
 const bus = require("fruster-bus");
 
 /**
- * Note: this service client was generated automatically by api doc @ 2018-10-16T12:10:49.799Z
+ * Note: this service client was generated automatically by api doc @ 2018-10-16T12:14:38.786Z
  */
 class UserServiceClient{
 

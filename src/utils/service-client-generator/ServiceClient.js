@@ -39,9 +39,9 @@ class ServiceClient {
         });
     }
 
-    toString() {
-        const typDefs = Object.keys(this.customTypeDefs).map(key => this.customTypeDefs[key].toString());
-        const endpoints = this.endpoints.map(endpoint => endpoint.toString());
+    toJavascript() {
+        const typDefs = Object.keys(this.customTypeDefs).map(key => this.customTypeDefs[key].toJavascript());
+        const endpoints = this.endpoints.map(endpoint => endpoint.toJavascript());
 
         return `const bus = require("fruster-bus");
 
@@ -206,8 +206,8 @@ class TypeDef {
         this._type = "_TypeDef";
     }
 
-    toString() {
-        const typeDefProperties = this.properties.map(typeDefProperty => typeDefProperty.toString());
+    toJavascript() {
+        const typeDefProperties = this.properties.map(typeDefProperty => typeDefProperty.toJavascript());
 
         return `    /**
      * @typedef {${_.startCase(this.type)}} ${this.name} ${this.description}
@@ -236,7 +236,7 @@ class TypeDefProperty {
         this._type = "_TypeDefProperty";
     }
 
-    toString() {
+    toJavascript() {
         return `     * @property {${_.startCase(this.type)}${!this.required ? "=" : ""}} ${this.name} ${this.description}`;
     }
 
@@ -260,7 +260,7 @@ class TypeDefArrayProperty extends TypeDefProperty {
         this._type = "_TypeDefArrayProperty";
     }
 
-    toString() {
+    toJavascript() {
         return `     * @property {Array<${_.startCase(this.type)}${!this.required ? "=" : ""}>} ${this.name} ${this.description}`;
     }
 }
@@ -285,14 +285,14 @@ class Endpoint {
         this._type = "_Endpoint";
     }
 
-    toString() {
+    toJavascript() {
         const functionParams = `${this.params.filter(param => !param.name.includes(".")).map((param, i) => `${i > 0 ? " " : ""}${param.name}`)}`;
         const returnType = `Promise<${this.returnType ? this.returnType.name ? this.returnType.name : this.returnType : "Void"}>`;
 
         return `    /**
      * ${this.description}
      * 
-${this.params.map(param => param.toString()).join("\n")}
+${this.params.map(param => param.toJavascript()).join("\n")}
      *
      * @return {${returnType}}
      */
@@ -325,7 +325,7 @@ class Parameter {
         this._type = "_Paramter";
     }
 
-    toString() {
+    toJavascript() {
         return `     * @param {${_.startCase(this.type)}${!this.required ? "=" : ""}} ${this.name} ${this.description}`;
     }
 
@@ -346,7 +346,7 @@ class ArrayParameter extends Parameter {
         this._type = "_ArrayParamter";
     }
 
-    toString() {
+    toJavascript() {
         return `     * @param {Array<${_.startCase(this.type)}${!this.required ? "=" : ""}>} ${this.name} ${this.description}`;
     }
 
@@ -360,8 +360,8 @@ const serviceClient = new ServiceClient(options);
 
 console.log("==================");
 console.log("");
-console.log(serviceClient.toString());
+console.log(serviceClient.toJavascript());
 console.log("");
 
 fs.writeFileSync("../serviceClient.json", JSON.stringify(serviceClient));
-fs.writeFileSync("../serviceClient-to-string.js", serviceClient.toString());
+fs.writeFileSync("../serviceClient-to-string.js", serviceClient.toJavascript());
