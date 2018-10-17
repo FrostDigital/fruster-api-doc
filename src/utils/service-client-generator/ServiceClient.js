@@ -1,6 +1,11 @@
 const ViewUtils = require("../ViewUtils");
 const _ = require("lodash");
 
+// TODO: Only keep the data for service endpoints! Currently typedefs for http endpoints are included.
+// TODO: Convert Integer and Float types to Number
+// TODO: Sort parameters on required/non-required (required first, non-required second)
+// TODO: Fix so that Array<String> are not always required 
+
 class ServiceClient {
 
     /**
@@ -44,9 +49,6 @@ class ServiceClient {
 
             this.endpoints.push(new Endpoint(constantNameCombined, constant.functionVariableName, endpointParameters, description, returnType, endpoint.deprecated));
         });
-
-        //TODO: only keep the data for service endpoints! Currently typedefs for http endpoints are included.
-        // TODO: Convert Integer and Float types to Number
     }
 
     toJavascriptClass() {
@@ -387,7 +389,10 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
         return (await bus.request({
             subject: ${this.urlConstant},
             message: {
-                ${functionParams}
+                reqId:"", //TODO:
+                data: {
+                    ${functionParams}
+                }
             }
         })).data;
     }
