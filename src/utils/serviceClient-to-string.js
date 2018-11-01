@@ -2,11 +2,11 @@ const bus = require("fruster-bus");
 const log = require("fruster-log");
 
 /**
- * Note: this service client was generated automatically by api doc @ 2018-10-16T17:36:58.269Z
+ * Note: this service client was generated automatically by api doc @ 2018-11-01T16:04:56.203Z
  */
 class UserServiceClient{
 
-    constructor(){ throw "service client shouldn't be instanced"; }
+    constructor(){ throw "Service client shouldn't be instanced"; }
 
     /**
      * All endpoints
@@ -109,8 +109,6 @@ class UserServiceClient{
      */
 
     /**
-
-     *
      * Adds inputted roles to specified user. Can only add roles existing in configuration. Response has status code `202` if successful.
      * 
      * @param {String} reqId the request id
@@ -120,18 +118,18 @@ class UserServiceClient{
      * @return {Promise<Void>}
      */
     static async addRoles(reqId, id, roles){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.ADD_ROLES,
             message: {
-                reqId, id, roles
+                reqId,
+                data: {
+                    id, roles
+                }
             }
         })).data;
     }
     
     /**
-
-     *
      * Creates a fruster user. Must include a few base fields but can contain any number of custom fields. Response has status code `201` if successful. Automatically splits data between user and profile if configured to.
      * 
      * @param {String} reqId the request id
@@ -144,18 +142,18 @@ class UserServiceClient{
      * @return {Promise<UserResponse>}
      */
     static async createUser(reqId, email, password, firstName, middleName, lastName){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.CREATE_USER,
             message: {
-                reqId, email, password, firstName, middleName, lastName
+                reqId,
+                data: {
+                    email, password, firstName, middleName, lastName
+                }
             }
         })).data;
     }
     
     /**
-
-     *
      * Deletes a user. Response has status code `200` if successful. `pub.user-service.user-deleted` is published after deletion
      * 
      * @param {String} reqId the request id
@@ -164,18 +162,18 @@ class UserServiceClient{
      * @return {Promise<Void>}
      */
     static async deleteUser(reqId, id){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.DELETE_USER,
             message: {
-                reqId, id
+                reqId,
+                data: {
+                    id
+                }
             }
         })).data;
     }
     
     /**
-
-     *
      * Gets profiles by query. Return data may vary depending on the configuration.
      * 
      * @param {String} reqId the request id
@@ -188,18 +186,18 @@ class UserServiceClient{
      * @return {Promise<Void>}
      */
     static async getProfilesByQuery(reqId, query, filter, start, limit, sort){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.GET_PROFILES_BY_QUERY,
             message: {
-                reqId, query, filter, start, limit, sort
+                reqId,
+                data: {
+                    query, filter, start, limit, sort
+                }
             }
         })).data;
     }
     
     /**
-
-     *
      * Gets all scopes for specified roles in a flat array. E.g. input ['admin', 'user', 'super-admin'] would return  ['*', 'admin.*', 'profile.get']. Response has status code` 20`0 if successful.
      * 
      * @param {String} reqId the request id
@@ -207,7 +205,6 @@ class UserServiceClient{
      * @return {Promise<String>}
      */
     static async getScopes(reqId){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.GET_SCOPES,
             message: {
@@ -236,8 +233,6 @@ class UserServiceClient{
     }
     
     /**
-
-     *
      * Gets users by query. Return data may vary depending on the configuration. 
 
  Can be expanded to return both user and profile data using `expand: "profile"` if configured to split the data. If expand is used; the query can be used to query profile fields as well: `{ "profile.firstName": "Bob" }`. With expand; the data is returned `{...userData, profile: {...profileData}}`
@@ -253,18 +248,18 @@ class UserServiceClient{
      * @return {Promise<GetUsersByQueryResponse>}
      */
     static async getUsersByQuery(reqId, query, filter, start, limit, sort, expand){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.GET_USERS_BY_QUERY,
             message: {
-                reqId, query, filter, start, limit, sort, expand
+                reqId,
+                data: {
+                    query, filter, start, limit, sort, expand
+                }
             }
         })).data;
     }
     
     /**
-
-     *
      * Removes inputted roles from specified user. Cannot remove the last role. Response has status code `202` if successful.
      * 
      * @param {String} reqId the request id
@@ -274,18 +269,18 @@ class UserServiceClient{
      * @return {Promise<Void>}
      */
     static async removeRoles(reqId, id, roles){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.REMOVE_ROLES,
             message: {
-                reqId, id, roles
+                reqId,
+                data: {
+                    id, roles
+                }
             }
         })).data;
     }
     
     /**
-
-     *
      * Generates a new email verification token and resends email w/ token to the provided user. Response has status code `200` if successful.
      * 
      * @param {String} reqId the request id
@@ -294,18 +289,18 @@ class UserServiceClient{
      * @return {Promise<Void>}
      */
     static async resendVerification(reqId, email){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.RESEND_VERIFICATION,
             message: {
-                reqId, email
+                reqId,
+                data: {
+                    email
+                }
             }
         })).data;
     }
     
     /**
-
-     *
      * Sets password of a user. Used by password reset service. Note: Updating a user's password should be done w/ the update-password endpoint. Response has status code `202` if successful.
      * 
      * @param {String} reqId the request id
@@ -315,18 +310,18 @@ class UserServiceClient{
      * @return {Promise<Void>}
      */
     static async setPassword(reqId, id, newPassword){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.SET_PASSWORD,
             message: {
-                reqId, id, newPassword
+                reqId,
+                data: {
+                    id, newPassword
+                }
             }
         })).data;
     }
     
     /**
-
-     *
      * Updates password of an account. Requires to validation of old password before new can be set. Response has status code `202` if successful.
      * 
      * @param {String} reqId the request id
@@ -337,18 +332,18 @@ class UserServiceClient{
      * @return {Promise<Void>}
      */
     static async updatePassword(reqId, newPassword, oldPassword, id){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.UPDATE_PASSWORD,
             message: {
-                reqId, newPassword, oldPassword, id
+                reqId,
+                data: {
+                    newPassword, oldPassword, id
+                }
             }
         })).data;
     }
     
     /**
-
-     *
      * Updates a user. Can contain any number of custom fields. Response has status code `200` if successful. 
      * 
      * @param {String} reqId the request id
@@ -361,18 +356,18 @@ class UserServiceClient{
      * @return {Promise<Void>}
      */
     static async updateProfile(reqId, id, firstName, lastName, middleName, email){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.UPDATE_PROFILE,
             message: {
-                reqId, id, firstName, lastName, middleName, email
+                reqId,
+                data: {
+                    id, firstName, lastName, middleName, email
+                }
             }
         })).data;
     }
     
     /**
-
-     *
      * Updates a user. Can contain any number of custom fields. Response has status code `200` if successful. 
      * 
      * @param {String} reqId the request id
@@ -385,18 +380,18 @@ class UserServiceClient{
      * @return {Promise<UserResponse>}
      */
     static async updateUser(reqId, id, firstName, lastName, middleName, email){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.UPDATE_USER,
             message: {
-                reqId, id, firstName, lastName, middleName, email
+                reqId,
+                data: {
+                    id, firstName, lastName, middleName, email
+                }
             }
         })).data;
     }
     
     /**
-
-     *
      * Validates that inputted password becomes the same hash as for an account. Typically used by auth service for login. Response has status code `200` if successful.
      * 
      * @param {String} reqId the request id
@@ -406,18 +401,18 @@ class UserServiceClient{
      * @return {Promise<UserResponse>}
      */
     static async validatePassword(reqId, username, password){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.VALIDATE_PASSWORD,
             message: {
-                reqId, username, password
+                reqId,
+                data: {
+                    username, password
+                }
             }
         })).data;
     }
     
     /**
-
-     *
      * Verifies a user's email address by providing a token sent to the user by email. Response has status code `200` if successful.
      * 
      * @param {String} reqId the request id
@@ -426,11 +421,13 @@ class UserServiceClient{
      * @return {Promise<VerifyEmailAddressResponse>}
      */
     static async verifyEmail(reqId, tokenId){
-        
         return (await bus.request({
             subject: UserServiceClient.endpoints.VERIFY_EMAIL,
             message: {
-                reqId, tokenId
+                reqId,
+                data: {
+                    tokenId
+                }
             }
         })).data;
     }

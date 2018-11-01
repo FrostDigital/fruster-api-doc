@@ -5,6 +5,7 @@ const _ = require("lodash");
 // TODO: Convert Integer and Float types to Number
 // TODO: Sort parameters on required/non-required (required first, non-required second)
 // TODO: Fix so that Array<String> are not always required 
+// TODO: Make descriptions cover multiple lines w/ max 130 characters (or the longest word) per row
 
 class ServiceClient {
 
@@ -55,7 +56,7 @@ class ServiceClient {
         const typDefs = Object.keys(this.customTypeDefs).map(key => this.customTypeDefs[key].toJavascriptClass());
         const endpoints = this.endpoints.map(endpoint => endpoint.toJavascriptClass());
 
-        return `const bus = require("fruster-bus");
+        let classString = `const bus = require("fruster-bus");
 const log = require("fruster-log");
 
 /**
@@ -63,7 +64,7 @@ const log = require("fruster-log");
  */
 class ${this.className}{
 
-    constructor(){ throw "service client shouldn't be instanced"; }
+    constructor(){ throw "Service client shouldn't be instanced"; }
 
     /**
      * All endpoints
@@ -83,6 +84,23 @@ ${endpoints.join("\n")}
 }
 
 module.exports = ${this.className};`;
+
+        return this._formatJavascript(classString);
+    }
+
+    /**
+     * Fixes faulty formatting
+     * 
+     * @param {String} string 
+     * @return {String}
+     */
+    _formatJavascript(string) {
+        // string = string.split("\n\n").join("\n"); // Removes double line breaks
+        string = string.split("    /**\n\n").join("    /**\n"); // removes new empty lines within comment blocks
+        string = string.split("    /**\n     *\n").join("    /**\n"); // removes double new lines in comments
+        string = string.split("{\n        \n        return ").join("{\n        return "); // removes new lines before return statement in functions
+
+        return string;
     }
 
     /**
@@ -355,7 +373,7 @@ class Endpoint {
      * @param {String} endpointName
      * @param {Array<Parameter>} params
      * @param {String} description
-     * @param {String} returnType
+     * @param {String|Object|TypeDefProperty} returnType
      * @param {String} deprecatedReason
      */
     constructor(urlConstant, endpointName, params, description, returnType, deprecatedReason) {
@@ -371,7 +389,8 @@ class Endpoint {
     }
 
     toJavascriptClass() {
-        const functionParams = `${this.params.filter(param => !param.name.includes(".")).map((param, i) => `${i > 0 ? " " : ""}${param.name}`)}`;
+        const functionParams = `${getParamsList(this.params)}`;
+        const requestBodyParams = `${getParamsList(this.params.slice(1))}`;
         const returnType = `Promise<${Utils.toTitleCase(this.returnType ? this.returnType.name ? this.returnType.name : this.returnType : "Void")}>`;
         const deprecatedReasonString = this.deprecatedReason ? `     * @deprecated ${this.deprecatedReason}` : "";
 
@@ -389,14 +408,18 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
         return (await bus.request({
             subject: ${this.urlConstant},
             message: {
-                reqId:"", //TODO:
+                reqId${requestBodyParams.length > 0 ? `,
                 data: {
-                    ${functionParams}
-                }
+                    ${requestBodyParams}
+                }` : ""}
             }
         })).data;
     }
     `;
+
+        function getParamsList(params) {
+            return params.filter(param => !param.name.includes(".")).map((param, i) => `${i > 0 ? " " : ""}${param.name}`);
+        }
     }
 
 }
@@ -463,14 +486,14 @@ class Utils {
 
 
 // // TODO: Temp tester
-// const fs = require("fs");
-// const options = JSON.parse(fs.readFileSync("test-data.json").toString());
-// const serviceClient = new ServiceClient(options);
+const fs = require("fs");
+const options = JSON.parse(fs.readFileSync("test-data.json").toString());
+const serviceClient = new ServiceClient(options);
 
-// console.log("==================");
-// console.log("");
-// // console.log(serviceClient.toJavascriptClass());
-// console.log("");
+console.log("==================");
+console.log("");
+// console.log(serviceClient.toJavascriptClass());
+console.log("");
 
-// fs.writeFileSync("../serviceClient.json", JSON.stringify(serviceClient));
-// fs.writeFileSync("../serviceClient-to-string.js", serviceClient.toJavascriptClass());
+fs.writeFileSync("../serviceClient.json", JSON.stringify(serviceClient));
+fs.writeFileSync("../serviceClient-to-string.js", serviceClient.toJavascriptClass());
