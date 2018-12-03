@@ -11,6 +11,7 @@ export default class JsonSchemaModalComponent extends React.Component {
         super(props);
 
         if (this.props.schema) {
+            // @ts-ignore
             this.state = this.state || {};
             this.state.schema = this.props.schema;
 
@@ -35,7 +36,6 @@ export default class JsonSchemaModalComponent extends React.Component {
 
     setInitialOpenState() {
         this.setState({
-            ...this.state,
             jsonSchemaIsOpen: false,
             sampleIsOpen: true
         });
@@ -210,47 +210,32 @@ export default class JsonSchemaModalComponent extends React.Component {
         );
     }
 
-    goToSample() {
-        this.state.sampleIsOpen = true;
-        this.forceUpdate();
+    async goToSample() {
+        this.setState({ sampleIsOpen: true });
+
         setTimeout(() => this.sampleHeader.scrollIntoView(true), 1);
 
-        this.state.sampleSelected = true;
+        await this.setState({ sampleSelected: true });
 
-        setTimeout(() => {
-            this.state.sampleSelected = false;
-            /** for some reason this.setState doesn't work here 🤔 */
-            this.forceUpdate();
-        }, 100);
+        setTimeout(() => this.setState({ sampleSelected: false }), 100);
     }
 
-    goToJsonSchema() {
-        this.state.jsonSchemaIsOpen = true;
-        this.forceUpdate();
+    async goToJsonSchema() {
+        this.setState({ jsonSchemaIsOpen: true });
 
         setTimeout(() => this.jsonSchemaHeader.scrollIntoView(true), 1);
 
-        this.state.jsonSchemaSelected = true;
+        await this.setState({ jsonSchemaSelected: true });
 
-        setTimeout(() => {
-            this.state.jsonSchemaSelected = false;
-            /** for some reason this.setState doesn't work here  🤔*/
-            this.forceUpdate();
-        }, 100);
+        setTimeout(() => this.setState({ jsonSchemaSelected: false }), 100);
     }
 
     toggleJsonSchemaFolded() {
-        this.setState({
-            ...this.state,
-            jsonSchemaIsOpen: !this.state.jsonSchemaIsOpen
-        });
+        this.setState({ jsonSchemaIsOpen: !this.state.jsonSchemaIsOpen });
     }
 
     toggleSampleFolded() {
-        this.setState({
-            ...this.state,
-            sampleIsOpen: !this.state.sampleIsOpen
-        });
+        this.setState({ sampleIsOpen: !this.state.sampleIsOpen });
     }
 
     openModal() {
@@ -260,10 +245,7 @@ export default class JsonSchemaModalComponent extends React.Component {
             hljs.highlightBlock(this.state.jsonSchemaElem);
             hljs.highlightBlock(this.state.jsonSampleElem);
 
-            this.setState({
-                ...this.state,
-                colorized: true
-            });
+            this.setState({ colorized: true });
         }
 
         /**

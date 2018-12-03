@@ -165,6 +165,7 @@ textarea {
 
 .modal-lg {
     overflow: hidden;
+    width: 1170px !important;
 }
 
 .doc-entry-title {
@@ -238,8 +239,27 @@ h3.deprecated,
     font-weight: bold;
 }
 
-.description {
+.description, .short-description {
     max-width: 1090px;
+}
+
+.short-description p {
+    overflow: hidden;
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.short-description {
+    opacity: 0.7;
+    overflow: hidden;
+    display: block;
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    padding-top: 10px;
+    max-height: 25px;
 }
 
 .description img {

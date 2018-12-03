@@ -17,16 +17,12 @@ const ViewUtils = require("./utils/ViewUtils");
 const config = require("../config");
 const port = config.port || 3100;
 
-const ServiceClientGenerator = require("./utils/ServiceClientGenerator");
-const fs = require("fs");
-const stream = require("stream");
+const ServiceClientGenerator = require("./utils/service-client-generator/ServiceClientGenerator");
 const _ = require("lodash");
 
 (async function () {
 
-    await bus.connect({
-        address: config.bus
-    });
+    await bus.connect({ address: config.bus });
 
     require("fruster-health").start();
 
@@ -50,45 +46,17 @@ function startServer() {
     });
 
     app.get("/service-client/:serviceName", async (req, res) => {
-        console.log("\n");
-        console.log(require("util").inspect(Object.keys(endpointsByType.service), null, null, true));
-        console.log("\n");
-        const options = {
-            serviceName: req.params.serviceName,
-            type: "service",
-            endpoints: endpointsByType.service[req.params.serviceName]
-        };
+        const type = "service";
+        const serviceName = req.params.serviceName;
+        const endpoints = endpointsByType.service[serviceName];
+        const options = { serviceName, type, endpoints };
 
-        // fs.writeFileSync("./metadataResponses.json", JSON.stringify({
-        //     serviceName: req.params.serviceName,
-        //     type: "service",
-        //     endpoints: endpointsByType.service[req.params.serviceName]
-        // }
-        // ));
-
-        const ServiceClient = require("./utils/service-client-generator/ServiceClient");
-        const serviceClient = new ServiceClient(options);
-
-        console.log("\n");
-        console.log(require("util").inspect(serviceClient, null, null, true));
-        console.log("\n");
-
-        const className = ViewUtils.replaceAll(_.startCase(req.params.serviceName), " ", "") + "Client";
-
-        // const serviceClientGenerator = new ServiceClientGenerator(options);
-        // const clientCode = await serviceClientGenerator.generate();
-
-        // var s = new stream.PassThrough()
-
-        // s.write(clientCode)
-        // s.end()
+        const serviceClientGenerator = new ServiceClientGenerator(options);
+        const className = ViewUtils.replaceAll(_.startCase(serviceName), " ", "") + "Client";
 
         res.setHeader("Content-type", "application/javascript");
         res.setHeader("Content-disposition", `attachment; filename=${className}.js`);
-        res.end(serviceClient.toJavascriptClass());
-
-
-        // res.end(clientCode);
+        res.end(serviceClientGenerator.toJavascriptClass());
     });
 
     app.get("/", async (req, res) => {
@@ -102,12 +70,21 @@ function startServer() {
             if (cachedHtml)
                 res.send(cachedHtml);
 
-            const metadataResponses = await bus.requestMany({
-                skipOptionsRequest: true,
-                subject: "metadata",
-                maxResponses: 10000,
-                message: { reqId: uuid.v4() }
-            });
+            let metadataResponses = [];
+
+            if (req.query.url) { /** Lets you input an url to log viewer in order to use that to get metadata */
+                metadataResponses = await utils.httpRequest("POST", req.query.url, {
+                    maxResponses: 10000,
+                    message: {},
+                    subject: "metadata"
+                });
+            } else
+                metadataResponses = await bus.requestMany({
+                    skipOptionsRequest: true,
+                    subject: "metadata",
+                    maxResponses: 10000,
+                    message: { reqId: uuid.v4() }
+                });
 
 
             let schemasWithErrors;

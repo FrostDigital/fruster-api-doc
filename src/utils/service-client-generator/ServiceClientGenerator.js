@@ -1,13 +1,31 @@
 const ViewUtils = require("../ViewUtils");
 const _ = require("lodash");
 
-// TODO: Only keep the data for service endpoints! Currently typedefs for http endpoints are included.
-// TODO: Convert Integer and Float types to Number
-// TODO: Sort parameters on required/non-required (required first, non-required second)
-// TODO: Fix so that Array<String> are not always required 
-// TODO: Make descriptions cover multiple lines w/ max 130 characters (or the longest word) per row
+// TODO: rename javascript keywords e.g. break, class, var, const, let etc
 
-class ServiceClient {
+// TODO: special type cases like 
+// "userId": {
+//     "anyOf": [
+//       {
+//         "description": "The id of the user associated to the log",
+//         "type": "string"
+//       },
+//       {
+//         "description": "Ids of the users associated to the log",
+//         "items": {
+//           "type": "string"
+//         },
+//         "type": "array"
+//       }
+//     ]
+//   }
+// },
+// see log service > log
+
+// TODO: it is possible for two functions to get the same name
+
+
+class ServiceClientGenerator {
 
     /**
      * @typedef {Object} EndpointConstant 
@@ -42,9 +60,10 @@ class ServiceClient {
             const returnType = this._getEndpointTypeDef(responseSchema);
             const constantNameCombined = `${this.className}.endpoints.${constant.constantName}`;
             const description = endpoint.docs ? endpoint.docs.description : "";
+            const constantsWithSameName = this.endpointConstants.filter(c => c.constantName === constant.constantName);
 
-            if (this.endpointConstants.find(c => c.constantName === constant.constantName))
-                constant.constantName = constant.constantName + "_2";
+            if (constantsWithSameName.length > 0)
+                constant.constantName = constant.constantName + "_" + constantsWithSameName.length;
 
             this.endpointConstants.push(constant);
 
@@ -55,16 +74,13 @@ class ServiceClient {
     toJavascriptClass() {
         const typDefs = Object.keys(this.customTypeDefs).map(key => this.customTypeDefs[key].toJavascriptClass());
         const endpoints = this.endpoints.map(endpoint => endpoint.toJavascriptClass());
-
-        let classString = `const bus = require("fruster-bus");
+        const classString = `const bus = require("fruster-bus");
 const log = require("fruster-log");
 
 /**
  * Note: this service client was generated automatically by api doc @ ${new Date().toJSON()}
  */
 class ${this.className}{
-
-    constructor(){ throw "Service client shouldn't be instanced"; }
 
     /**
      * All endpoints
@@ -108,7 +124,7 @@ module.exports = ${this.className};`;
      * 
      * @param {Object} schema response schema
      * 
-     * @return {String}
+     * @return {String|TypeDefArrayProperty|TypeDefProperty}
      */
     _getEndpointTypeDef(schema) {
         if (!schema)
@@ -150,8 +166,7 @@ module.exports = ${this.className};`;
         if (typeDefs.length > 0) {
             this.customTypeDefs[schema.id] = typeDef;
             output = name;
-        }
-        else
+        } else
             output = typeDef.type;
 
         return output;
@@ -165,7 +180,7 @@ module.exports = ${this.className};`;
      * @return {Array<Parameter>}
      */
     _getEndpointParameters(schema) {
-        if (!schema)
+        if (!schema || !schema.id)
             return [];
 
         const parameters = [];
@@ -187,7 +202,7 @@ module.exports = ${this.className};`;
             if (property.type === "array") {
                 const subParams = this._getEndpointParameters(property);
 
-                if (subParams.length === 0 && "type" in property.items)
+                if (subParams.length === 0 && property.items && "type" in property.items)
                     subParams.push(new Parameter(
                         propertyKeys[i],
                         property.items.type,
@@ -251,9 +266,15 @@ module.exports = ${this.className};`;
         let constantName = ViewUtils.replaceAll(endpoint.subject.toUpperCase(), "-", "_");
         constantName = ViewUtils.replaceAll(constantName, ".", "_");
         constantName = constantName.replace(`${constantsServiceName}_`, "");
+        constantName = ViewUtils.replaceAll(constantName, ":", "");
+        constantName = ViewUtils.replaceAll(constantName, "*", "");
 
         let functionVariableName = _.camelCase(endpoint.subject).replace(_.camelCase(this.serviceName), "");
-        functionVariableName = functionVariableName[0].toLowerCase() + functionVariableName.substring(1);
+
+        if (functionVariableName[0])
+            functionVariableName = functionVariableName[0].toLowerCase() + functionVariableName.substring(1);
+        else
+            functionVariableName = endpoint.subject;
 
         return {
             constantName,
@@ -264,7 +285,7 @@ module.exports = ${this.className};`;
 
 }
 
-module.exports = ServiceClient;
+module.exports = ServiceClientGenerator;
 
 class TypeDef {
 
@@ -275,7 +296,7 @@ class TypeDef {
      * @param {Array<TypeDefProperty>} properties 
      */
     constructor(name, type, description, properties) {
-        this.name = name;
+        this.name = Utils.toTitleCase(name);
         this.type = type;
         this.description = description;
         this.properties = properties;
@@ -286,7 +307,7 @@ class TypeDef {
         const typeDefProperties = this.properties.map(typeDefProperty => typeDefProperty.toJavascriptClass());
 
         return `    /**
-     * @typedef {${Utils.toTitleCase(this.type)}} ${this.name} ${this.description} 
+     * @typedef {${Utils.toTitleCase(this.type)}} ${this.name} ${this.description || ""} 
      *
 ${typeDefProperties.length > 0 ? typeDefProperties.join("\n") : ""}
      */
@@ -324,7 +345,10 @@ class TypeDefProperty {
         else
             typeString = Utils.toTitleCase(this.type);
 
-        return `     * @property {${typeString}${!this.required ? "=" : ""}} ${this.name} ${this.description}`;
+        if (["Integer", "Float"].includes(typeString))
+            typeString = "Number";
+
+        return `     * @property {${typeString}${!this.required ? "=" : ""}} ${this.name} ${this.description || ""}`;
     }
 
 }
@@ -362,7 +386,10 @@ class TypeDefArrayProperty extends TypeDefProperty {
         if (description === "")
             description = this.params[0].description;
 
-        return `     * @property {Array<${typeString}${!this.required ? "=" : ""}>} ${this.name} ${description}`;
+        if (["Integer", "Float"].includes(typeString))
+            typeString = "Number";
+
+        return `     * @property {Array<${typeString}>${!this.required ? "=" : ""}} ${this.name} ${description || ""}`;
     }
 }
 
@@ -381,10 +408,11 @@ class Endpoint {
         this.urlConstant = urlConstant;
         this.description = description;
         this.returnType = returnType;
-        this.params = [
-            new Parameter("reqId", "string", "the request id", true)
-        ].concat(params);
         this.deprecatedReason = deprecatedReason;
+
+        this.params = Utils.sortParams(params);
+        this.params = [new Parameter("reqId", "string", "the request id", true)].concat(this.params);
+
         this._type = "_Endpoint";
     }
 
@@ -397,7 +425,7 @@ class Endpoint {
         return `    /**
 ${deprecatedReasonString}
      *
-     * ${this.description}
+     * ${this.description || ""}
      * 
 ${this.params.map(param => param.toJavascriptClass()).join("\n")}
      *
@@ -434,7 +462,7 @@ class Parameter {
      */
     constructor(name, type, description, required) {
         this.name = name;
-        this.type = type;
+        this.type = type || "any";
         this.description = description;
         this.required = !!required || type && type.toLowerCase && type.toLowerCase().includes("null");
         this._type = "_Paramter";
@@ -450,7 +478,13 @@ class Parameter {
         } else
             typeString = Utils.toTitleCase(this.type);
 
-        return `     * @param {${typeString}${!this.required ? "=" : ""}} ${this.name} ${this.description}`;
+        if (["Integer", "Float"].includes(typeString))
+            typeString = "Number";
+
+        if (typeString === "Any")
+            typeString = "any";
+
+        return `     * @param {${typeString}${!this.required ? "=" : ""}} ${this.name} ${this.description || ""}`;
     }
 
 }
@@ -467,11 +501,17 @@ class ArrayParameter extends Parameter {
     constructor(name, type, description, params, required) {
         super(name, type, description, required);
         this.params = params;
+        this.required = !params.filter(p => !p.required);
         this._type = "_ArrayParamter";
     }
 
     toJavascriptClass() {
-        return `     * @param {Array<${Utils.toTitleCase(this.type)}${!this.required ? "=" : ""}>} ${this.name} ${this.description}`;
+        let typeString = Utils.toTitleCase(this.type);
+
+        if (["Integer", "Float"].includes(typeString))
+            typeString = "Number";
+
+        return `     * @param {Array<${typeString}>${!this.required ? "=" : ""}} ${this.name} ${this.description || ""}`;
     }
 
 }
@@ -482,18 +522,31 @@ class Utils {
         return _.startCase(string).split(" ").join("");
     }
 
+    /**
+     * @param {Array<Parameter>} params 
+     * @return {Array<Parameter>} 
+     */
+    static sortParams(params) {
+        return params.sort((a, b) => {
+            const aVal = a.required ? 1 : 0;
+            const bVal = b.required ? 1 : 0;
+
+            return bVal - aVal;
+        });
+    }
+
 }
 
 
-// // TODO: Temp tester
-const fs = require("fs");
-const options = JSON.parse(fs.readFileSync("test-data.json").toString());
-const serviceClient = new ServiceClient(options);
+// // // TODO: Temp tester
+// const fs = require("fs");
+// const options = JSON.parse(fs.readFileSync("test-data.json").toString());
+// const serviceClientGenerator = new ServiceClientGenerator(options);
 
-console.log("==================");
-console.log("");
-// console.log(serviceClient.toJavascriptClass());
-console.log("");
+// console.log("==================");
+// console.log("");
+// // console.log(serviceClientGenerator.toJavascriptClass());
+// console.log("");
 
-fs.writeFileSync("../serviceClient.json", JSON.stringify(serviceClient));
-fs.writeFileSync("../serviceClient-to-string.js", serviceClient.toJavascriptClass());
+// fs.writeFileSync("../serviceClientGenerator.json", JSON.stringify(serviceClientGenerator));
+// fs.writeFileSync("../serviceClientGenerator-to-string.js", serviceClientGenerator.toJavascriptClass());

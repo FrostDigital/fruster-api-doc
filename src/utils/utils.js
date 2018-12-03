@@ -9,6 +9,7 @@ const filePath = path.resolve(`${__dirname}/json-schemas`);
 const JsonSchemaCruncher = require("../utils/JsonSchemaCruncher");
 
 const jsf = require("json-schema-faker");
+const request = require("request");
 
 jsf.option({
     requiredOnly: false,
@@ -196,6 +197,24 @@ class Utils {
         } catch (err) {
             log.debug("setFakerSpecificAttrs", err);
         }
+    }
+
+    static httpRequest(method, url, body) {
+        return new Promise((resolve, reject) => {
+            const options = {
+                method,
+                url,
+                headers: { "content-type": "application/json" },
+                body,
+                json: true
+            };
+
+            request(options, function (error, resp, body) {
+                if (error) reject(error);
+                else resolve(body.data);
+            });
+
+        });
     }
 
 }

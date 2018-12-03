@@ -56,25 +56,16 @@ export default class EndpointDetailsComponent extends React.Component {
         if (decodeURI(window.location.hash) === `#${this.state.urlSubjectLink}`)
             this.reactToClickHash();
 
-        this.setState({
-            ...this.state,
-            lastLocationHash: decodeURI(window.location.hash)
-        });
+        this.setState({ lastLocationHash: decodeURI(window.location.hash) });
     }
 
     reactToClickHash() {
         this.setState({
-            ...this.state,
             selected: true,
             isOpen: true
         });
 
-        setTimeout(() => {
-            this.setState({
-                ...this.state,
-                selected: false
-            });
-        }, 100);
+        setTimeout(() => this.setState({ selected: false }), 100);
 
         if (this.markup)
             this.markup.scrollIntoView(true);
@@ -129,13 +120,22 @@ export default class EndpointDetailsComponent extends React.Component {
 
                                         {this.getDocumentationTable(context)}
 
-                                    </span> : ""
+                                    </span>
+
+                                    :
+                                    this.props.endpoint.docs
+                                    && this.props.endpoint.docs.description
+                                    && <span
+                                        className="short-description"
+                                        dangerouslySetInnerHTML={{ __html: markdown.markdown.toHTML(this.props.endpoint.docs.description) }} />
                             }
 
                         </div>
 
                         {
-                            this.state.isOpen ? <span>
+                            this.state.isOpen &&
+
+                            <span>
 
                                 <JsonSchemaModalComponent
                                     ref={ref => { this.requestBodyModal = ref; }}
@@ -151,7 +151,7 @@ export default class EndpointDetailsComponent extends React.Component {
                                     isError={this.state.responseSchema ? this.state.responseSchema._error : false}
                                 />
 
-                            </span> : ""
+                            </span>
                         }
 
                     </span>
@@ -162,10 +162,7 @@ export default class EndpointDetailsComponent extends React.Component {
     }
 
     toggleFolded() {
-        this.setState({
-            ...this.state,
-            isOpen: !this.state.isOpen
-        });
+        this.setState({ isOpen: !this.state.isOpen });
     }
 
     /**
@@ -202,7 +199,7 @@ export default class EndpointDetailsComponent extends React.Component {
                             <a href=""
                                 className={this.props.endpoint.requestSchema ? "" : "deactivated"}>
                                 {this.props.endpoint.requestSchema || <span className="not-available"> n/a</span>}
-                                {this.props.endpoint.requestSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}
+                                {this.props.endpoint.requestSchema && <span className="glyphicon glyphicon-new-window"></span>}
                             </a>
                         </td>
                         {/* Required permissions */}
@@ -241,7 +238,7 @@ export default class EndpointDetailsComponent extends React.Component {
                             <a href=""
                                 className={this.props.endpoint.responseSchema ? "" : "deactivated"}>
                                 {this.props.endpoint.responseSchema || <span className="not-available">n/a</span>}
-                                {this.props.endpoint.responseSchema ? <span className="glyphicon glyphicon-new-window"></span> : ""}
+                                {this.props.endpoint.responseSchema && <span className="glyphicon glyphicon-new-window"></span>}
                             </a>
                         </td>
 
@@ -278,9 +275,9 @@ export default class EndpointDetailsComponent extends React.Component {
                         <td className="description">
                             {this.props.endpoint.docs ?
                                 <div>
-                                    {this.props.endpoint.docs.description ? <div className="doc-entry-title">Description</div> : ""}
-                                    {this.props.endpoint.docs.description ?
-                                        <span className="description-value" dangerouslySetInnerHTML={{ __html: markdown.markdown.toHTML(this.props.endpoint.docs.description), }}></span>
+                                    {this.props.endpoint.docs.description && <div className="doc-entry-title">Description</div>}
+                                    {this.props.endpoint.docs.description
+                                        ? <span className="description-value" dangerouslySetInnerHTML={{ __html: markdown.markdown.toHTML(this.props.endpoint.docs.description), }}></span>
                                         : <span className="not-available">n/a</span>}
                                     {this.props.endpoint.docs.params ? this.getDocEntry(this.props.endpoint.docs.params, "Url parameters") : ""}
                                     {this.props.endpoint.docs.query ? this.getDocEntry(this.props.endpoint.docs.query, "Query parameters") : ""}
