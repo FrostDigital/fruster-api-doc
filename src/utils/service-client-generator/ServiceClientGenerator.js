@@ -24,6 +24,8 @@ const _ = require("lodash");
 
 // TODO: it is possible for two functions to get the same name
 
+// TODO: Make it possible to select which endpoints to include
+
 
 class ServiceClientGenerator {
 
