@@ -536,17 +536,3 @@ class Utils {
     }
 
 }
-
-
-// // // TODO: Temp tester
-// const fs = require("fs");
-// const options = JSON.parse(fs.readFileSync("test-data.json").toString());
-// const serviceClientGenerator = new ServiceClientGenerator(options);
-
-// console.log("==================");
-// console.log("");
-// // console.log(serviceClientGenerator.toJavascriptClass());
-// console.log("");
-
-// fs.writeFileSync("../serviceClientGenerator.json", JSON.stringify(serviceClientGenerator));
-// fs.writeFileSync("../serviceClientGenerator-to-string.js", serviceClientGenerator.toJavascriptClass());

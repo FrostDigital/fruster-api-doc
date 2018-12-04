@@ -9,6 +9,8 @@ const express = require("express");
 const uuid = require("uuid");
 const app = express();
 const path = require("path");
+const util = require("util");
+const fs = require("fs");
 
 const bus = require("fruster-bus");
 const log = require("fruster-log");
@@ -20,6 +22,10 @@ const port = config.port || 3100;
 const ServiceClientGenerator = require("./utils/service-client-generator/ServiceClientGenerator");
 const _ = require("lodash");
 
+let schemasPerService = {};
+let endpointsByType = { http: {}, service: {}, ws: {} };
+let cachedHtml;
+
 (async function () {
 
     await bus.connect({ address: config.bus });
@@ -30,13 +36,8 @@ const _ = require("lodash");
 
 }());
 
-let schemasPerService = {};
-let endpointsByType = { http: {}, service: {}, ws: {} };
-let cachedHtml;
-
 function startServer() {
     app.use("/assets", express.static(path.resolve(`${__dirname}/assets`)));
-
 
     app.post("/reset-cache", (req, res) => {
         resetCache();
@@ -46,17 +47,25 @@ function startServer() {
     });
 
     app.get("/service-client/:serviceName", async (req, res) => {
-        const type = "service";
-        const serviceName = req.params.serviceName;
-        const endpoints = endpointsByType.service[serviceName];
-        const options = { serviceName, type, endpoints };
+        try {
+            const type = "service";
+            const serviceName = req.params.serviceName;
+            const endpoints = endpointsByType.service[serviceName];
+            const options = { serviceName, type, endpoints };
 
-        const serviceClientGenerator = new ServiceClientGenerator(options);
-        const className = ViewUtils.replaceAll(_.startCase(serviceName), " ", "") + "Client";
+            const serviceClientGenerator = new ServiceClientGenerator(options);
+            const className = ViewUtils.replaceAll(_.startCase(serviceName), " ", "") + "Client";
 
-        res.setHeader("Content-type", "application/javascript");
-        res.setHeader("Content-disposition", `attachment; filename=${className}.js`);
-        res.end(serviceClientGenerator.toJavascriptClass());
+            const file = serviceClientGenerator.toJavascriptClass();
+
+            res.setHeader("Content-type", "application/javascript");
+            res.setHeader("Content-disposition", `attachment; filename=${className}.js`);
+
+            res.end(file);
+        } catch (err) {
+            log.warn(err);
+            res.end(`<html><body>Could not generate service client. <br/>Reason:  <br/><code><pre>${util.inspect(err, null, null)}</pre></code></body></html>`);
+        }
     });
 
     app.get("/", async (req, res) => {
@@ -143,6 +152,7 @@ function startServer() {
 
             if (!res.headersSent)
                 res.send(cachedHtml);
+
         } catch (err) {
             log.error(err);
             res.json(err);

@@ -16,7 +16,7 @@ export default class JsonSchemaModalComponent extends React.Component {
             this.state.schema = this.props.schema;
 
             const schemaToJson = Object.assign({}, this.state.schema);
-            this.state.jsonSample = schemaToJson ? JSON.stringify(schemaToJson.sample, null, 2) : undefined;
+            this.state.jsonSample = schemaToJson && schemaToJson.sample ? JSON.stringify(ViewUtils.sortObject(schemaToJson.sample), null, 2) : undefined;
             delete schemaToJson.sample;
 
             this.state.jsonSchema = JSON.stringify(ViewUtils.sortObject(schemaToJson), null, 2);
@@ -61,9 +61,7 @@ export default class JsonSchemaModalComponent extends React.Component {
                                 onClick={e => this.closeModal()}>
                             </span>
 
-                            <h1 id="header">
-                                {this.state.schema.id}
-                            </h1>
+                            <h1 id="header">{this.state.schema.id}</h1>
 
                             <a
                                 hidden={this.props.isError}
