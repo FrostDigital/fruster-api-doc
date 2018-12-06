@@ -27,6 +27,9 @@ const _ = require("lodash");
 // TODO: Make it possible to select which endpoints to include
 
 
+/**
+ * NOTE: all tabs and spaces in the strings are there because they should be there 😁
+ */
 class ServiceClientGenerator {
 
     /**
