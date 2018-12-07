@@ -31,14 +31,15 @@ export default class JsonSchemaModalComponent extends React.Component {
         colorized: false,
         sampleSelected: false,
         jsonSchemaSelected: false,
-        jsonSchemaIsOpen: false,
+        jsonSchemaIsOpen: true,
         sampleIsOpen: true,
-        modal: {}
+        modal: {},
+        currentTabIndex: 0
     };
 
     setInitialOpenState() {
         this.setState({
-            jsonSchemaIsOpen: false,
+            jsonSchemaIsOpen: true,
             sampleIsOpen: true
         });
     }
@@ -60,12 +61,12 @@ export default class JsonSchemaModalComponent extends React.Component {
                             <span
                                 className="glyphicon glyphicon-remove close"
                                 id="close-btn"
-                                onClick={e => this.closeModal()}>
+                                onClick={() => this.closeModal()}>
                             </span>
 
                             <h1 id="header">{this.state.schema.id}</h1>
 
-                            <a
+                            {/* <a
                                 hidden={this.props.isError}
                                 className="clickable"
                                 onClick={() => this.goToSample()}>
@@ -76,16 +77,30 @@ export default class JsonSchemaModalComponent extends React.Component {
                                 className="clickable"
                                 onClick={() => this.goToJsonSchema()}>
                                 <div>Go to json Schema</div>
-                            </a>
+                            </a> */}
 
-                            <hr />
+                            <ul className="nav nav-tabs">
+                                <li className="nav-item">
+                                    <a className={`nav-link ${this.state.currentTabIndex === 0 ? "active" : ""}`} onClick={() => this.goToTab(0)}>Docson</a>
+                                </li>
+                                <li className="nav-item">
+                                    <a className={`nav-link ${this.state.currentTabIndex === 1 ? "active" : ""}`} onClick={() => this.goToTab(1)}>Sample</a>
+                                </li>
+                                <li className="nav-item">
+                                    <a className={`nav-link ${this.state.currentTabIndex === 2 ? "active" : ""}`} onClick={() => this.goToTab(2)}>Json schema</a>
+                                </li>
+                            </ul>
 
-                            <div id={`docson-${this.state.schema.id}`} />
+                            {/* <hr /> */}
 
-                            <hr />
 
-                            <span className="modal-container">
-                                <span
+                            <div id={`docson-${this.state.schema.id}`} hidden={this.state.currentTabIndex !== 0} />
+
+                            {/* <hr /> */}
+
+
+                            <span className="modal-container" hidden={this.state.currentTabIndex !== 1}>
+                                {/* <span
                                     className={`endpoint-fold-btn ${this.state.sampleIsOpen ? "open" : ""}`}
                                     onClick={() => this.toggleSampleFolded()}>
                                     {this.state.sampleIsOpen ?
@@ -99,16 +114,17 @@ export default class JsonSchemaModalComponent extends React.Component {
                                     style={{ display: "inline-block" }}
                                     id={`sample-${this.props.subject}-${this.state.schema.id}`}>
                                     {this.props.isError ? "Error message" : "Sample"}
-                                </h2>
+                                </h2> */}
 
                                 {this.renderSample()}
 
                             </span>
 
-                            <hr />
 
-                            <span className="modal-container">
-                                <span
+                            {/* <hr /> */}
+
+                            <span className="modal-container" hidden={this.state.currentTabIndex !== 2}>
+                                {/* <span
                                     className={`endpoint-fold-btn ${this.state.jsonSchemaIsOpen ? "open" : ""}`}
                                     onClick={() => this.toggleJsonSchemaFolded()}>
                                     {this.state.jsonSchemaIsOpen ?
@@ -122,11 +138,12 @@ export default class JsonSchemaModalComponent extends React.Component {
                                     style={{ display: "inline-block" }}
                                     id={`schema-${this.props.subject}-${this.state.schema.id}`}>
                                     {this.props.isError ? "Full error" : "Json schema"}
-                                </h2>
+                                </h2> */}
 
                                 {this.renderJsonSchema()}
 
                             </span>
+
 
                         </div>
 
@@ -248,20 +265,13 @@ export default class JsonSchemaModalComponent extends React.Component {
         const schemaToJson = Object.assign({}, this.state.schema);
         delete schemaToJson.sample;
 
-        if (!this.state.colorized) {
-            hljs.highlightBlock(this.state.jsonSchemaElem);
-            hljs.highlightBlock(this.state.jsonSampleElem);
-
-            this.setState({ colorized: true });
-        }
-
         /**
          * Only works when frontend is loaded with bootstrap / jquery
          */
         if ($)
             // @ts-ignore 
             $(this.state.modal).modal();
-
+        // TODO: sort keys in schema
         const docson = nodeDocson();
         docson.doc(schemaToJson, `docson-${this.state.schema.id}`);
     }
@@ -270,6 +280,23 @@ export default class JsonSchemaModalComponent extends React.Component {
         if ($)
             // @ts-ignore
             $(this.state.modal).modal("hide");
+    }
+
+    async goToTab(index) {
+        await this.setState({ currentTabIndex: index });
+
+        if (index === 2)
+            hljs.highlightBlock(this.state.jsonSchemaElem);
+
+        if (index === 1)
+            hljs.highlightBlock(this.state.jsonSampleElem);
+
+        if (index === 0) {
+            // const schemaToJson = Object.assign({}, this.state.schema);
+            // delete schemaToJson.sample;
+            // const docson = nodeDocson();
+            // docson.doc(schemaToJson, `docson-${this.state.schema.id}`);
+        }
     }
 
 }
