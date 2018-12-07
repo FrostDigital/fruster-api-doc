@@ -20,6 +20,8 @@ export default class JsonSchemaModalComponent extends React.Component {
             delete schemaToJson.sample;
 
             this.state.jsonSchema = JSON.stringify(ViewUtils.sortObject(schemaToJson), null, 2);
+
+            console.log(this.state.schema.$docson);
         } else
             this.state.schema = {};
     }
@@ -75,6 +77,10 @@ export default class JsonSchemaModalComponent extends React.Component {
                                 onClick={() => this.goToJsonSchema()}>
                                 <div>Go to json Schema</div>
                             </a>
+
+                            <hr />
+
+                            <div id={`docson-${this.state.schema.id}`} />
 
                             <hr />
 
@@ -239,6 +245,9 @@ export default class JsonSchemaModalComponent extends React.Component {
     openModal() {
         this.setInitialOpenState();
 
+        const schemaToJson = Object.assign({}, this.state.schema);
+        delete schemaToJson.sample;
+
         if (!this.state.colorized) {
             hljs.highlightBlock(this.state.jsonSchemaElem);
             hljs.highlightBlock(this.state.jsonSampleElem);
@@ -252,6 +261,9 @@ export default class JsonSchemaModalComponent extends React.Component {
         if ($)
             // @ts-ignore 
             $(this.state.modal).modal();
+
+        const docson = nodeDocson();
+        docson.doc(schemaToJson, `docson-${this.state.schema.id}`);
     }
 
     closeModal() {
