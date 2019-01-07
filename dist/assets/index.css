@@ -421,6 +421,9 @@ button.action:hover {
     border-color: #dee2e6 #dee2e6 #fff;
 }
 
+.docson-entry * {
+    user-select: all !important;
+}
 .docson-entry {
     margin-top: 40px;
 }

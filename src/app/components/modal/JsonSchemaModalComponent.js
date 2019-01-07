@@ -16,6 +16,14 @@ function getTabFromHash() {
     }
 }
 
+function cssFriendlify(string) {
+    return string
+        .split("/").join("")
+        .split("#").join("")
+        .split(":").join("")
+        .split(".").join("");
+}
+
 export default class JsonSchemaModalComponent extends React.Component {
 
     constructor(props) {
@@ -99,7 +107,7 @@ export default class JsonSchemaModalComponent extends React.Component {
                                 </ul>
                             }
 
-                            <div id={`docson-${this.state.schema.id}`}
+                            <div id={`docson-${cssFriendlify(this.props.endpointUrl)}-${this.state.schema.id}`}
                                 className="docson-entry"
                                 hidden={this.state.currentTabIndex !== 0} >
                                 <br />
@@ -226,7 +234,7 @@ export default class JsonSchemaModalComponent extends React.Component {
 
         // TODO: sort keys in schema!
         const docson = nodeDocson();
-        docson.doc(schemaToJson, `docson-${this.state.schema.id}`);
+        docson.doc(schemaToJson, `docson-${cssFriendlify(this.props.endpointUrl)}-${this.state.schema.id}`);
     }
 
     closeModal() {
