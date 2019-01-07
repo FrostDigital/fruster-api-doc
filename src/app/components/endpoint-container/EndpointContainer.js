@@ -37,9 +37,6 @@ export default class EndpointContainer extends React.Component {
                 const schemas = endpoint.schemas
                     .filter(schema => {
                         if (schema) {
-                            if (schema.id === "LockAndUnlockEntriesRequest")
-                                console.log(schema);
-
                             switch (true) {
                                 case schema.id === endpoint.requestSchema:
                                 case schema.id === endpoint.responseSchema:

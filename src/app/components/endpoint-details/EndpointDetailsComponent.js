@@ -14,9 +14,9 @@ export default class EndpointDetailsComponent extends React.Component {
         responseSchema: this.props.schemas.find(schema => schema.id === this.props.endpoint.responseSchema),
         urlSubjectLink: this.getSubjectLink(),
         urlSubject: this.getSubject(),
-        lastLocationHash: "",
         isOpen: false,
-        selected: false
+        selected: false,
+        lastHash: ""
     };
 
     getParsedSubject() {
@@ -52,11 +52,37 @@ export default class EndpointDetailsComponent extends React.Component {
         setTimeout(() => this.reactToHashChange());
     }
 
-    reactToHashChange() {
-        if (decodeURI(window.location.hash) === `#${this.state.urlSubjectLink}`)
-            this.reactToClickHash();
+    async reactToHashChange() {
+        const decodedURI = decodeURI(window.location.hash);
+        const newHashWithoutTab = decodedURI.substring(0, decodedURI.length - 1);
+        const lastHashWithoutTab = this.state.lastHash.substring(0, this.state.lastHash.length - 1);
 
-        this.setState({ lastLocationHash: decodeURI(window.location.hash) });
+        switch (true) {
+            case decodedURI === `#${this.state.urlSubjectLink}`:
+            case decodedURI.includes("?modal=") && decodedURI.includes(`#${this.state.urlSubjectLink}`):
+                /** If hash was just a tab switch we don't do anything */
+                if (this.state.requestSchema && decodedURI.includes(`?modal=${this.state.requestSchema.id}`)
+                    || this.state.responseSchema && decodedURI.includes(`?modal=${this.state.responseSchema.id}`)) {
+                    if (newHashWithoutTab === lastHashWithoutTab)
+                        return;
+                }
+
+                this.reactToClickHash();
+
+                if (this.state.requestSchema && decodedURI.includes(`?modal=${this.state.requestSchema.id}`)) {
+                    if ($)
+                        $(".modal").modal("hide");
+
+                    this.requestBodyModal.openModal();
+                } else if (this.state.responseSchema && decodedURI.includes(`?modal=${this.state.responseSchema.id}`)) {
+                    if ($)
+                        $(".modal").modal("hide");
+
+                    this.responseBodyModal.openModal();
+                }
+        }
+
+        this.setState({ lastHash: decodedURI });
     }
 
     reactToClickHash() {
@@ -118,7 +144,7 @@ export default class EndpointDetailsComponent extends React.Component {
 
                                         {this.getEndpointDetailsTable(context)}
 
-                                        {this.getDocumentationTable(context)}
+                                        {this.getDocumentationTable()}
 
                                     </span>
 
@@ -126,6 +152,7 @@ export default class EndpointDetailsComponent extends React.Component {
                                     this.props.endpoint.docs
                                     && this.props.endpoint.docs.description
                                     && <span
+                                        title={this.props.endpoint.docs ? this.props.endpoint.docs.description : ""}
                                         className="short-description"
                                         dangerouslySetInnerHTML={{ __html: markdown.markdown.toHTML(this.props.endpoint.docs.description) }} />
                             }
@@ -137,19 +164,23 @@ export default class EndpointDetailsComponent extends React.Component {
 
                             <span>
 
-                                <JsonSchemaModalComponent
-                                    ref={ref => { this.requestBodyModal = ref; }}
-                                    subject={this.props.endpoint.subject}
-                                    schema={this.state.requestSchema}
-                                    isError={this.state.requestSchema ? this.state.requestSchema._error : false}
-                                />
+                                {this.state.requestSchema &&
+                                    <JsonSchemaModalComponent
+                                        ref={ref => { this.requestBodyModal = ref; }}
+                                        subject={this.props.endpoint.subject}
+                                        schema={this.state.requestSchema}
+                                        endpointUrl={this.state.urlSubjectLink}
+                                        isError={this.state.requestSchema ? this.state.requestSchema._error : false}
+                                    />}
 
-                                <JsonSchemaModalComponent
-                                    ref={ref => { this.responseBodyModal = ref; }}
-                                    subject={this.props.endpoint.subject}
-                                    schema={this.state.responseSchema}
-                                    isError={this.state.responseSchema ? this.state.responseSchema._error : false}
-                                />
+                                {this.state.responseSchema &&
+                                    <JsonSchemaModalComponent
+                                        ref={ref => { this.responseBodyModal = ref; }}
+                                        subject={this.props.endpoint.subject}
+                                        schema={this.state.responseSchema}
+                                        endpointUrl={this.state.urlSubjectLink}
+                                        isError={this.state.responseSchema ? this.state.responseSchema._error : false}
+                                    />}
 
                             </span>
                         }
@@ -196,7 +227,7 @@ export default class EndpointDetailsComponent extends React.Component {
                             ${this.props.endpoint.requestSchema} 
                             ${(this.props.endpoint.requestSchema ? " " : "deactivated")}
                             ${this.state.requestSchema && this.state.requestSchema._error ? "has-error" : ""}`}>
-                            <a href=""
+                            <a href={this.props.endpoint.requestSchema ? `#${this.state.urlSubjectLink}?modal=${this.props.endpoint.requestSchema}` : "#"}
                                 className={this.props.endpoint.requestSchema ? "" : "deactivated"}>
                                 {this.props.endpoint.requestSchema || <span className="not-available"> n/a</span>}
                                 {this.props.endpoint.requestSchema && <span className="glyphicon glyphicon-new-window"></span>}
@@ -235,7 +266,7 @@ export default class EndpointDetailsComponent extends React.Component {
                             ${this.props.endpoint.responseSchema} 
                             ${(this.props.endpoint.responseSchema ? " " : "deactivated")}
                             ${this.state.responseSchema && this.state.responseSchema._error ? "has-error" : ""}`}>
-                            <a href=""
+                            <a href={this.props.endpoint.responseSchema ? `#${this.state.urlSubjectLink}?modal=${this.props.endpoint.responseSchema}` : "#"}
                                 className={this.props.endpoint.responseSchema ? "" : "deactivated"}>
                                 {this.props.endpoint.responseSchema || <span className="not-available">n/a</span>}
                                 {this.props.endpoint.responseSchema && <span className="glyphicon glyphicon-new-window"></span>}
@@ -256,10 +287,8 @@ export default class EndpointDetailsComponent extends React.Component {
 
     /**
      * Prepares the description table
-     * 
-     * @param {Object} context 
      */
-    getDocumentationTable(context) {
+    getDocumentationTable() {
         return (
             <table
                 className="table table">
@@ -298,7 +327,9 @@ export default class EndpointDetailsComponent extends React.Component {
      */
     openRequestBodyModal(e) {
         e.preventDefault();
-        this.requestBodyModal.openModal();
+
+        if (this.requestBodyModal)
+            this.requestBodyModal.openModal();
     }
 
     /**
@@ -308,7 +339,9 @@ export default class EndpointDetailsComponent extends React.Component {
      */
     openResponseBodyModal(e) {
         e.preventDefault();
-        this.responseBodyModal.openModal();
+
+        if (this.responseBodyModal)
+            this.responseBodyModal.openModal();
     }
 
     /**
