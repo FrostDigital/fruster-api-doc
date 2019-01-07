@@ -34,7 +34,35 @@ export default class EndpointContainer extends React.Component {
     getEndpoints() {
         return this.props.endpoints
             .map((endpoint, index) => {
-                const schemas = endpoint.schemas.filter(schema => schema && (schema.id === endpoint.requestSchema || schema.id === endpoint.responseSchema));
+                const schemas = endpoint.schemas
+                    .filter(schema => {
+                        if (schema) {
+                            if (schema.id === "LockAndUnlockEntriesRequest")
+                                console.log(schema);
+
+                            switch (true) {
+                                case schema.id === endpoint.requestSchema:
+                                case schema.id === endpoint.responseSchema:
+                                case endpoint.requestSchema && typeof endpoint.requestSchema === "object" && schema.id === endpoint.requestSchema.id:
+                                case endpoint.responseSchema && typeof endpoint.responseSchema && schema.id === endpoint.responseSchema.id:
+                                    return schema;
+                            }
+                        }
+                    });
+
+                if (endpoint.requestSchema && typeof endpoint.requestSchema === "object") {
+                    if (!schemas.find(schema => schema.id === endpoint.requestSchema.id))
+                        schemas.push(endpoint.requestSchema);
+
+                    endpoint.requestSchema = endpoint.requestSchema.id;
+                }
+
+                if (endpoint.responseSchema && typeof endpoint.responseSchema === "object") {
+                    if (!schemas.find(schema => schema.id === endpoint.responseSchema.id))
+                        schemas.push(endpoint.responseSchema);
+
+                    endpoint.responseSchema = endpoint.responseSchema.id;
+                }
 
                 return (
                     <span key={"endpoint" + index}>
