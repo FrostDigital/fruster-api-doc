@@ -59,7 +59,7 @@ export default class EndpointDetailsComponent extends React.Component {
 
         switch (true) {
             case decodedURI === `#${this.state.urlSubjectLink}`:
-            case decodedURI.includes("?modal=") && decodedURI.includes(`#${this.state.urlSubjectLink}`):
+            case decodedURI.includes("?modal=") && decodedURI.includes(`#${this.state.urlSubjectLink}?`):
                 /** If hash was just a tab switch we don't do anything */
                 if (this.state.requestSchema && decodedURI.includes(`?modal=${this.state.requestSchema.id}`)
                     || this.state.responseSchema && decodedURI.includes(`?modal=${this.state.responseSchema.id}`)) {
@@ -332,10 +332,12 @@ export default class EndpointDetailsComponent extends React.Component {
      * @param {Object} e 
      */
     openRequestBodyModal(e) {
-        e.preventDefault();
+        if (e.nativeEvent.which !== 2) {
+            e.preventDefault();
 
-        if (this.requestBodyModal)
-            this.requestBodyModal.openModal();
+            if (this.requestBodyModal)
+                this.requestBodyModal.openModal();
+        }
     }
 
     /**
@@ -344,10 +346,12 @@ export default class EndpointDetailsComponent extends React.Component {
      * @param {Object} e 
      */
     openResponseBodyModal(e) {
-        e.preventDefault();
+        if (e.nativeEvent.which !== 2) {
+            e.preventDefault();
 
-        if (this.responseBodyModal)
-            this.responseBodyModal.openModal();
+            if (this.responseBodyModal)
+                this.responseBodyModal.openModal();
+        }
     }
 
     /**
