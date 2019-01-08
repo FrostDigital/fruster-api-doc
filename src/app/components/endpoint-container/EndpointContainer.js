@@ -1,7 +1,44 @@
 import React from "react";
 import EndpointDetailsComponent from "../endpoint-details/EndpointDetailsComponent";
 
+
+
 export default class EndpointContainer extends React.Component {
+
+    state = {
+        checked: true,
+        checkboxes: EndpointContainer.prepareCheckboxes(this.props.endpoints)
+    };
+
+    static prepareCheckboxes(endpoints) {
+        const returnObj = {};
+
+        endpoints.forEach(endpoint => returnObj[endpoint.subject] = true);
+
+        return returnObj;
+    }
+
+    getCheckedEndpoints() {
+        return Object.keys(this.state.checkboxes)
+            .map(subject => {
+                if (this.state.checkboxes[subject])
+                    return subject;
+            })
+            .filter(subject => !!subject)
+            .join(",");
+    }
+
+    checkAll() {
+        const newCheckedStatus = !this.state.checked;
+        const checkboxesNewStatus = {};
+
+        Object.keys(this.state.checkboxes).forEach(subject => checkboxesNewStatus[subject] = newCheckedStatus);
+
+        this.setState({
+            checked: newCheckedStatus,
+            checkboxes: checkboxesNewStatus
+        });
+    }
 
     render() {
         return (
@@ -11,14 +48,32 @@ export default class EndpointContainer extends React.Component {
 
                 <a href={"#" + this.props.serviceName + "-" + (this.props.type || "service")}><h2>{this.props.serviceName}</h2></a>
 
+                {
+                    this.props.type === "service" &&
+                    <span className="service-btn">
+                        <label
+                            htmlFor={this.props.serviceName + "-" + (this.props.type || "service") + "-" + "select-all"}>
+                            Select / deselect all
+                        </label> <input
+                            id={this.props.serviceName + "-" + (this.props.type || "service") + "-" + "select-all"}
+                            onChange={e => this.checkAll()}
+                            checked={this.state.checked}
+                            type="checkbox" /> |
+
+                        <a href={`/service-client/${this.props.serviceName}?subjects=${encodeURIComponent(this.getCheckedEndpoints())}`}>
+                            <button className="action">Download service client <span className="glyphicon glyphicon-download"></span></button>
+                        </a>
+                    </span>
+                }
+
                 {this.getEndpoints()}
 
             </div>
         );
     }
 
-    shouldComponentUpdate() {
-        return false;
+    onCheckboxChecked = (e) => {
+        this.setState({ checkboxes: { ...this.state.checkboxes, [e.target.name]: e.target.checked }, checked: false });
     }
 
     /**
@@ -30,9 +85,6 @@ export default class EndpointContainer extends React.Component {
                 const schemas = endpoint.schemas
                     .filter(schema => {
                         if (schema) {
-                            if (schema.id === "LockAndUnlockEntriesRequest")
-                                console.log(schema);
-
                             switch (true) {
                                 case schema.id === endpoint.requestSchema:
                                 case schema.id === endpoint.responseSchema:
@@ -64,7 +116,10 @@ export default class EndpointContainer extends React.Component {
                             type={this.props.type}
                             endpoint={endpoint}
                             schemas={schemas}
-                            allEndpoints={this.props.allEndpoints} />
+                            allEndpoints={this.props.allEndpoints}
+                            onCheck={e => this.onCheckboxChecked(e)}
+                            checked={this.state.checkboxes[endpoint.subject]}
+                        />
                     </span>
                 )
             });

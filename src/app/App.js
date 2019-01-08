@@ -9,7 +9,6 @@ import ToolbarComponent from "./components/toolbar/ToolbarComponent";
 import { ApiDocContext } from "./Context";
 
 
-
 export default class App extends React.Component {
 
     constructor(props) {

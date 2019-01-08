@@ -5,17 +5,40 @@ import CopyToClipboardComponent from "../copy-to-clipboard/CopyToClipboardCompon
 
 hljs.configure({ languages: ["json"] });
 
+function getTabFromHash() {
+    try {
+        const decodedURIHash = decodeURI(window.location.hash);
+        const windowLocationTab = Number.parseInt(decodedURIHash.substring(decodedURIHash.length - 1));
+
+        return windowLocationTab || 0;
+    } catch (err) {
+        return 0;
+    }
+}
+
+function cssFriendlify(string) {
+    if (!string)
+        return string;
+
+    return string
+        .split("/").join("")
+        .split("#").join("")
+        .split(":").join("")
+        .split(".").join("");
+}
+
 export default class JsonSchemaModalComponent extends React.Component {
 
     constructor(props) {
         super(props);
 
         if (this.props.schema) {
+            // @ts-ignore
             this.state = this.state || {};
             this.state.schema = this.props.schema;
 
             const schemaToJson = Object.assign({}, this.state.schema);
-            this.state.jsonSample = schemaToJson ? JSON.stringify(schemaToJson.sample, null, 2) : undefined;
+            this.state.jsonSample = schemaToJson && schemaToJson.sample ? JSON.stringify(ViewUtils.sortObject(schemaToJson.sample), null, 2) : undefined;
             delete schemaToJson.sample;
 
             this.state.jsonSchema = JSON.stringify(ViewUtils.sortObject(schemaToJson), null, 2);
@@ -26,19 +49,17 @@ export default class JsonSchemaModalComponent extends React.Component {
     // @ts-ignore
     state = {
         colorized: false,
-        sampleSelected: false,
-        jsonSchemaSelected: false,
-        jsonSchemaIsOpen: false,
-        sampleIsOpen: true,
-        modal: {}
+        modal: {},
+        currentTabIndex: getTabFromHash()
     };
 
-    setInitialOpenState() {
-        this.setState({
-            ...this.state,
-            jsonSchemaIsOpen: false,
-            sampleIsOpen: true
-        });
+    async setInitialOpenState() {
+
+
+        if (this.props.isError)
+            await this.goToTab(1);
+        else
+            await this.goToTab(getTabFromHash());
     }
 
     render() {
@@ -58,70 +79,51 @@ export default class JsonSchemaModalComponent extends React.Component {
                             <span
                                 className="glyphicon glyphicon-remove close"
                                 id="close-btn"
-                                onClick={e => this.closeModal()}>
+                                onClick={() => this.closeModal()}>
                             </span>
 
-                            <h1 id="header">
-                                {this.state.schema.id}
-                            </h1>
-
-                            <a
-                                hidden={this.props.isError}
-                                className="clickable"
-                                onClick={() => this.goToSample()}>
-                                <div>Go to sample</div>
-                            </a>
-                            <a
-                                hidden={this.props.isError}
-                                className="clickable"
-                                onClick={() => this.goToJsonSchema()}>
-                                <div>Go to json Schema</div>
-                            </a>
+                            <h1 id="header">{this.state.schema.id}</h1>
+                            <p>{this.props.isError ? "Contains errors" : this.state.schema.description}</p>
 
                             <hr />
 
-                            <span className="modal-container">
-                                <span
-                                    className={`endpoint-fold-btn ${this.state.sampleIsOpen ? "open" : ""}`}
-                                    onClick={() => this.toggleSampleFolded()}>
-                                    {this.state.sampleIsOpen ?
-                                        <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-down"></i>
-                                        : <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-right"></i>}
-                                </span>
-                                <h2
-                                    className="clickable"
-                                    onClick={() => this.goToSample()}
-                                    ref={ref => this.sampleHeader = ref}
-                                    style={{ display: "inline-block" }}
-                                    id={`sample-${this.props.subject}-${this.state.schema.id}`}>
-                                    {this.props.isError ? "Error message" : "Sample"}
-                                </h2>
+                            {this.props.isError ?
+                                <ul className="nav nav-tabs">
+                                    <li className="nav-item clickable">
+                                        <a className={`nav-link ${this.state.currentTabIndex === 1 ? "active" : ""}`} onClick={() => this.goToTab(1)}>Error message</a>
+                                    </li>
+                                    <li className="nav-item clickable">
+                                        <a className={`nav-link ${this.state.currentTabIndex === 2 ? "active" : ""}`} onClick={() => this.goToTab(2)}>Full error</a>
+                                    </li>
+                                </ul>
+                                :
+                                <ul className="nav nav-tabs">
+                                    <li className="nav-item clickable">
+                                        <a className={`nav-link ${this.state.currentTabIndex === 0 ? "active" : ""}`} onClick={() => this.goToTab(0)}>Definition</a>
+                                    </li>
+                                    <li className="nav-item clickable">
+                                        <a className={`nav-link ${this.state.currentTabIndex === 1 ? "active" : ""}`} onClick={() => this.goToTab(1)}>Sample</a>
+                                    </li>
+                                    <li className="nav-item clickable">
+                                        <a className={`nav-link ${this.state.currentTabIndex === 2 ? "active" : ""}`} onClick={() => this.goToTab(2)}>Json schema</a>
+                                    </li>
+                                </ul>
+                            }
 
+                            <div id={`docson-${cssFriendlify(this.props.endpointUrl)}-${this.state.schema.id}`}
+                                className="docson-entry"
+                                hidden={this.state.currentTabIndex !== 0} >
+                                <br />
+                            </div>
+
+                            <span className="modal-container"
+                                hidden={this.state.currentTabIndex !== 1}>
                                 {this.renderSample()}
-
                             </span>
 
-                            <hr />
-
-                            <span className="modal-container">
-                                <span
-                                    className={`endpoint-fold-btn ${this.state.jsonSchemaIsOpen ? "open" : ""}`}
-                                    onClick={() => this.toggleJsonSchemaFolded()}>
-                                    {this.state.jsonSchemaIsOpen ?
-                                        <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-down"></i>
-                                        : <i className="toggle-fold-btn json-schema glyphicon glyphicon-menu-right"></i>}
-                                </span>
-                                <h2
-                                    className="clickable"
-                                    onClick={() => this.goToJsonSchema()}
-                                    ref={ref => { this.jsonSchemaHeader = ref; }}
-                                    style={{ display: "inline-block" }}
-                                    id={`schema-${this.props.subject}-${this.state.schema.id}`}>
-                                    {this.props.isError ? "Full error" : "Json schema"}
-                                </h2>
-
+                            <span className="modal-container"
+                                hidden={this.state.currentTabIndex !== 2}>
                                 {this.renderJsonSchema()}
-
                             </span>
 
                         </div>
@@ -135,6 +137,9 @@ export default class JsonSchemaModalComponent extends React.Component {
     }
 
     renderSample() {
+        if (!this.state.jsonSample)
+            return <span />;
+
         return (
             <span>
 
@@ -155,27 +160,26 @@ export default class JsonSchemaModalComponent extends React.Component {
 
                 </button>
 
-                <span hidden={!this.state.sampleIsOpen}>
+                <div className="clearfix" />
 
-                    <div className="clearfix" />
-
-                    <pre
-                        className={`${this.state.sampleSelected ? "selected-animated" : ""}`}
-                        ref={ref => { this.state.jsonSampleElem = ref; }}>
-                        {/* Since errors have some HTML formatted elements: */}
-                        <code id="sample-json" dangerouslySetInnerHTML={{ __html: this.state.jsonSample }} />
-                    </pre>
-
-                </span>
+                <pre
+                    ref={ref => { this.state.jsonSampleElem = ref; }}>
+                    {/* Since errors have some HTML formatted elements: */}
+                    <code
+                        id="sample-json"
+                        dangerouslySetInnerHTML={{ __html: this.state.jsonSample }} />
+                </pre>
 
             </span>
         );
     }
 
     renderJsonSchema() {
+        if (!this.state.jsonSchema)
+            return <span />;
+
         return (
             <span>
-
                 <button
                     style={{
                         display: "inline",
@@ -193,91 +197,71 @@ export default class JsonSchemaModalComponent extends React.Component {
 
                 </button>
 
-                <span hidden={!this.state.jsonSchemaIsOpen}>
+                {this.state.jsonSchema.length > 0 ?
+                    <span>
 
-                    <div className="clearfix" />
+                        <div className="clearfix" />
 
-                    <pre
-                        className={`${this.state.jsonSchemaSelected ? "selected-animated" : ""}`}
-                        ref={ref => { this.state.jsonSchemaElem = ref; }}>
-                        {/* Since errors have some HTML formatted elements: */}
-                        <code id="json-schema-json" dangerouslySetInnerHTML={{ __html: this.state.jsonSchema }} />
-                    </pre>
+                        <pre
+                            ref={ref => { this.state.jsonSchemaElem = ref; }}>
+                            {/* Since errors have some HTML formatted elements: */}
+                            <code
+                                id="json-schema-json"
+                                dangerouslySetInnerHTML={{ __html: this.state.jsonSchema }} />
+                        </pre>
 
-                </span>
+                    </span> : "No further details available."}
 
             </span>
         );
     }
 
-    goToSample() {
-        this.state.sampleIsOpen = true;
-        this.forceUpdate();
-        setTimeout(() => this.sampleHeader.scrollIntoView(true), 1);
+    async openModal() {
+        await this.setInitialOpenState();
 
-        this.state.sampleSelected = true;
+        history.replaceState(undefined, undefined, `#${this.props.endpointUrl}?modal=${this.state.schema.id}&tab=${this.state.currentTabIndex}`)
 
-        setTimeout(() => {
-            this.state.sampleSelected = false;
-            /** for some reason this.setState doesn't work here 🤔 */
-            this.forceUpdate();
-        }, 100);
-    }
-
-    goToJsonSchema() {
-        this.state.jsonSchemaIsOpen = true;
-        this.forceUpdate();
-
-        setTimeout(() => this.jsonSchemaHeader.scrollIntoView(true), 1);
-
-        this.state.jsonSchemaSelected = true;
-
-        setTimeout(() => {
-            this.state.jsonSchemaSelected = false;
-            /** for some reason this.setState doesn't work here  🤔*/
-            this.forceUpdate();
-        }, 100);
-    }
-
-    toggleJsonSchemaFolded() {
-        this.setState({
-            ...this.state,
-            jsonSchemaIsOpen: !this.state.jsonSchemaIsOpen
-        });
-    }
-
-    toggleSampleFolded() {
-        this.setState({
-            ...this.state,
-            sampleIsOpen: !this.state.sampleIsOpen
-        });
-    }
-
-    openModal() {
-        this.setInitialOpenState();
-
-        if (!this.state.colorized) {
-            hljs.highlightBlock(this.state.jsonSchemaElem);
-            hljs.highlightBlock(this.state.jsonSampleElem);
-
-            this.setState({
-                ...this.state,
-                colorized: true
-            });
-        }
+        const schemaToJson = ViewUtils.sortObject(Object.assign({}, this.state.schema));
+        delete schemaToJson.sample;
 
         /**
          * Only works when frontend is loaded with bootstrap / jquery
          */
-        if ($)
-            // @ts-ignore 
+        if ($) {
+            // @ts-ignore
             $(this.state.modal).modal();
+            $(this.state.modal).on("hide.bs.modal", () => {
+                this.resetModalHash();
+            });
+        }
+
+        // TODO: sort keys in schema!
+        const docson = nodeDocson();
+        docson.doc(schemaToJson, `docson-${cssFriendlify(this.props.endpointUrl)}-${this.state.schema.id}`);
     }
 
     closeModal() {
+        this.resetModalHash();
+
         if ($)
             // @ts-ignore
             $(this.state.modal).modal("hide");
+    }
+
+    resetModalHash() {
+        history.replaceState(undefined, undefined, `#${this.props.endpointUrl}`);
+    }
+
+    async goToTab(index) {
+        await this.setState({ currentTabIndex: index });
+
+        if (index === 2)
+            hljs.highlightBlock(this.state.jsonSchemaElem);
+
+        if (index === 1)
+            hljs.highlightBlock(this.state.jsonSampleElem);
+
+        window.location.hash = `${window.location.hash.substring(0, window.location.hash.length - 1)}${index}`;
     }
 
 }

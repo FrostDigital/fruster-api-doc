@@ -9,6 +9,8 @@ const express = require("express");
 const uuid = require("uuid");
 const app = express();
 const path = require("path");
+const util = require("util");
+const fs = require("fs");
 
 const bus = require("fruster-bus");
 const log = require("fruster-log");
@@ -17,11 +19,16 @@ const ViewUtils = require("./utils/ViewUtils");
 const config = require("../config");
 const port = config.port || 3100;
 
+const ServiceClientGenerator = require("./utils/service-client-generator/ServiceClientGenerator");
+const _ = require("lodash");
+
+let schemasPerService = {};
+let endpointsByType = { http: {}, service: {}, ws: {} };
+let cachedHtml;
+
 (async function () {
 
-    await bus.connect({
-        address: config.bus
-    });
+    await bus.connect({ address: config.bus });
 
     require("fruster-health").start();
 
@@ -29,19 +36,42 @@ const port = config.port || 3100;
 
 }());
 
-let schemasPerService = {};
-let endpointsByType = { http: {}, service: {}, ws: {} };
-let cachedHtml;
-
 function startServer() {
     app.use("/assets", express.static(path.resolve(`${__dirname}/assets`)));
-
 
     app.post("/reset-cache", (req, res) => {
         resetCache();
 
         res.status(200);
         res.end();
+    });
+
+    app.get("/service-client/:serviceName", async (req, res) => {
+        try {
+            const type = "service";
+            const serviceName = req.params.serviceName;
+            const endpoints = endpointsByType.service[serviceName];
+
+            if (!endpointsByType.service[serviceName]) {
+                res.end("<html><body><h1>No data found</h1><h2>run the api doc at least once and try again</h2></body></html>");
+                return;
+            }
+
+            const options = { serviceName, type, endpoints, subjects: req.query.subjects };
+
+            const serviceClientGenerator = new ServiceClientGenerator(options);
+            const className = ViewUtils.replaceAll(_.startCase(serviceName), " ", "") + "Client";
+
+            const file = serviceClientGenerator.toJavascriptClass();
+
+            res.setHeader("Content-type", "application/javascript");
+            res.setHeader("Content-disposition", `attachment; filename=${className}.js`);
+
+            res.end(file);
+        } catch (err) {
+            log.warn(err);
+            res.end(`<html><body>Could not generate service client. <br/>Reason:  <br/><code><pre>${util.inspect(err, null, null)}</pre></code></body></html>`);
+        }
     });
 
     app.get("/", async (req, res) => {
@@ -55,12 +85,22 @@ function startServer() {
             if (cachedHtml)
                 res.send(cachedHtml);
 
-            const metadataResponses = await bus.requestMany({
-                skipOptionsRequest: true,
-                subject: "metadata",
-                maxResponses: 10000,
-                message: { reqId: uuid.v4() }
-            });
+            let metadataResponses = [];
+
+            if (req.query.url) { /** Lets you input an url to log viewer in order to use that to get metadata */
+                metadataResponses = await utils.httpRequest("POST", req.query.url, {
+                    maxResponses: 10000,
+                    message: {},
+                    subject: "metadata"
+                });
+            } else
+                metadataResponses = await bus.requestMany({
+                    skipOptionsRequest: true,
+                    subject: "metadata",
+                    maxResponses: 10000,
+                    message: { reqId: uuid.v4() }
+                });
+
 
             let schemasWithErrors;
             const promises = [];
@@ -118,6 +158,7 @@ function startServer() {
 
             if (!res.headersSent)
                 res.send(cachedHtml);
+
         } catch (err) {
             log.error(err);
             res.json(err);
@@ -153,6 +194,11 @@ function startServer() {
  * @param {String} instanceId 
  */
 function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
+    if (!object.subject) {
+        console.log("Could not parse endpoint; No subject...?", object);
+        return;
+    }
+
     const splits = object.subject.split(".");
 
     if (splits[splitIndex] === "health")

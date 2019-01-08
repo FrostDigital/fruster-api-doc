@@ -54,6 +54,7 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                                             return (
                                                 <li
                                                     key={`table-of-contents-http-${index}`}
+                                                    title={endpoint.docs ? endpoint.docs.description : ""}
                                                     className={endpoint.deprecated ? "deprecated" : ""}>
                                                     <a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
                                                         <span className={parsedSubject.method}>
@@ -99,6 +100,7 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                                         endpoints.map((endpoint, index) => {
                                             return (
                                                 <li key={`table-of-contents-${this.props.type}-${index}`}
+                                                    title={endpoint.docs ? endpoint.docs.description : ""}
                                                     className={endpoint.deprecated ? "deprecated" : ""}>
                                                     <a
                                                         href={"#" + endpoint.subject}

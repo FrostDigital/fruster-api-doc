@@ -165,6 +165,8 @@ textarea {
 
 .modal-lg {
     overflow: hidden;
+    max-width: 1170px !important;
+    width: 100% !important;
 }
 
 .doc-entry-title {
@@ -238,8 +240,27 @@ h3.deprecated,
     font-weight: bold;
 }
 
-.description {
+.description, .short-description {
     max-width: 1090px;
+}
+
+.short-description p {
+    overflow: hidden;
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.short-description {
+    opacity: 0.7;
+    overflow: hidden;
+    display: block;
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    padding-top: 10px;
+    max-height: 25px;
 }
 
 .description img {
@@ -387,4 +408,34 @@ button.action:hover {
 
 .clickable {
     cursor: pointer;
+}
+
+.service-btn {
+    margin-top: -10px;
+    float: right;
+}
+
+.nav-link.active {
+    color: #495057;
+    background-color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+}
+
+.docson-entry * {
+    user-select: all !important;
+}
+.docson-entry {
+    margin-top: 40px;
+}
+
+.docson .box, .docson .box.box-selected {
+    border-radius: 0 !important;
+    border-width: 1px !important;
+    border-color: lightgrey !important;
+    background-color: white !important;
+    box-shadow: none !important;
+}
+
+.docson .box-header, .docson .box-header .box-body, .box.box-selected .box-body {
+    background-color: white !important;
 }
