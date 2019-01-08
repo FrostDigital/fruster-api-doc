@@ -17,6 +17,9 @@ function getTabFromHash() {
 }
 
 function cssFriendlify(string) {
+    if (!string)
+        return string;
+
     return string
         .split("/").join("")
         .split("#").join("")
