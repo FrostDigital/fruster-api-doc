@@ -218,7 +218,7 @@ export default class JsonSchemaModalComponent extends React.Component {
 
         history.replaceState(undefined, undefined, `#${this.props.endpointUrl}?modal=${this.state.schema.id}&tab=${this.state.currentTabIndex}`)
 
-        const schemaToJson = Object.assign({}, this.state.schema);
+        const schemaToJson = ViewUtils.sortObject(Object.assign({}, this.state.schema));
         delete schemaToJson.sample;
 
         /**

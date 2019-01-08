@@ -52,8 +52,6 @@ function startServer() {
             const serviceName = req.params.serviceName;
             const endpoints = endpointsByType.service[serviceName];
 
-            console.log(endpointsByType);
-
             if (!endpointsByType.service[serviceName]) {
                 res.end("<html><body><h1>No data found</h1><h2>run the api doc at least once and try again</h2></body></html>");
                 return;
@@ -196,6 +194,11 @@ function startServer() {
  * @param {String} instanceId 
  */
 function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
+    if (!object.subject) {
+        console.log("Could not parse endpoint; No subject...?", object);
+        return;
+    }
+
     const splits = object.subject.split(".");
 
     if (splits[splitIndex] === "health")

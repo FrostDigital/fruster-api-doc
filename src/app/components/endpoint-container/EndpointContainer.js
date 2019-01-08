@@ -53,7 +53,7 @@ export default class EndpointContainer extends React.Component {
                     <span className="service-btn">
                         <label
                             htmlFor={this.props.serviceName + "-" + (this.props.type || "service") + "-" + "select-all"}>
-                            Select/deselect all
+                            Select / deselect all
                         </label> <input
                             id={this.props.serviceName + "-" + (this.props.type || "service") + "-" + "select-all"}
                             onChange={e => this.checkAll()}
@@ -73,7 +73,7 @@ export default class EndpointContainer extends React.Component {
     }
 
     onCheckboxChecked = (e) => {
-        this.setState({ checkboxes: { ...this.state.checkboxes, [e.target.name]: e.target.checked } });
+        this.setState({ checkboxes: { ...this.state.checkboxes, [e.target.name]: e.target.checked }, checked: false });
     }
 
     /**
