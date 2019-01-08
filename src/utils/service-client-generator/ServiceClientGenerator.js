@@ -1,8 +1,6 @@
 const ViewUtils = require("../ViewUtils");
 const _ = require("lodash");
 
-// TODO: rename javascript keywords e.g. break, class, var, const, let etc
-
 // TODO: special type cases like 
 // "userId": {
 //     "anyOf": [
@@ -26,6 +24,17 @@ const _ = require("lodash");
 
 // TODO: Make it possible to select which endpoints to include
 
+const RESERVED_JAVASCRIPT_KEYWORDS = ["abstract", "arguments", "await", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue", "debugger", "default", "delete", "do", "double", "else", "enum", "eval", "export", "extends", "false", "final", "finally", "float", "for", "function", "goto", "if", "implements", "import", "in", "instanceof", "int", "interface", "let*", "long", "native", "new", "null", "package", "private", "protected", "public", "return", "short", "static", "super*", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try", "typeof", "var", "void", "volatile", "while", "with", "yield"];
+
+function replaceReservedKeyword(string, isRequestBody) {
+    if (RESERVED_JAVASCRIPT_KEYWORDS.includes(string)) {
+        if (isRequestBody)
+            return `"${string}": ${string}Param`;
+        else
+            return `${string}Param`;
+    } else
+        return string;
+};
 
 /**
  * NOTE: all tabs and spaces in the strings are there because they should be there 😁
@@ -44,6 +53,7 @@ class ServiceClientGenerator {
      * @param {Object} options 
      * @param {String} options.serviceName
      * @param {Array<Object>} options.endpoints
+     * @param {Array<String>} options.subjects
      */
     constructor(options) {
         this.customTypeDefs = {};
@@ -58,6 +68,9 @@ class ServiceClientGenerator {
         this.className = ViewUtils.replaceAll(Utils.toTitleCase(this.serviceName), " ", "") + "Client";
 
         options.endpoints.forEach(endpoint => {
+            if (options.subjects && options.subjects.length !== 0 && !options.subjects.includes(endpoint.subject)) 
+                return;
+
             const constant = this._getEndpointConstant(endpoint);
             const requestSchema = endpoint.schemas.find(schema => schema.id === endpoint.requestSchema);
             const responseSchema = endpoint.schemas.find(schema => schema.id === endpoint.responseSchema);
@@ -80,7 +93,6 @@ class ServiceClientGenerator {
         const typDefs = Object.keys(this.customTypeDefs).map(key => this.customTypeDefs[key].toJavascriptClass());
         const endpoints = this.endpoints.map(endpoint => endpoint.toJavascriptClass());
         const classString = `const bus = require("fruster-bus");
-const log = require("fruster-log");
 
 /**
  * Note: this service client was generated automatically by api doc @ ${new Date().toJSON()}
@@ -120,6 +132,9 @@ module.exports = ${this.className};`;
         string = string.split("    /**\n\n").join("    /**\n"); // removes new empty lines within comment blocks
         string = string.split("    /**\n     *\n").join("    /**\n"); // removes double new lines in comments
         string = string.split("{\n        \n        return ").join("{\n        return "); // removes new lines before return statement in functions
+
+        if (["log.warn", "log.debug", "log.error"].includes(string)) // adds fruster-log require if fruster-log is used anywhere
+            string = "const log = require(\"fruster-log\");\n" + string;
 
         return string;
     }
@@ -423,7 +438,7 @@ class Endpoint {
 
     toJavascriptClass() {
         const functionParams = `${getParamsList(this.params)}`;
-        const requestBodyParams = `${getParamsList(this.params.slice(1))}`;
+        const requestBodyParams = `${getParamsList(this.params.slice(1), true)}`;
         const returnType = `Promise<${Utils.toTitleCase(this.returnType ? this.returnType.name ? this.returnType.name : this.returnType : "Void")}>`;
         const deprecatedReasonString = this.deprecatedReason ? `     * @deprecated ${this.deprecatedReason}` : "";
 
@@ -450,8 +465,8 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
     }
     `;
 
-        function getParamsList(params) {
-            return params.filter(param => !param.name.includes(".")).map((param, i) => `${i > 0 ? " " : ""}${param.name}`);
+        function getParamsList(params, isRequestBody) {
+            return params.filter(param => !param.name.includes(".")).map((param, i) => `${i > 0 ? " " : ""}${replaceReservedKeyword(param.name, isRequestBody)}`);
         }
     }
 
@@ -489,7 +504,7 @@ class Parameter {
         if (typeString === "Any")
             typeString = "any";
 
-        return `     * @param {${typeString}${!this.required ? "=" : ""}} ${this.name} ${this.description || ""}`;
+        return `     * @param {${typeString}${!this.required ? "=" : ""}} ${replaceReservedKeyword(this.name)} ${this.description || ""}`;
     }
 
 }

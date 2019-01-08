@@ -51,7 +51,13 @@ function startServer() {
             const type = "service";
             const serviceName = req.params.serviceName;
             const endpoints = endpointsByType.service[serviceName];
-            const options = { serviceName, type, endpoints };
+
+            if (!endpointsByType.service[serviceName]) {
+                res.end("<html><body><h1>No data found, please run the api doc at least once before trying to generate service client</h1></body></html>");
+                return;
+            }
+
+            const options = { serviceName, type, endpoints, subjects: req.query.subjects };
 
             const serviceClientGenerator = new ServiceClientGenerator(options);
             const className = ViewUtils.replaceAll(_.startCase(serviceName), " ", "") + "Client";

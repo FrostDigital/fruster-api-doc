@@ -70,13 +70,11 @@ export default class EndpointDetailsComponent extends React.Component {
                 this.reactToClickHash();
 
                 if (this.state.requestSchema && decodedURI.includes(`?modal=${this.state.requestSchema.id}`)) {
-                    if ($)
-                        $(".modal").modal("hide");
+                    if ($) $(".modal").modal("hide");
 
                     this.requestBodyModal.openModal();
                 } else if (this.state.responseSchema && decodedURI.includes(`?modal=${this.state.responseSchema.id}`)) {
-                    if ($)
-                        $(".modal").modal("hide");
+                    if ($) $(".modal").modal("hide");
 
                     this.responseBodyModal.openModal();
                 }
@@ -132,6 +130,13 @@ export default class EndpointDetailsComponent extends React.Component {
                                     from {this.props.endpoint.instanceId} {this.getDeprecationNote()}
 
                                     <CopyAsCurlComponent cUrl={this.props.endpoint.cUrl} />
+
+                                    {this.props.type === "service" && <input
+                                        type="checkbox"
+                                        name={this.props.endpoint.subject}
+                                        checked={this.props.checked}
+                                        onChange={this.props.onCheck}
+                                        style={{ float: "right" }} />}
 
                                 </span>
 

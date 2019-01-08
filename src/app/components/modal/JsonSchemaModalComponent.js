@@ -216,7 +216,7 @@ export default class JsonSchemaModalComponent extends React.Component {
     async openModal() {
         await this.setInitialOpenState();
 
-        window.location.hash = `${this.props.endpointUrl}?modal=${this.state.schema.id}&tab=${this.state.currentTabIndex}`;
+        history.replaceState(undefined, undefined, `#${this.props.endpointUrl}?modal=${this.state.schema.id}&tab=${this.state.currentTabIndex}`)
 
         const schemaToJson = Object.assign({}, this.state.schema);
         delete schemaToJson.sample;
@@ -246,7 +246,7 @@ export default class JsonSchemaModalComponent extends React.Component {
     }
 
     resetModalHash() {
-        window.location.hash = `${this.props.endpointUrl}`;
+        history.replaceState(undefined, undefined, `#${this.props.endpointUrl}`);
     }
 
     async goToTab(index) {
