@@ -1,40 +1,28 @@
 const ViewUtils = require("../ViewUtils");
 const _ = require("lodash");
 
-// TODO: special type cases like 
-// "userId": {
-//     "anyOf": [
-//       {
-//         "description": "The id of the user associated to the log",
-//         "type": "string"
-//       },
-//       {
-//         "description": "Ids of the users associated to the log",
-//         "items": {
-//           "type": "string"
-//         },
-//         "type": "array"
-//       }
-//     ]
-//   }
-// },
-// see log service > log
-
-// TODO: it is possible for two functions to get the same name
-
-// TODO: Make it possible to select which endpoints to include
-
-const RESERVED_JAVASCRIPT_KEYWORDS = ["abstract", "arguments", "await", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue", "debugger", "default", "delete", "do", "double", "else", "enum", "eval", "export", "extends", "false", "final", "finally", "float", "for", "function", "goto", "if", "implements", "import", "in", "instanceof", "int", "interface", "let*", "long", "native", "new", "null", "package", "private", "protected", "public", "return", "short", "static", "super*", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try", "typeof", "var", "void", "volatile", "while", "with", "yield"];
-
-function replaceReservedKeyword(string, isRequestBody) {
-    if (RESERVED_JAVASCRIPT_KEYWORDS.includes(string)) {
-        if (isRequestBody)
-            return `"${string}": ${string}Param`;
-        else
-            return `${string}Param`;
-    } else
-        return string;
-};
+/**
+ * 
+ * TODO: 
+ * special type cases like 
+ *  "userId": {
+ *    "anyOf": [
+ *      {
+ *        "description": "The id of the user associated to the log",
+ *        "type": "string"
+ *      },
+ *      {
+ *        "description": "Ids of the users associated to the log",
+ *        "items": {
+ *          "type": "string"
+ *        },
+ *        "type": "array"
+ *      }
+ *    ]
+ * }
+*
+*TODO: Make it impossible for two functions to get the same name (This will not happen very often)
+*/
 
 /**
  * NOTE: all tabs and spaces in the strings are there because they should be there 😁
@@ -68,7 +56,7 @@ class ServiceClientGenerator {
         this.className = ViewUtils.replaceAll(Utils.toTitleCase(this.serviceName), " ", "") + "Client";
 
         options.endpoints.forEach(endpoint => {
-            if (options.subjects && options.subjects.length !== 0 && !options.subjects.includes(endpoint.subject)) 
+            if (options.subjects && options.subjects.length !== 0 && !options.subjects.includes(endpoint.subject))
                 return;
 
             const constant = this._getEndpointConstant(endpoint);
@@ -89,6 +77,9 @@ class ServiceClientGenerator {
         });
     }
 
+    /**
+     * Converts all data to a javascript service client class
+     */
     toJavascriptClass() {
         const typDefs = Object.keys(this.customTypeDefs).map(key => this.customTypeDefs[key].toJavascriptClass());
         const endpoints = this.endpoints.map(endpoint => endpoint.toJavascriptClass());
@@ -133,7 +124,7 @@ module.exports = ${this.className};`;
         string = string.split("    /**\n     *\n").join("    /**\n"); // removes double new lines in comments
         string = string.split("{\n        \n        return ").join("{\n        return "); // removes new lines before return statement in functions
 
-        if (["log.warn", "log.debug", "log.error"].includes(string)) // adds fruster-log require if fruster-log is used anywhere
+        if (string.includes("log.warn") || string.includes("log.error") || string.includes("log.debug")) // adds fruster-log require if fruster-log is used anywhere
             string = "const log = require(\"fruster-log\");\n" + string;
 
         return string;
@@ -323,6 +314,9 @@ class TypeDef {
         this._type = "_TypeDef";
     }
 
+    /**s
+     * Converts all data to a javascript service client class
+     */
     toJavascriptClass() {
         const typeDefProperties = this.properties.map(typeDefProperty => typeDefProperty.toJavascriptClass());
 
@@ -353,6 +347,9 @@ class TypeDefProperty {
         this._type = "_TypeDefProperty";
     }
 
+    /**
+     * Converts all data to a javascript service client class
+     */
     toJavascriptClass() {
         let typeString = "";
 
@@ -391,6 +388,9 @@ class TypeDefArrayProperty extends TypeDefProperty {
         this._type = "_TypeDefArrayProperty";
     }
 
+    /**
+     * Converts all data to a javascript service client class
+     */
     toJavascriptClass() {
         let typeString = "";
 
@@ -436,6 +436,9 @@ class Endpoint {
         this._type = "_Endpoint";
     }
 
+    /**
+     * Converts all data to a javascript service client class
+     */
     toJavascriptClass() {
         const functionParams = `${getParamsList(this.params)}`;
         const requestBodyParams = `${getParamsList(this.params.slice(1), true)}`;
@@ -466,7 +469,7 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
     `;
 
         function getParamsList(params, isRequestBody) {
-            return params.filter(param => !param.name.includes(".")).map((param, i) => `${i > 0 ? " " : ""}${replaceReservedKeyword(param.name, isRequestBody)}`);
+            return params.filter(param => !param.name.includes(".")).map((param, i) => `${i > 0 ? " " : ""}${Utils.replaceReservedKeyword(param.name, isRequestBody)}`);
         }
     }
 
@@ -488,6 +491,9 @@ class Parameter {
         this._type = "_Paramter";
     }
 
+    /**
+     * Converts all data to a javascript service client class
+     */
     toJavascriptClass() {
         let typeString = "";
 
@@ -504,7 +510,7 @@ class Parameter {
         if (typeString === "Any")
             typeString = "any";
 
-        return `     * @param {${typeString}${!this.required ? "=" : ""}} ${replaceReservedKeyword(this.name)} ${this.description || ""}`;
+        return `     * @param {${typeString}${!this.required ? "=" : ""}} ${Utils.replaceReservedKeyword(this.name)} ${this.description || ""}`;
     }
 
 }
@@ -525,6 +531,9 @@ class ArrayParameter extends Parameter {
         this._type = "_ArrayParamter";
     }
 
+    /**
+     * Converts all data to a javascript service client class
+     */
     toJavascriptClass() {
         let typeString = Utils.toTitleCase(this.type);
 
@@ -554,5 +563,23 @@ class Utils {
             return bVal - aVal;
         });
     }
+
+    static get RESERVED_JAVASCRIPT_KEYWORDS() { return ["abstract", "arguments", "await", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue", "debugger", "default", "delete", "do", "double", "else", "enum", "eval", "export", "extends", "false", "final", "finally", "float", "for", "function", "goto", "if", "implements", "import", "in", "instanceof", "int", "interface", "let*", "long", "native", "new", "null", "package", "private", "protected", "public", "return", "short", "static", "super*", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try", "typeof", "var", "void", "volatile", "while", "with", "yield"]; };
+
+    /**
+     * Replaces reserved keywords with adjusted name to not collide with them.
+     * 
+     * @param {String} string 
+     * @param {Boolean} isRequestBody 
+     */
+    static replaceReservedKeyword(string, isRequestBody) {
+        if (Utils.RESERVED_JAVASCRIPT_KEYWORDS.includes(string)) {
+            if (isRequestBody)
+                return `"${string}": ${string}Param`;
+            else
+                return `${string}Param`;
+        } else
+            return string;
+    };
 
 }

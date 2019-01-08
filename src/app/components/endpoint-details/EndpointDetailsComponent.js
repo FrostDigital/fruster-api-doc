@@ -157,6 +157,7 @@ export default class EndpointDetailsComponent extends React.Component {
                                     this.props.endpoint.docs
                                     && this.props.endpoint.docs.description
                                     && <span
+                                        onClick={e => this.toggleFolded()}
                                         title={this.props.endpoint.docs ? this.props.endpoint.docs.description : ""}
                                         className="short-description"
                                         dangerouslySetInnerHTML={{ __html: markdown.markdown.toHTML(this.props.endpoint.docs.description) }} />

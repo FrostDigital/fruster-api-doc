@@ -52,8 +52,10 @@ function startServer() {
             const serviceName = req.params.serviceName;
             const endpoints = endpointsByType.service[serviceName];
 
+            console.log(endpointsByType);
+
             if (!endpointsByType.service[serviceName]) {
-                res.end("<html><body><h1>No data found, please run the api doc at least once before trying to generate service client</h1></body></html>");
+                res.end("<html><body><h1>No data found</h1><h2>run the api doc at least once and try again</h2></body></html>");
                 return;
             }
 
