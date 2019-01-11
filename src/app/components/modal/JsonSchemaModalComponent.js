@@ -54,8 +54,6 @@ export default class JsonSchemaModalComponent extends React.Component {
     };
 
     async setInitialOpenState() {
-
-
         if (this.props.isError)
             await this.goToTab(1);
         else
@@ -235,9 +233,10 @@ export default class JsonSchemaModalComponent extends React.Component {
             });
         }
 
-        // TODO: sort keys in schema!
-        const docson = nodeDocson();
-        docson.doc(schemaToJson, `docson-${cssFriendlify(this.props.endpointUrl)}-${this.state.schema.id}`);
+        if (!this.props.isError) {
+            const docson = nodeDocson();
+            docson.doc(schemaToJson, `docson-${cssFriendlify(this.props.endpointUrl)}-${this.state.schema.id}`);
+        }
     }
 
     closeModal() {
