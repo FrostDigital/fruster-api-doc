@@ -95,12 +95,12 @@ a h5 {
 
 .true {
     color: #6d9f33;
-    font-weight: bold;
+    /* font-weight: bold; */
 }
 
 .false {
     color: #f34e4b;
-    font-weight: bold;
+    /* font-weight: bold; */
 }
 
 .GET,
@@ -173,10 +173,16 @@ textarea {
     font-weight: bold;
 }
 
-.description-key,
-.permission {
-    font-weight: bold;
-    color: #727272;
+.description-key {
+    padding: 2px 4px;
+    background-color: #f2f2f2;
+    border-radius: 4px;
+    margin-right: 5px;
+    color: #6c6c6c;
+}
+
+.description-item {
+    line-height: 30px;
 }
 
 .permission:after {
@@ -237,7 +243,7 @@ h3.deprecated,
 }
 
 .deprecated-description {
-    font-weight: bold;
+    /* font-weight: bold; */
 }
 
 .description, .short-description {

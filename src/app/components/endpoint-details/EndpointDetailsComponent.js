@@ -314,9 +314,9 @@ export default class EndpointDetailsComponent extends React.Component {
                                     {this.props.endpoint.docs.description
                                         ? <span className="description-value" dangerouslySetInnerHTML={{ __html: markdown.markdown.toHTML(this.props.endpoint.docs.description), }}></span>
                                         : <span className="not-available">n/a</span>}
-                                    {this.props.endpoint.docs.params ? this.getDocEntry(this.props.endpoint.docs.params, "Url parameters") : ""}
-                                    {this.props.endpoint.docs.query ? this.getDocEntry(this.props.endpoint.docs.query, "Query parameters") : ""}
-                                    {this.props.endpoint.docs.errors ? this.getDocEntry(this.props.endpoint.docs.errors, "Errors") : ""}
+                                    <span className="url-params-desc">{this.props.endpoint.docs.params ? this.getDocEntry(this.props.endpoint.docs.params, "Url parameters") : ""}</span>
+                                    <span className="query-params-desc">{this.props.endpoint.docs.query ? this.getDocEntry(this.props.endpoint.docs.query, "Query parameters") : ""}</span>
+                                    <span className="errors-desc">{this.props.endpoint.docs.errors ? this.getDocEntry(this.props.endpoint.docs.errors, "Errors") : ""}</span>
                                 </div> : <span className="not-available">n/a</span>}
                         </td>
                     </tr>
