@@ -29,6 +29,7 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
     httpEndpoints(context) {
         return (
             <ul className="http">
+            
                 <a href="#http-endpoints">
                     <h3>Http endpoints</h3>
                 </a>

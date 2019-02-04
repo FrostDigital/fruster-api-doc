@@ -20,18 +20,54 @@ export default class App extends React.Component {
 
         this.state = {
             config: this.props.config,
+            backupEndpointsByType: this.props.endpointsByType,
             endpointsByType: this.props.endpointsByType
         };
     }
 
-    shouldComponentUpdate() {
-        return false;
+    // shouldComponentUpdate() {
+    //     return false;
+    // }
+
+    filter(e) {
+        // TODO: debounce
+        const value = new String(e.target.value).toLowerCase();
+
+        const service = {};
+        const http = {};
+        const ws = {};
+
+        Object
+            .keys(this.state.backupEndpointsByType.service)
+            .forEach(serviceName => {
+                const endpoints = this.state.backupEndpointsByType.service[serviceName];
+                service[serviceName] = endpoints.filter(endpoint => endpoint.subject.includes(value));
+            });
+
+        Object
+            .keys(this.state.backupEndpointsByType.http)
+            .forEach(httpName => {
+                const endpoints = this.state.backupEndpointsByType.http[httpName];
+                http[httpName] = endpoints.filter(endpoint => endpoint.subject.includes(value));
+            });
+
+        Object
+            .keys(this.state.backupEndpointsByType.ws)
+            .forEach(wsName => {
+                const endpoints = this.state.backupEndpointsByType.ws[wsName];
+                ws[wsName] = endpoints.filter(endpoint => endpoint.subject.includes(value));
+            });
+
+        /** TODO: Make this update the entire state! */
+        this.setState({ endpointsByType: { service, http, ws } });
     }
 
     render() {
         return (
             <ApiDocContext.Provider
                 value={this.state}>
+
+                <input onChange={(e) => this.filter(e)} />
 
                 <div className="container">
                     <ErrorMessageComponent
@@ -86,11 +122,11 @@ export default class App extends React.Component {
     * @param {String } type
     */
     listEndpointDetails(type) {
-        if (Object.keys(this.props.endpointsByType[type]).length === 0)
+        if (Object.keys(this.state.endpointsByType[type]).length === 0)
             return "No endpoints";
 
         return ViewUtils
-            .sortedForEach(this.props.endpointsByType[type], (endpoints, serviceName, index) => {
+            .sortedForEach(this.state.endpointsByType[type], (endpoints, serviceName, index) => {
                 return (
                     <EndpointContainer
                         key={"listEndpointDetails" + index}
