@@ -218,7 +218,8 @@ module.exports = ${this.className};`;
                         propertyKeys[i],
                         property.items.type,
                         property.items.description,
-                        false));
+                        false,
+                        property.items.format));
 
                 const propertySchema = { ...property, id: `${schema.id}${Utils.toTitleCase(propertyKeys[i])}` }
                 const type = this._getEndpointTypeDef(propertySchema);
@@ -234,7 +235,8 @@ module.exports = ${this.className};`;
                     propertyKeys[i],
                     property.type,
                     property.description,
-                    schema.required ? schema.required.includes(propertyKeys[i]) : false);
+                    schema.required ? schema.required.includes(propertyKeys[i]) : false,
+                    property.format);
             }
 
             if (property.type === "object") {
@@ -248,7 +250,8 @@ module.exports = ${this.className};`;
                         propertyKeys[i],
                         type,
                         property.description,
-                        schema.required ? schema.required.includes(propertyKeys[i]) : false);
+                        schema.required ? schema.required.includes(propertyKeys[i]) : false,
+                        property.format);
                 } else {
                     subParams.forEach(param => {
                         param.name = `${propertyKeys[i]}.${param.name}`;
@@ -482,12 +485,14 @@ class Parameter {
      * @param {String} type 
      * @param {String} description 
      * @param {Boolean=} required 
+     * @param {String=} format
      */
-    constructor(name, type, description, required) {
+    constructor(name, type, description, required, format) {
         this.name = name;
         this.type = type || "any";
         this.description = description;
         this.required = !!required || type && type.toLowerCase && type.toLowerCase().includes("null");
+        this.format = format || null;
         this._type = "_Paramter";
     }
 
@@ -500,9 +505,19 @@ class Parameter {
         if (Array.isArray(this.type)) {
             typeString = this.type
                 .filter(type => type !== "null")
+                .map(type => {
+                    if (type === "string" && this.format === "date-time")
+                        return "Date";
+                    else
+                        return type;
+                })
                 .map(type => Utils.toTitleCase(type)).join("|");
-        } else
-            typeString = Utils.toTitleCase(this.type);
+        } else {
+            if (this.type === "string" && this.format === "date-time")
+                typeString = "Date";
+            else
+                typeString = Utils.toTitleCase(this.type);
+        }
 
         if (["Integer", "Float"].includes(typeString))
             typeString = "Number";
