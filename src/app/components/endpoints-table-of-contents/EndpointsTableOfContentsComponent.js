@@ -29,7 +29,7 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
     httpEndpoints(context) {
         return (
             <ul className="http">
-            
+
                 <a href="#http-endpoints">
                     <h3>Http endpoints</h3>
                 </a>
@@ -42,9 +42,12 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                         : ViewUtils.sortedForEach(context.endpointsByType.http, (endpoints, serviceName, index) => {
                             endpoints = endpoints.sort(this.sortEndpoints);
 
+                            if (endpoints.length === 0)
+                                return;
+
                             return (
                                 <span
-                                    key={"endpointsByType.http" + index}>
+                                    key={`endpointsByType.http-${serviceName}`}>
                                     <a href={"#" + serviceName + "-http"}>
                                         <h4>{serviceName}</h4>
                                     </a>
@@ -54,7 +57,7 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
 
                                             return (
                                                 <li
-                                                    key={`table-of-contents-http-${index}`}
+                                                    key={`table-of-contents-http-${serviceName}-${endpoint.subject}`}
                                                     title={endpoint.docs ? endpoint.docs.description : ""}
                                                     className={endpoint.deprecated ? "deprecated" : ""}>
                                                     <a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
@@ -91,16 +94,19 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                         : ViewUtils.sortedForEach(context.endpointsByType[this.props.type.toLowerCase()], (endpoints, serviceName, index) => {
                             endpoints = endpoints.sort(this.sortEndpoints);
 
+                            if (endpoints.length === 0)
+                                return;
+
                             return (
                                 <span
-                                    key={this.props.type.toLowerCase() + index}>
+                                    key={`${this.props.type.toLowerCase()}-${serviceName}`}>
                                     <a href={"#" + serviceName + "-" + this.props.type.toLowerCase()}>
                                         <h4>{serviceName}</h4>
                                     </a>
                                     {
                                         endpoints.map((endpoint, index) => {
                                             return (
-                                                <li key={`table-of-contents-${this.props.type}-${index}`}
+                                                <li key={`table-of-contents-${this.props.type}-${serviceName}-${endpoint.subject}`}
                                                     title={endpoint.docs ? endpoint.docs.description : ""}
                                                     className={endpoint.deprecated ? "deprecated" : ""}>
                                                     <a

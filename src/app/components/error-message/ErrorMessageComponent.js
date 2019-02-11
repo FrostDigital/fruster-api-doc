@@ -30,13 +30,6 @@ export default class ErrorMessageComponent extends React.Component {
     }
 
     /**
-     * Since errors are from the server we don't want the frontend to try to update these.
-     */
-    shouldComponentUpdate() {
-        return false;
-    }
-
-    /**
      * Prepares errors so that they can be shown inside a modal.
      */
     prepareSchemasWithErrors() {

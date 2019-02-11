@@ -215,27 +215,31 @@ export default class JsonSchemaModalComponent extends React.Component {
     }
 
     async openModal() {
-        await this.setInitialOpenState();
+        try {
+            await this.setInitialOpenState();
 
-        history.replaceState(undefined, undefined, `#${this.props.endpointUrl}?modal=${this.state.schema.id}&tab=${this.state.currentTabIndex}`)
+            history.replaceState(undefined, undefined, `#${this.props.endpointUrl}?modal=${this.state.schema.id}&tab=${this.state.currentTabIndex}`)
 
-        const schemaToJson = ViewUtils.sortObject(Object.assign({}, this.state.schema));
-        delete schemaToJson.sample;
+            const schemaToJson = ViewUtils.sortObject(Object.assign({}, this.state.schema));
+            delete schemaToJson.sample;
 
-        /**
-         * Only works when frontend is loaded with bootstrap / jquery
-         */
-        if ($) {
-            // @ts-ignore
-            $(this.state.modal).modal();
-            $(this.state.modal).on("hide.bs.modal", () => {
-                this.resetModalHash();
-            });
-        }
+            /**
+             * Only works when frontend is loaded with bootstrap / jquery
+             */
+            if ($) {
+                // @ts-ignore
+                $(this.state.modal).modal();
+                $(this.state.modal).on("hide.bs.modal", () => {
+                    this.resetModalHash();
+                });
+            }
 
-        if (!this.props.isError) {
-            const docson = nodeDocson();
-            docson.doc(schemaToJson, `docson-${cssFriendlify(this.props.endpointUrl)}-${this.state.schema.id}`);
+            if (!this.props.isError) {
+                const docson = nodeDocson();
+                docson.doc(schemaToJson, `docson-${cssFriendlify(this.props.endpointUrl)}-${this.state.schema.id}`);
+            }
+        } catch (err) {
+            console.warn(err);
         }
     }
 

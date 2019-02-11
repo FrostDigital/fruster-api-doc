@@ -10,6 +10,10 @@ export default class EndpointContainer extends React.Component {
         checkboxes: EndpointContainer.prepareCheckboxes(this.props.endpoints)
     };
 
+    shouldComponentUpdate() {
+        return false;
+    }
+
     static prepareCheckboxes(endpoints) {
         const returnObj = {};
 
@@ -110,7 +114,7 @@ export default class EndpointContainer extends React.Component {
                 }
 
                 return (
-                    <span key={"endpoint" + index}>
+                    <span key={`endpoint-${endpoint.subject}`}>
                         <hr />
                         <EndpointDetailsComponent
                             type={this.props.type}
