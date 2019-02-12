@@ -10,9 +10,9 @@ export default class EndpointContainer extends React.Component {
         checkboxes: EndpointContainer.prepareCheckboxes(this.props.endpoints)
     };
 
-    shouldComponentUpdate() {
-        return false;
-    }
+    // shouldComponentUpdate() {
+    //     return false;
+    // }
 
     static prepareCheckboxes(endpoints) {
         const returnObj = {};

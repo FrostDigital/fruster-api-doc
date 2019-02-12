@@ -46,22 +46,20 @@ export default class ToolbarComponent extends React.Component {
     renderFiltering(context) {
         return (
             <div className="filter-container">
-                {/* <div className="form-group">
-                    <label
-                        htmlFor="filter-input"
-                        className="filter">
-                        | Filter:
-             </label>
-                    <input
-                        ref={ref => this.filterInput = ref}
-                        id="filter-input"
-                        onChange={(e) => context.filter(e)} />
-                </div> */}
-
                 <div className="form-group">
                     <label htmlFor="filter">Filter:</label>
                     <input type="text" className="form-control" id="filter"
-                        onChange={(e) => context.filter(e)} />
+                        onChange={(e) => {
+                            e.persist();
+
+                            if (this.timeout)
+                                clearTimeout(this.timeout);
+
+                            this.timeout = setTimeout(() => {
+                                console.log("FILTERING!");
+                                context.filter(e);
+                            }, 100);
+                        }} />
                 </div>
 
                 <div className="form-group">
@@ -73,6 +71,7 @@ export default class ToolbarComponent extends React.Component {
                         onChange={(e) => context.changeFilterType(e)} >
                         <option value="subject">endpoint subject/url</option>
                         <option value="persmissions">permissions</option>
+                        <option value="docs">docs</option>
                     </select>
                 </div>
 

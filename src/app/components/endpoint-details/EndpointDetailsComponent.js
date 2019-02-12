@@ -19,9 +19,9 @@ export default class EndpointDetailsComponent extends React.Component {
         lastHash: ""
     };
 
-    shouldComponentUpdate() {
-        return false;
-    }
+    // shouldComponentUpdate() {
+    //     return false;
+    // }
 
     getParsedSubject() {
         if (this.parsedSubject)

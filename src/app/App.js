@@ -33,23 +33,37 @@ export default class App extends React.Component {
         };
     }
 
-    // shouldComponentUpdate() {
-    //     return false;
-    // }
-
     changeFilterType(e) {
         this.setState({ filterBy: e.target.value });
     }
 
     filter(e) {
-        // TODO: debounce
         const value = new String(e.target.value).toLowerCase().split("/").join(".");
         const valueArray = value.split(" ");
         const that = this;
 
-        const service = this.state.filterBy === "subject" ? filterBySubject("service") : filterByPermissions("service");
-        const http = this.state.filterBy === "subject" ? filterBySubject("http") : filterByPermissions("http");
-        const ws = this.state.filterBy === "subject" ? filterBySubject("ws") : filterByPermissions("ws");
+        let service;
+        let http;
+        let ws;
+
+        switch (this.state.filterBy) {
+            case "permissions":
+                service = filterByPermissions("service");
+                http = filterByPermissions("http");
+                ws = filterByPermissions("ws");
+                break;
+            case "docs":
+                service = filterByDocs("service");
+                http = filterByDocs("http");
+                ws = filterByDocs("ws");
+                break;
+            case "subject":
+            default:
+                service = filterBySubject("service");
+                http = filterBySubject("http");
+                ws = filterBySubject("ws");
+                break;
+        }
 
         this.setState({ endpointsByType: { service, http, ws }, isFilteredResult: value !== "" });
 
@@ -103,6 +117,62 @@ export default class App extends React.Component {
                 });
 
             return foundEndpoints;
+        }
+
+        function filterByDocs(type) {
+            const foundEndpoints = {};
+
+            Object
+                .keys(that.state.backupEndpointsByType[type])
+                .forEach(serviceName => {
+                    const endpoints = that.state.backupEndpointsByType[type][serviceName];
+
+                    foundEndpoints[serviceName] = endpoints.filter(endpoint => {
+                        const flatEndpointObj = squishObject(endpoint.docs);
+
+                        let comparisonString = "";
+
+                        if (flatEndpointObj)
+                            Object.keys(flatEndpointObj).forEach(key => comparisonString += `${flatEndpointObj[key]}`);
+
+                        for (let inputValue of valueArray) {
+                            if (comparisonString.toLowerCase().includes(inputValue.toLowerCase()))
+                                return true;
+                        }
+
+                        return false;
+                    });
+                });
+
+            return foundEndpoints;
+        }
+
+        /**
+        * @param {Object} obj 
+        *
+        * @return {Object}
+        */
+        function squishObject(obj) {
+            if (!obj) return;
+
+            const output = {};
+
+            Object.keys(obj)
+                .forEach(key => {
+                    if (obj[key] && typeof obj[key] === "object") {
+                        const squishedSubObject = squishObject(obj[key]);
+
+                        if (squishedSubObject)
+                            Object.keys(squishedSubObject)
+                                .forEach(subObjKey => {
+                                    output[subObjKey] = squishedSubObject[subObjKey];
+                                });
+                    } else {
+                        output[key] = obj[key];
+                    }
+                });
+
+            return output;
         }
     }
 
