@@ -453,11 +453,12 @@ ${deprecatedReasonString}
      *
      * ${this.description || ""}
      * 
+     * @param {Object} param0
 ${this.params.map(param => param.toJavascriptClass()).join("\n")}
      *
      * @return {${returnType}}
      */
-    static async ${this.endpointName}(${functionParams}){
+    static async ${this.endpointName}({${functionParams}}){
         ${this.deprecatedReason ? `log.warn("Using deprecated endpoint ${this.endpointName}")` : ""}
         return (await bus.request({
             subject: ${this.urlConstant},
@@ -525,7 +526,7 @@ class Parameter {
         if (typeString === "Any")
             typeString = "any";
 
-        return `     * @param {${typeString}${!this.required ? "=" : ""}} ${Utils.replaceReservedKeyword(this.name)} ${this.description || ""}`;
+        return `     * @param {${typeString}${!this.required ? "=" : ""}} param0.${Utils.replaceReservedKeyword(this.name)} ${this.description || ""}`;
     }
 
 }
@@ -555,7 +556,7 @@ class ArrayParameter extends Parameter {
         if (["Integer", "Float"].includes(typeString))
             typeString = "Number";
 
-        return `     * @param {Array<${typeString}>${!this.required ? "=" : ""}} ${this.name} ${this.description || ""}`;
+        return `     * @param {Array<${typeString}>${!this.required ? "=" : ""}} param0.${this.name} ${this.description || ""}`;
     }
 
 }
@@ -585,9 +586,9 @@ class Utils {
      * Replaces reserved keywords with adjusted name to not collide with them.
      * 
      * @param {String} string 
-     * @param {Boolean} isRequestBody 
+     * @param {Boolean=} isRequestBody 
      */
-    static replaceReservedKeyword(string, isRequestBody) {
+    static replaceReservedKeyword(string, isRequestBody = false) {
         if (Utils.RESERVED_JAVASCRIPT_KEYWORDS.includes(string)) {
             if (isRequestBody)
                 return `"${string}": ${string}Param`;
