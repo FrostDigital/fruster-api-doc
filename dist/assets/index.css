@@ -61,7 +61,7 @@ body {
 
 .toolbar button {
     margin-right: 5px;
-    margin-top: 20px;
+    margin-top: 6px;
 }
 
 .filter-container {
@@ -75,13 +75,21 @@ body {
     margin-right: 5px;
 }
 
-.filter-container .form-group:last-child {
-    margin-left: 10px;
+.filter-container .form-group .form-control:focus{
+    box-shadow: none !important;
+    text-shadow: none !important;
 }
 
 .filter-container .form-group label {
     font-weight: normal;
     margin: 0px;
+}
+
+.filter-container .form-group .form-control {
+    display: inline-block !important;
+    width: auto !important;
+    margin-left: 5px;
+    border-radius: 0px !important
 }
 
 .filter-container .filter {

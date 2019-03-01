@@ -58,7 +58,7 @@ export default class ToolbarComponent extends React.Component {
                             this.timeout = setTimeout(() => {
                                 console.log("FILTERING!");
                                 context.filter(e);
-                            }, 100);
+                            }, 300);
                         }} />
                 </div>
 
@@ -70,7 +70,7 @@ export default class ToolbarComponent extends React.Component {
                         id="filter-by"
                         onChange={(e) => context.changeFilterType(e)} >
                         <option value="subject">endpoint subject/url</option>
-                        <option value="persmissions">permissions</option>
+                        <option value="permissions">permissions</option>
                         <option value="docs">docs</option>
                     </select>
                 </div>

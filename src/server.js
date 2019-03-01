@@ -90,6 +90,8 @@ function startServer() {
             if (req.query.project) { /** Lets you input an url to log viewer in order to use that to get metadata */
                 const url = `http://${req.query.project}-log-viewer.c4.fruster.se/api/bus/request`;
 
+                console.log("using", url);
+
                 metadataResponses = await utils.httpRequest("POST", url, {
                     maxResponses: 10000,
                     message: {},

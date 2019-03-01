@@ -29,6 +29,9 @@ export default class App extends React.Component {
             changeFilterType: (e) => {
                 return this.changeFilterType(e);
             },
+            resetFilter: () => {
+                return this.resetFilter();
+            },
             filterBy: "subject"
         };
     }
@@ -37,7 +40,7 @@ export default class App extends React.Component {
         this.setState({ filterBy: e.target.value });
     }
 
-    filter(e) {
+    async filter(e) {
         const value = new String(e.target.value).toLowerCase().split("/").join(".");
         const valueArray = value.split(" ");
         const that = this;
@@ -65,7 +68,7 @@ export default class App extends React.Component {
                 break;
         }
 
-        this.setState({ endpointsByType: { service, http, ws }, isFilteredResult: value !== "" });
+        await this.setState({ endpointsByType: { service, http, ws }, isFilteredResult: value !== "" });
 
         function filterBySubject(type) {
             const foundEndpoints = {};
@@ -105,10 +108,8 @@ export default class App extends React.Component {
 
                         endpoint.permissions.forEach(permission => {
                             valueArray.forEach(value => {
-                                if (value !== "") {
-                                    if (permission.includes(value))
-                                        containsSearchWord = true;
-                                }
+                                if (value !== "")
+                                    containsSearchWord = permission.includes(value);
                             });
                         });
 
@@ -176,6 +177,13 @@ export default class App extends React.Component {
         }
     }
 
+    resetFilter = () => {
+        this.setState({
+            isFilteredResult: false,
+            endpointsByType: this.props.endpointsByType
+        });
+    };
+
     render() {
         return (
             <ApiDocContext.Provider
@@ -195,7 +203,9 @@ export default class App extends React.Component {
 
                     <div className="row table-of-contents">
 
-                        {this.state.isFilteredResult && <h5 style={{ marginLeft: "15px", color: "#ff6969" }}><b>Note:</b> <i>Showing filtered result</i></h5>}
+                        {this.state.isFilteredResult && <h5 style={{ marginLeft: "15px", color: "#ff6969" }}>
+                            <b>Note:</b><i>Showing filtered result</i>. <a className="clickable" onClick={this.resetFilter}>Reset</a>
+                        </h5>}
 
                         <EndpointsTableOfContentsComponent type="Http" />
                         <EndpointsTableOfContentsComponent type="Service" />
@@ -244,11 +254,6 @@ export default class App extends React.Component {
     hasEndpoints(type) {
         const endpoints = this.state.endpointsByType[type];
 
-        console.log({
-            endpoints,
-            length: Object.keys(endpoints)
-        });
-
         if (Object.keys(endpoints).some(key => endpoints[key].length > 0))
             return true;
     }
@@ -269,7 +274,7 @@ export default class App extends React.Component {
 
                 return (
                     <EndpointContainer
-                        key={`listEndpointDetails-${serviceName}`}
+                        key={`${serviceName}`}
                         serviceName={serviceName}
                         type={type}
                         endpoints={endpoints}
