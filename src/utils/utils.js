@@ -195,7 +195,7 @@ class Utils {
                 });
             }
         } catch (err) {
-            log.debug("setFakerSpecificAttrs", err);
+            log.silly("setFakerSpecificAttrs", err);
         }
     }
 

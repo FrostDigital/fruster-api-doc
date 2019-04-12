@@ -35,6 +35,7 @@
 body {
     overflow-y: scroll;
     background-color: #fff !important;
+    margin-bottom: 75px !important;
 }
 
 .toolbar {
@@ -61,7 +62,18 @@ body {
 
 .toolbar button {
     margin-right: 5px;
-    margin-top: 6px;
+}
+
+input[type="text"], select {
+    height: 22px !important;
+    padding: 0px !important;
+    padding-left: 2.5px !important;
+}
+
+select {
+    margin: 0;
+    margin-left: 12px !important;
+    padding: 0px !important;
 }
 
 .filter-container {
@@ -71,8 +83,8 @@ body {
 .filter-container .form-group {
     display: inline-block;
     margin: 0px;
-    margin-left: 5px;
-    margin-right: 5px;
+    margin-left: 5px !important;
+    margin-right: 5px !important;
 }
 
 .filter-container .form-group .form-control:focus{
@@ -88,7 +100,7 @@ body {
 .filter-container .form-group .form-control {
     display: inline-block !important;
     width: auto !important;
-    margin-left: 5px;
+    margin-left: 5px !important;
     border-radius: 0px !important
 }
 

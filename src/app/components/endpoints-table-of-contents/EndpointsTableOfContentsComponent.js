@@ -40,6 +40,7 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                         ? "No endpoints"
 
                         : ViewUtils.sortedForEach(context.endpointsByType.http, (endpoints, serviceName, index) => {
+                            endpoints = endpoints.filter(e => !e.hidden);
                             endpoints = endpoints.sort(this.sortEndpoints);
 
                             if (endpoints.length === 0)
@@ -52,22 +53,24 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                                         <h4>{serviceName}</h4>
                                     </a>
                                     {
-                                        endpoints.map((endpoint, index) => {
-                                            const parsedSubject = ViewUtils.parseSubjectToAPIUrl(endpoint.subject);
+                                        endpoints
+                                            .filter(endpoint => !endpoint.hidden)
+                                            .map((endpoint, index) => {
+                                                const parsedSubject = ViewUtils.parseSubjectToAPIUrl(endpoint.subject);
 
-                                            return (
-                                                <li
-                                                    key={`table-of-contents-http-${serviceName}-${endpoint.subject}`}
-                                                    title={endpoint.docs ? endpoint.docs.description : ""}
-                                                    className={endpoint.deprecated ? "deprecated" : ""}>
-                                                    <a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
-                                                        <span className={parsedSubject.method}>
-                                                            {parsedSubject.method}
-                                                        </span> to {parsedSubject.url}
-                                                    </a>
-                                                </li>
-                                            )
-                                        })
+                                                return (
+                                                    <li
+                                                        key={`table-of-contents-http-${serviceName}-${endpoint.subject}`}
+                                                        title={endpoint.docs ? endpoint.docs.description : ""}
+                                                        className={endpoint.deprecated ? "deprecated" : ""}>
+                                                        <a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
+                                                            <span className={parsedSubject.method}>
+                                                                {parsedSubject.method}
+                                                            </span> to {parsedSubject.url}
+                                                        </a>
+                                                    </li>
+                                                )
+                                            })
                                     }
 
                                 </span>
@@ -92,6 +95,7 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                         ? "No endpoints"
 
                         : ViewUtils.sortedForEach(context.endpointsByType[this.props.type.toLowerCase()], (endpoints, serviceName, index) => {
+                            endpoints = endpoints.filter(e => !e.hidden);
                             endpoints = endpoints.sort(this.sortEndpoints);
 
                             if (endpoints.length === 0)
@@ -104,17 +108,19 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                                         <h4>{serviceName}</h4>
                                     </a>
                                     {
-                                        endpoints.map((endpoint, index) => {
-                                            return (
-                                                <li key={`table-of-contents-${this.props.type}-${serviceName}-${endpoint.subject}`}
-                                                    title={endpoint.docs ? endpoint.docs.description : ""}
-                                                    className={endpoint.deprecated ? "deprecated" : ""}>
-                                                    <a
-                                                        href={"#" + endpoint.subject}
-                                                        dangerouslySetInnerHTML={{ __html: ViewUtils.getColorCodedTitle(endpoint.subject) }} />
-                                                </li>
-                                            )
-                                        })
+                                        endpoints
+                                            .filter(endpoint => !endpoint.hidden)
+                                            .map((endpoint, index) => {
+                                                return (
+                                                    <li key={`table-of-contents-${this.props.type}-${serviceName}-${endpoint.subject}`}
+                                                        title={endpoint.docs ? endpoint.docs.description : ""}
+                                                        className={endpoint.deprecated ? "deprecated" : ""}>
+                                                        <a
+                                                            href={"#" + endpoint.subject}
+                                                            dangerouslySetInnerHTML={{ __html: ViewUtils.getColorCodedTitle(endpoint.subject) }} />
+                                                    </li>
+                                                )
+                                            })
                                     }
                                 </span>
                             )

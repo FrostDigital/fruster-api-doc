@@ -28,7 +28,7 @@ export default class ToolbarComponent extends React.Component {
                             {/* Buttons to the right */}
                             <div className="float-right">
                                 <button
-                                    className="btn btn-danger btn-xs"
+                                    className="btn btn-xs btn-danger"
                                     onClick={() => this.resetCache()}>
                                     Reset cache
                             </button>
@@ -43,23 +43,40 @@ export default class ToolbarComponent extends React.Component {
         );
     }
 
+    callback() {
+        if (this.filterInput)
+            this.filterInput.value = "";
+    }
+
     renderFiltering(context) {
+        context.filterResetCallback = () => this.callback();
+
         return (
             <div className="filter-container">
                 <div className="form-group">
                     <label htmlFor="filter">Filter:</label>
-                    <input type="text" className="form-control" id="filter"
+                    <input
+                        type="text"
+                        className="form-control"
+                        id="filter"
+                        ref={ref => this.filterInput = ref}
                         onChange={(e) => {
                             e.persist();
 
                             if (this.timeout)
                                 clearTimeout(this.timeout);
 
-                            this.timeout = setTimeout(() => {
-                                console.log("FILTERING!");
-                                context.filter(e);
-                            }, 300);
+                            this.timeout = setTimeout(() => context.filter(e), 300);
                         }} />
+                    &nbsp;
+                    <button
+                        className="btn btn-xs btn-danger"
+                        onClick={() => {
+                            context.resetFilter();
+                            this.callback();
+                        }}>
+                        Reset
+                    </button>
                 </div>
 
                 <div className="form-group">

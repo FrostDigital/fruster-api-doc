@@ -85,7 +85,8 @@ export default class EndpointContainer extends React.Component {
      */
     getEndpoints() {
         return this.props.endpoints
-            .map((endpoint, index) => {
+            .filter(endpoint => !endpoint.hidden)
+            .map(endpoint => {
                 const schemas = endpoint.schemas
                     .filter(schema => {
                         if (schema) {

@@ -76,11 +76,13 @@ export default class EndpointDetailsComponent extends React.Component {
                 if (this.state.requestSchema && decodedURI.includes(`?modal=${this.state.requestSchema.id}`)) {
                     if ($) $(".modal").modal("hide");
 
-                    this.requestBodyModal.openModal();
+                    if (this.requestBodyModal)
+                        this.requestBodyModal.openModal();
                 } else if (this.state.responseSchema && decodedURI.includes(`?modal=${this.state.responseSchema.id}`)) {
                     if ($) $(".modal").modal("hide");
 
-                    this.responseBodyModal.openModal();
+                    if (this.responseBodyModal)
+                        this.responseBodyModal.openModal();
                 }
         }
 

@@ -89,7 +89,9 @@ export default class ErrorMessageComponent extends React.Component {
      */
     openSchemaWithError(e, serviceName, schemaWithError) {
         e.preventDefault();
-        this.preparedSchemasWithErrors[`${serviceName}-${schemaWithError}`].ref.openModal();
+
+        if (this.preparedSchemasWithErrors[`${serviceName}-${schemaWithError}`].ref)
+            this.preparedSchemasWithErrors[`${serviceName}-${schemaWithError}`].ref.openModal();
     }
 
     /**
