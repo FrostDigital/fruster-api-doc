@@ -310,6 +310,7 @@ export default class App extends React.Component {
     resetFilter = () => {
         this.filter(undefined, "");
         this.setState({ isFilteredResult: false, currentFilter: undefined });
+        window.location.hash = "";
 
         if (this.state.filterResetCallback)
             this.state.filterResetCallback();

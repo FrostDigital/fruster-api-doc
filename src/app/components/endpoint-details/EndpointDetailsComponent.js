@@ -57,6 +57,9 @@ export default class EndpointDetailsComponent extends React.Component {
     }
 
     async reactToHashChange() {
+        if (this.props.endpoint.hidden)
+            return;
+
         const decodedURI = decodeURI(window.location.hash);
         const newHashWithoutTab = decodedURI.substring(0, decodedURI.length - 1);
         const lastHashWithoutTab = this.state.lastHash.substring(0, this.state.lastHash.length - 1);
@@ -182,6 +185,7 @@ export default class EndpointDetailsComponent extends React.Component {
                                         subject={this.props.endpoint.subject}
                                         schema={this.state.requestSchema}
                                         endpointUrl={this.state.urlSubjectLink}
+                                        hidden={this.state.hidden}
                                         isError={this.state.requestSchema ? this.state.requestSchema._error : false}
                                     />}
 
@@ -191,6 +195,7 @@ export default class EndpointDetailsComponent extends React.Component {
                                         subject={this.props.endpoint.subject}
                                         schema={this.state.responseSchema}
                                         endpointUrl={this.state.urlSubjectLink}
+                                        hidden={this.state.hidden}
                                         isError={this.state.responseSchema ? this.state.responseSchema._error : false}
                                     />}
 
@@ -338,6 +343,9 @@ export default class EndpointDetailsComponent extends React.Component {
      * @param {Object} e 
      */
     openRequestBodyModal(e) {
+        if (this.props.endpoint.hidden || !this.state.isOpen)
+            return;
+
         if (e.nativeEvent.which !== 2) {
             e.preventDefault();
 
@@ -352,6 +360,9 @@ export default class EndpointDetailsComponent extends React.Component {
      * @param {Object} e 
      */
     openResponseBodyModal(e) {
+        if (this.props.endpoint.hidden || !this.state.isOpen)
+            return;
+
         if (e.nativeEvent.which !== 2) {
             e.preventDefault();
 

@@ -215,6 +215,9 @@ export default class JsonSchemaModalComponent extends React.Component {
     }
 
     async openModal() {
+        if (this.props.hidden)
+            return;
+
         try {
             await this.setInitialOpenState();
 
@@ -246,13 +249,14 @@ export default class JsonSchemaModalComponent extends React.Component {
     closeModal() {
         this.resetModalHash();
 
-        if ($)
+        if ($ && !this.props.hidden)
             // @ts-ignore
             $(this.state.modal).modal("hide");
     }
 
     resetModalHash() {
-        history.replaceState(undefined, undefined, `#${this.props.endpointUrl}`);
+        if (!this.props.hidden)
+            history.replaceState(undefined, undefined, `#${this.props.endpointUrl}`);
     }
 
     async goToTab(index) {
