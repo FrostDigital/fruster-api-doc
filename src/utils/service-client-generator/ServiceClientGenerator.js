@@ -225,7 +225,8 @@ module.exports = ${this.className};`;
                         propertyKeys[i],
                         property.items.type,
                         property.items.description,
-                        false));
+                        false,
+                        property.items.format));
 
                 const propertySchema = { ...property, id: `${schema.id}${Utils.toTitleCase(propertyKeys[i])}` }
                 const type = this._getEndpointTypeDef(propertySchema);
@@ -241,7 +242,8 @@ module.exports = ${this.className};`;
                     propertyKeys[i],
                     property.type,
                     property.description,
-                    schema.required ? schema.required.includes(propertyKeys[i]) : false);
+                    schema.required ? schema.required.includes(propertyKeys[i]) : false,
+                    property.format);
             }
 
             if (property.type === "object") {
@@ -255,7 +257,8 @@ module.exports = ${this.className};`;
                         propertyKeys[i],
                         type,
                         property.description,
-                        schema.required ? schema.required.includes(propertyKeys[i]) : false);
+                        schema.required ? schema.required.includes(propertyKeys[i]) : false,
+                        property.format);
                 } else {
                     subParams.forEach(param => {
                         param.name = `${propertyKeys[i]}.${param.name}`;
@@ -457,11 +460,12 @@ ${deprecatedReasonString}
      *
      * ${this.description || ""}
      * 
+     * @param {Object} param0
 ${this.params.map(param => param.toJavascriptClass()).join("\n")}
      *
      * @return {${returnType}}
      */
-    static async ${this.endpointName}(${functionParams}){
+    static async ${this.endpointName}({${functionParams}}){
         ${this.deprecatedReason ? `log.warn("Using deprecated endpoint ${this.endpointName}")` : ""}
         return (await bus.request({
             subject: ${this.urlConstant},
@@ -507,12 +511,14 @@ class Parameter {
      * @param {String} type 
      * @param {String} description 
      * @param {Boolean=} required 
+     * @param {String=} format
      */
-    constructor(name, type, description, required) {
+    constructor(name, type, description, required, format) {
         this.name = name;
         this.type = type || "any";
         this.description = description;
         this.required = !!required || type && type.toLowerCase && type.toLowerCase().includes("null");
+        this.format = format || null;
         this._type = "_Paramter";
     }
 
@@ -525,9 +531,19 @@ class Parameter {
         if (Array.isArray(this.type)) {
             typeString = this.type
                 .filter(type => type !== "null")
+                .map(type => {
+                    if (type === "string" && this.format === "date-time")
+                        return "Date";
+                    else
+                        return type;
+                })
                 .map(type => Utils.toTitleCase(type)).join("|");
-        } else
-            typeString = Utils.toTitleCase(this.type);
+        } else {
+            if (this.type === "string" && this.format === "date-time")
+                typeString = "Date";
+            else
+                typeString = Utils.toTitleCase(this.type);
+        }
 
         if (["Integer", "Float"].includes(typeString))
             typeString = "Number";
@@ -535,7 +551,7 @@ class Parameter {
         if (typeString === "Any")
             typeString = "any";
 
-        return `     * @param {${typeString}${!this.required ? "=" : ""}} ${Utils.replaceReservedKeyword(this.name)} ${this.description || ""}`;
+        return `     * @param {${typeString}${!this.required ? "=" : ""}} param0.${Utils.replaceReservedKeyword(this.name)} ${this.description || ""}`;
     }
 
 }
@@ -565,7 +581,7 @@ class ArrayParameter extends Parameter {
         if (["Integer", "Float"].includes(typeString))
             typeString = "Number";
 
-        return `     * @param {Array<${typeString}>${!this.required ? "=" : ""}} ${this.name} ${this.description || ""}`;
+        return `     * @param {Array<${typeString}>${!this.required ? "=" : ""}} param0.${this.name} ${this.description || ""}`;
     }
 
 }
@@ -595,9 +611,9 @@ class Utils {
      * Replaces reserved keywords with adjusted name to not collide with them.
      * 
      * @param {String} string 
-     * @param {Boolean} isRequestBody 
+     * @param {Boolean=} isRequestBody 
      */
-    static replaceReservedKeyword(string, isRequestBody) {
+    static replaceReservedKeyword(string, isRequestBody = false) {
         if (Utils.RESERVED_JAVASCRIPT_KEYWORDS.includes(string)) {
             if (isRequestBody)
                 return `"${string}": ${string}Param`;
