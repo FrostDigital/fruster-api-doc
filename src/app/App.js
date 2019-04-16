@@ -265,7 +265,7 @@ export default class App extends React.Component {
                         if (flatEndpointObj)
                             Object.keys(flatEndpointObj).forEach(key => comparisonString += `${flatEndpointObj[key]}`);
 
-                        for (let inputValue of valueArray) {
+                        for (const inputValue of valueArray) {
                             if (comparisonString.toLowerCase().includes(inputValue.toLowerCase())) {
                                 endpoint.hidden = false;
                                 return;
