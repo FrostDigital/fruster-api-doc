@@ -144,6 +144,8 @@ module.exports = ${this.className};`;
         if (this.customTypeDefs[schema.id])
             return this.customTypeDefs[schema.id];
 
+        let outputIsArray = false;
+
         const name = schema.id;
         const params = this._getEndpointParameters(schema);
         const typeDefs = params.map(param => {
@@ -159,6 +161,8 @@ module.exports = ${this.className};`;
         if (!schema.type || schema.type === "")
             type = "Object";
         else if (schema.type === "array") {
+            outputIsArray = true;
+
             if (schema.items && schema.items.type)
                 type = schema.items.type;
             else
@@ -180,7 +184,10 @@ module.exports = ${this.className};`;
         } else
             output = typeDef.type;
 
-        return output;
+        if (outputIsArray)
+            return `Array<${output}>`;
+        else
+            return output;
     }
 
     /**
@@ -445,7 +452,7 @@ class Endpoint {
     toJavascriptClass() {
         const functionParams = `${getParamsList(this.params)}`;
         const requestBodyParams = `${getParamsList(this.params.slice(1), true)}`;
-        const returnType = `Promise<${Utils.toTitleCase(this.returnType ? this.returnType.name ? this.returnType.name : this.returnType : "Void")}>`;
+        const returnType = `Promise<${getReturnType(this.returnType)}>`;
         const deprecatedReasonString = this.deprecatedReason ? `     * @deprecated ${this.deprecatedReason}` : "";
 
         return `    /**
@@ -472,8 +479,26 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
     }
     `;
 
+        /**
+         * @param {Array<Parameter>} params 
+         * @param {Boolean=} isRequestBody 
+         */
         function getParamsList(params, isRequestBody) {
             return params.filter(param => !param.name.includes(".")).map((param, i) => `${i > 0 ? " " : ""}${Utils.replaceReservedKeyword(param.name, isRequestBody)}`);
+        }
+
+        /**
+         * @param {String|Object} returnType 
+         */
+        function getReturnType(returnType) {
+            const inputType = returnType ? returnType.name ? returnType.name : returnType : "Void";
+
+            if (returnType.includes("Array<") && returnType[returnType.length - 1] === ">") {
+                const titleCased = Utils.toTitleCase(inputType.replace("Array<", ""));
+
+                return `Array<${titleCased}>`;
+            } else
+                return Utils.toTitleCase(inputType);
         }
     }
 
