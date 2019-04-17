@@ -493,7 +493,7 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
         function getReturnType(returnType) {
             const inputType = returnType ? returnType.name ? returnType.name : returnType : "Void";
 
-            if (returnType.includes("Array<") && returnType[returnType.length - 1] === ">") {
+            if (returnType && returnType.includes("Array<") && returnType[returnType.length - 1] === ">") {
                 const titleCased = Utils.toTitleCase(inputType.replace("Array<", ""));
 
                 return `Array<${titleCased}>`;
