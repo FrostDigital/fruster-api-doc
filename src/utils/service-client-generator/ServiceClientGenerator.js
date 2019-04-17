@@ -491,13 +491,13 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
             const inputType = returnType ? returnType.name ? returnType.name : returnType : "Void";
 
             return Utils.typeToTitleCase(inputType);
+            // TODO: Fix at some point
+            // if (returnType && returnType.includes("Array<") && returnType[returnType.length - 1] === ">") {
+            //     const titleCased = Utils.typeToTitleCase(inputType.replace("Array<", ""));
 
-            if (returnType && returnType.includes("Array<") && returnType[returnType.length - 1] === ">") {
-                const titleCased = Utils.typeToTitleCase(inputType.replace("Array<", ""));
-
-                return `Array<${titleCased}>`;
-            } else
-                return Utils.typeToTitleCase(inputType);
+            //     return `Array<${titleCased}>`;
+            // } else
+            //     return Utils.typeToTitleCase(inputType);
         }
     }
 
