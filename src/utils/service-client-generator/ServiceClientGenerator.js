@@ -184,10 +184,7 @@ module.exports = ${this.className};`;
         } else
             output = typeDef.type;
 
-        if (outputIsArray)
-            return `Array<${output}>`;
-        else
-            return output;
+        return output;
     }
 
     /**
@@ -331,7 +328,7 @@ class TypeDef {
         const typeDefProperties = this.properties.map(typeDefProperty => typeDefProperty.toJavascriptClass());
 
         return `    /**
-     * @typedef {${Utils.toTitleCase(this.type)}} ${this.name} ${this.description || ""} 
+     * @typedef {${Utils.typeToTitleCase(this.type)}} ${this.name} ${this.description || ""} 
      *
 ${typeDefProperties.length > 0 ? typeDefProperties.join("\n") : ""}
      */
@@ -366,11 +363,11 @@ class TypeDefProperty {
         if (Array.isArray(this.type)) {
             typeString = this.type
                 .filter(type => type !== "null")
-                .map(type => Utils.toTitleCase(type)).join("|");
+                .map(type => Utils.typeToTitleCase(type)).join("|");
         } else if (!this.type || this.type === "")
             typeString = "Object";
         else
-            typeString = Utils.toTitleCase(this.type);
+            typeString = Utils.typeToTitleCase(this.type);
 
         if (["Integer", "Float"].includes(typeString))
             typeString = "Number";
@@ -407,9 +404,9 @@ class TypeDefArrayProperty extends TypeDefProperty {
         if (Array.isArray(this.type)) {
             typeString = this.type
                 .filter(type => type !== "null")
-                .map(type => Utils.toTitleCase(type)).join("|");
+                .map(type => Utils.typeToTitleCase(type)).join("|");
         } else
-            typeString = Utils.toTitleCase(this.type);
+            typeString = Utils.typeToTitleCase(this.type);
 
         let description = this.description;
 
@@ -493,12 +490,14 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
         function getReturnType(returnType) {
             const inputType = returnType ? returnType.name ? returnType.name : returnType : "Void";
 
-            if (returnType.includes("Array<") && returnType[returnType.length - 1] === ">") {
-                const titleCased = Utils.toTitleCase(inputType.replace("Array<", ""));
+            return Utils.typeToTitleCase(inputType);
+
+            if (returnType && returnType.includes("Array<") && returnType[returnType.length - 1] === ">") {
+                const titleCased = Utils.typeToTitleCase(inputType.replace("Array<", ""));
 
                 return `Array<${titleCased}>`;
             } else
-                return Utils.toTitleCase(inputType);
+                return Utils.typeToTitleCase(inputType);
         }
     }
 
@@ -537,12 +536,12 @@ class Parameter {
                     else
                         return type;
                 })
-                .map(type => Utils.toTitleCase(type)).join("|");
+                .map(type => Utils.typeToTitleCase(type)).join("|");
         } else {
             if (this.type === "string" && this.format === "date-time")
                 typeString = "Date";
             else
-                typeString = Utils.toTitleCase(this.type);
+                typeString = Utils.typeToTitleCase(this.type);
         }
 
         if (["Integer", "Float"].includes(typeString))
@@ -576,7 +575,7 @@ class ArrayParameter extends Parameter {
      * Converts all data to a javascript service client class
      */
     toJavascriptClass() {
-        let typeString = Utils.toTitleCase(this.type);
+        let typeString = Utils.typeToTitleCase(this.type);
 
         if (["Integer", "Float"].includes(typeString))
             typeString = "Number";
@@ -590,6 +589,28 @@ class Utils {
 
     static toTitleCase(string) {
         return _.startCase(string).split(" ").join("");
+    }
+
+    static typeToTitleCase(string) {
+        string = string.charAt(0).toUpperCase() + string.slice(1);
+
+        let output = "";
+
+        for (let i = 0; i < string.length; i++) {
+            const lastChar = i > 0 ? string.charAt(i - 1) : "<";
+            const char = string.charAt(i);
+
+            if (!isLetter(lastChar))
+                output += char.toUpperCase();
+            else
+                output += char;
+        }
+
+        return output;
+
+        function isLetter(str) {
+            return str.length === 1 && !!str.match(/[a-z]/i);
+        }
     }
 
     /**
