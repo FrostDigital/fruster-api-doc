@@ -27,6 +27,47 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
     }
 
     httpEndpoints(context) {
+        const elems = ViewUtils
+            .sortedForEach(context.endpointsByType.http, (endpoints, serviceName) => {
+                endpoints = endpoints.filter(e => !e.hidden);
+                endpoints = endpoints.sort(this.sortEndpoints);
+
+                if (endpoints.length === 0)
+                    return;
+
+                return (
+                    <span
+                        key={`endpointsByType.http-${serviceName}`}>
+                        <a href={"#" + serviceName + "-http"}>
+                            <h4>{serviceName}</h4>
+                        </a>
+                        {
+                            endpoints
+                                .filter(endpoint => !endpoint.hidden)
+                                .map((endpoint) => {
+                                    const parsedSubject = ViewUtils.parseSubjectToAPIUrl(endpoint.subject);
+
+                                    return (
+                                        <li
+                                            key={`table-of-contents-http-${serviceName}-${endpoint.subject}`}
+                                            title={endpoint.docs ? endpoint.docs.description : ""}
+                                            className={endpoint.deprecated ? "deprecated" : ""}>
+                                            <a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
+                                                <span className={parsedSubject.method}>
+                                                    {parsedSubject.method}
+                                                </span> to {parsedSubject.url}
+                                            </a>
+                                        </li>
+                                    )
+                                })
+                        }
+
+                    </span>
+                )
+            })
+            // @ts-ignore
+            .filter(elem => !!elem);
+
         return (
             <ul className="http">
 
@@ -34,101 +75,62 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                     <h3>Http endpoints</h3>
                 </a>
 
-                {
-                    Object.keys(context.endpointsByType.http).length === 0
-
-                        ? "No endpoints"
-
-                        : ViewUtils.sortedForEach(context.endpointsByType.http, (endpoints, serviceName, index) => {
-                            endpoints = endpoints.filter(e => !e.hidden);
-                            endpoints = endpoints.sort(this.sortEndpoints);
-
-                            if (endpoints.length === 0)
-                                return;
-
-                            return (
-                                <span
-                                    key={`endpointsByType.http-${serviceName}`}>
-                                    <a href={"#" + serviceName + "-http"}>
-                                        <h4>{serviceName}</h4>
-                                    </a>
-                                    {
-                                        endpoints
-                                            .filter(endpoint => !endpoint.hidden)
-                                            .map((endpoint, index) => {
-                                                const parsedSubject = ViewUtils.parseSubjectToAPIUrl(endpoint.subject);
-
-                                                return (
-                                                    <li
-                                                        key={`table-of-contents-http-${serviceName}-${endpoint.subject}`}
-                                                        title={endpoint.docs ? endpoint.docs.description : ""}
-                                                        className={endpoint.deprecated ? "deprecated" : ""}>
-                                                        <a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
-                                                            <span className={parsedSubject.method}>
-                                                                {parsedSubject.method}
-                                                            </span> to {parsedSubject.url}
-                                                        </a>
-                                                    </li>
-                                                )
-                                            })
-                                    }
-
-                                </span>
-                            )
-                        })
-                }
+                {elems.length > 0 ? elems : this.getNoEndpointsText()}
 
             </ul>
         );
     }
 
     otherEndpoints(context) {
+        const elems = ViewUtils
+            .sortedForEach(context.endpointsByType[this.props.type.toLowerCase()], (endpoints, serviceName, index) => {
+                endpoints = endpoints.filter(e => !e.hidden);
+                endpoints = endpoints.sort(this.sortEndpoints);
+
+                if (endpoints.length === 0)
+                    return;
+
+                return (
+                    <span
+                        key={`${this.props.type.toLowerCase()}-${serviceName}`}>
+                        <a href={"#" + serviceName + "-" + this.props.type.toLowerCase()}>
+                            <h4>{serviceName}</h4>
+                        </a>
+                        {
+                            endpoints
+                                .filter(endpoint => !endpoint.hidden)
+                                .map((endpoint, index) => {
+                                    return (
+                                        <li key={`table-of-contents-${this.props.type}-${serviceName}-${endpoint.subject}`}
+                                            title={endpoint.docs ? endpoint.docs.description : ""}
+                                            className={endpoint.deprecated ? "deprecated" : ""}>
+                                            <a
+                                                href={"#" + endpoint.subject}
+                                                dangerouslySetInnerHTML={{ __html: ViewUtils.getColorCodedTitle(endpoint.subject) }} />
+                                        </li>
+                                    )
+                                })
+                        }
+                    </span>
+                )
+            })
+            // @ts-ignore
+            .filter(elem => !!elem);
+
         return (
             <ul className={this.props.type.toLowerCase()}>
                 <a href={"#" + this.props.type.toLowerCase() + "-endpoints"}>
                     <h3>{this.props.type} endpoints</h3>
                 </a>
 
-                {
-                    Object.keys(context.endpointsByType[this.props.type.toLowerCase()]).length === 0
-
-                        ? "No endpoints"
-
-                        : ViewUtils.sortedForEach(context.endpointsByType[this.props.type.toLowerCase()], (endpoints, serviceName, index) => {
-                            endpoints = endpoints.filter(e => !e.hidden);
-                            endpoints = endpoints.sort(this.sortEndpoints);
-
-                            if (endpoints.length === 0)
-                                return;
-
-                            return (
-                                <span
-                                    key={`${this.props.type.toLowerCase()}-${serviceName}`}>
-                                    <a href={"#" + serviceName + "-" + this.props.type.toLowerCase()}>
-                                        <h4>{serviceName}</h4>
-                                    </a>
-                                    {
-                                        endpoints
-                                            .filter(endpoint => !endpoint.hidden)
-                                            .map((endpoint, index) => {
-                                                return (
-                                                    <li key={`table-of-contents-${this.props.type}-${serviceName}-${endpoint.subject}`}
-                                                        title={endpoint.docs ? endpoint.docs.description : ""}
-                                                        className={endpoint.deprecated ? "deprecated" : ""}>
-                                                        <a
-                                                            href={"#" + endpoint.subject}
-                                                            dangerouslySetInnerHTML={{ __html: ViewUtils.getColorCodedTitle(endpoint.subject) }} />
-                                                    </li>
-                                                )
-                                            })
-                                    }
-                                </span>
-                            )
-                        })
-                }
+                {elems.length > 0 ? elems : this.getNoEndpointsText()}
 
             </ul>
         );
+    }
+
+    getNoEndpointsText() {
+        return <span>No endpoints</span>;
     }
 
     sortEndpoints(a, b) {

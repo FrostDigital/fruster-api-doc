@@ -22,8 +22,13 @@ export default class App extends React.Component {
             backupEndpointsByType: this.props.endpointsByType,
             endpointsByType: this.props.endpointsByType,
             isFilteredResult: false,
-            filter: (e) => {
-                return this.filter(e);
+            filter: async (e) => {
+                this.filter(e);
+
+                if (this.state.currentFilter === "") {
+                    await this.setAllVisible();
+                    this.setState({ currentFilter: "" });
+                }
             },
             changeFilterType: (e) => {
                 return this.changeFilterType(e);
@@ -123,7 +128,7 @@ export default class App extends React.Component {
         if (this.state.endpointsByType[type] && Object.keys(this.state.endpointsByType[type]).length === 0)
             return "No endpoints";
 
-        return ViewUtils
+        const elems = ViewUtils
             .sortedForEach(this.state.endpointsByType[type], (endpoints, serviceName, index) => {
                 if (endpoints.some(e => !e.hidden))
                     return (
@@ -135,6 +140,13 @@ export default class App extends React.Component {
                             allEndpoints={this.props.allEndpoints} />
                     );
             })
+            // @ts-ignore
+            .filter(elem => !!elem);
+
+        if (elems.length === 0)
+            return <span>No endpoints</span>;
+
+        return elems;
     }
 
     async changeFilterType(e) {
@@ -142,7 +154,10 @@ export default class App extends React.Component {
 
         await this.setState({ filterBy: e.target.value });
 
-        this.filter(undefined, this.state.currentFilter || "");
+        if (this.state.currentFilter && this.state.currentFilter !== "")
+            this.filter(undefined, this.state.currentFilter || "");
+        else
+            this.setAllVisible();
     }
 
     /**
@@ -158,162 +173,165 @@ export default class App extends React.Component {
             : e.target.value)
             .toLowerCase().split("/").join(".");
         const valueArray = value.split(" ");
-        const that = this;
-
-        let service;
-        let http;
-        let ws;
 
         switch (this.state.filterBy) {
             case "permissions":
-                filterByPermissions("service");
-                filterByPermissions("http");
-                filterByPermissions("ws");
+                this.filterByPermissions(valueArray);
                 break;
             case "docs":
-                filterByDocs("service");
-                filterByDocs("http");
-                filterByDocs("ws");
+                this.filterByDocs(valueArray);
                 break;
             case "subject":
             default:
-                filterBySubject("service");
-                filterBySubject("http");
-                filterBySubject("ws");
+                this.filterBySubject(valueArray);
                 break;
         }
 
         this.setState({ isFilteredResult: value !== "", currentFilter: value });
+    }
 
-        /**
-         * @param {String} type 
-         */
-        function filterBySubject(type) {
-            Object
-                .keys(that.props.endpointsByType[type])
-                .forEach(serviceName => {
-                    const endpoints = that.props.endpointsByType[type][serviceName];
+    /**
+     * @param {Array<String>} valuesToFilterBy values to filter by
+     */
+    filterBySubject(valuesToFilterBy) {
+        Object.keys(this.props.endpointsByType)
+            .forEach(type => {
+                Object
+                    .keys(this.props.endpointsByType[type])
+                    .forEach(serviceName => {
+                        const endpoints = this.props.endpointsByType[type][serviceName];
 
-                    endpoints.forEach(endpoint => {
-                        let containsSearchWord = true;
+                        endpoints.forEach(endpoint => {
+                            let containsSearchWord = true;
 
-                        valueArray.forEach(value => {
-                            if (value !== "")
-                                containsSearchWord = containsSearchWord && endpoint.subject.includes(value);
-                        });
-
-                        if (!containsSearchWord)
-                            endpoint.hidden = true;
-                        else
-                            endpoint.hidden = false;
-                    });
-                });
-        }
-
-        /**
-         * @param {String} type 
-         */
-        function filterByPermissions(type) {
-            const foundEndpoints = {};
-
-            Object
-                .keys(that.props.endpointsByType[type])
-                .forEach(serviceName => {
-                    const endpoints = that.props.endpointsByType[type][serviceName];
-
-                    endpoints.forEach(endpoint => {
-                        let containsSearchWord = false;
-
-                        if (!endpoint.permissions || endpoint.permissions.length === 0) {
-                            endpoint.hidden = true;
-                            return;
-                        }
-
-                        endpoint.permissions.forEach(permission => {
-                            valueArray.forEach(value => {
+                            valuesToFilterBy.forEach(value => {
                                 if (value !== "")
-                                    containsSearchWord = permission.includes(value);
+                                    containsSearchWord = containsSearchWord && endpoint.subject.includes(value);
                             });
-                        });
 
-                        if (!containsSearchWord)
-                            endpoint.hidden = true;
-                        else
-                            endpoint.hidden = false;
-                    });
-                });
-
-            return foundEndpoints;
-        }
-
-        /**
-         * @param {String} type 
-         */
-        function filterByDocs(type) {
-            const foundEndpoints = {};
-
-            Object
-                .keys(that.props.endpointsByType[type])
-                .forEach(serviceName => {
-                    const endpoints = that.props.endpointsByType[type][serviceName];
-
-                    endpoints.forEach(endpoint => {
-                        const flatEndpointObj = squishObject(endpoint.docs);
-
-                        let comparisonString = "";
-
-                        if (flatEndpointObj)
-                            Object.keys(flatEndpointObj).forEach(key => comparisonString += `${flatEndpointObj[key]}`);
-
-                        for (const inputValue of valueArray) {
-                            if (comparisonString.toLowerCase().includes(inputValue.toLowerCase())) {
+                            if (!containsSearchWord)
+                                endpoint.hidden = true;
+                            else
                                 endpoint.hidden = false;
+                        });
+                    });
+            });
+    }
+
+    /**
+     * @param {Array<String>} valuesToFilterBy values to filter by
+     */
+    filterByPermissions(valuesToFilterBy) {
+        Object.keys(this.props.endpointsByType)
+            .forEach(type => {
+                Object
+                    .keys(this.props.endpointsByType[type])
+                    .forEach(serviceName => {
+                        const endpoints = this.props.endpointsByType[type][serviceName];
+
+                        endpoints.forEach(endpoint => {
+                            let containsSearchWord = false;
+
+                            if (!endpoint.permissions || endpoint.permissions.length === 0) {
+                                endpoint.hidden = true;
                                 return;
                             }
-                        }
-                        endpoint.hidden = true;
-                    });
-                });
 
-            return foundEndpoints;
-        }
-
-        /**
-        * @param {Object} obj 
-        *
-        * @return {Object}
-        */
-        function squishObject(obj) {
-            if (!obj) return;
-
-            const output = {};
-
-            Object.keys(obj)
-                .forEach(key => {
-                    if (obj[key] && typeof obj[key] === "object") {
-                        const squishedSubObject = squishObject(obj[key]);
-
-                        if (squishedSubObject)
-                            Object.keys(squishedSubObject)
-                                .forEach(subObjKey => {
-                                    output[subObjKey] = squishedSubObject[subObjKey];
+                            endpoint.permissions.forEach(permission => {
+                                valuesToFilterBy.forEach(value => {
+                                    if (value !== "")
+                                        containsSearchWord = permission.includes(value);
                                 });
-                    } else {
-                        output[key] = obj[key];
-                    }
-                });
+                            });
 
-            return output;
-        }
+                            if (!containsSearchWord)
+                                endpoint.hidden = true;
+                            else
+                                endpoint.hidden = false;
+                        });
+                    });
+            });
+    }
+
+    /**
+     * @param {Array<String>} valuesToFilterBy values to filter by
+     */
+    filterByDocs(valuesToFilterBy) {
+        Object.keys(this.props.endpointsByType)
+            .forEach(type => {
+                Object
+                    .keys(this.props.endpointsByType[type])
+                    .forEach(serviceName => {
+                        const endpoints = this.props.endpointsByType[type][serviceName];
+
+                        endpoints.forEach(endpoint => {
+                            const flatEndpointObj = this.squishObject(endpoint.docs);
+
+                            let comparisonString = "";
+
+                            if (flatEndpointObj)
+                                Object.keys(flatEndpointObj).forEach(key => comparisonString += `${flatEndpointObj[key]}`);
+
+                            for (const inputValue of valuesToFilterBy) {
+                                if (comparisonString.toLowerCase().includes(inputValue.toLowerCase())) {
+                                    endpoint.hidden = false;
+                                    return;
+                                }
+                            }
+                            endpoint.hidden = true;
+                        });
+                    });
+            });
+    }
+
+    /**
+    * @param {Object} obj 
+    *
+    * @return {Object}
+    */
+    squishObject(obj) {
+        if (!obj) return;
+
+        const output = {};
+
+        Object.keys(obj)
+            .forEach(key => {
+                if (obj[key] && typeof obj[key] === "object") {
+                    const squishedSubObject = this.squishObject(obj[key]);
+
+                    if (squishedSubObject)
+                        Object.keys(squishedSubObject)
+                            .forEach(subObjKey => {
+                                output[subObjKey] = squishedSubObject[subObjKey];
+                            });
+                } else {
+                    output[key] = obj[key];
+                }
+            });
+
+        return output;
     }
 
     resetFilter = () => {
         this.filter(undefined, "");
         this.setState({ isFilteredResult: false, currentFilter: undefined });
         window.location.hash = "";
+        this.setAllVisible();
+    };
+
+    setAllVisible() {
+        Object.keys(this.props.endpointsByType)
+            .forEach(type => {
+                Object
+                    .keys(this.props.endpointsByType[type])
+                    .forEach(serviceName => {
+                        const endpoints = this.props.endpointsByType[type][serviceName];
+                        endpoints.forEach(endpoint => endpoint.hidden = false);
+                    });
+            });
 
         if (this.state.filterResetCallback)
             this.state.filterResetCallback();
-    };
+    }
 
 }

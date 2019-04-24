@@ -2,7 +2,6 @@ import $ from "jquery";
 import React from "react";
 import ScrollToTopComponent from "../scroll-to-top/ScrollToTopComponent";
 import { ApiDocContext } from "../../Context";
-import { throws } from "assert";
 
 export default class ToolbarComponent extends React.Component {
 
@@ -10,6 +9,10 @@ export default class ToolbarComponent extends React.Component {
         super(props);
 
         this.allEndpointsOpen = false;
+    }
+
+    shouldComponentUpdate() {
+        return false;
     }
 
     render() {
@@ -109,10 +112,6 @@ export default class ToolbarComponent extends React.Component {
             await $.post("/reset-cache");
             location.reload();
         }
-    }
-
-    shouldComponentUpdate() {
-        return false;
     }
 
 }

@@ -41,7 +41,7 @@ class ServiceClientGenerator {
      * @param {Object} options 
      * @param {String} options.serviceName
      * @param {Array<Object>} options.endpoints
-     * @param {Array<String>} options.subjects
+     * @param {String} options.subjects
      */
     constructor(options) {
         this.customTypeDefs = {};
@@ -55,8 +55,10 @@ class ServiceClientGenerator {
         this.serviceName = options.serviceName;
         this.className = ViewUtils.replaceAll(Utils.toTitleCase(this.serviceName), " ", "") + "Client";
 
+        const inputtedSubjects = options.subjects.split(",");
+
         options.endpoints.forEach(endpoint => {
-            if (options.subjects && options.subjects.length !== 0 && !options.subjects.includes(endpoint.subject))
+            if (inputtedSubjects && inputtedSubjects.length !== 0 && (!inputtedSubjects.some(s => s === endpoint.subject)))
                 return;
 
             const constant = this._getEndpointConstant(endpoint);

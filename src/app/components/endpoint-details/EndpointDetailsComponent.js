@@ -5,7 +5,6 @@ import { ApiDocContext } from "../../Context";
 import JsonSchemaModalComponent from "../modal/JsonSchemaModalComponent";
 import CopyAsCurlComponent from "./copy-as-curl/CopyAsCurlComponent";
 
-
 export default class EndpointDetailsComponent extends React.Component {
 
     state = {
@@ -18,10 +17,6 @@ export default class EndpointDetailsComponent extends React.Component {
         selected: false,
         lastHash: ""
     };
-
-    // shouldComponentUpdate() {
-    //     return false;
-    // }
 
     getParsedSubject() {
         if (this.parsedSubject)
@@ -57,10 +52,11 @@ export default class EndpointDetailsComponent extends React.Component {
     }
 
     async reactToHashChange() {
-        if (this.props.endpoint.hidden)
+        const decodedURI = decodeURI(window.location.hash);
+
+        if (this.props.endpoint.hidden || this.state.isOpen || this.state.lastHash == decodedURI)
             return;
 
-        const decodedURI = decodeURI(window.location.hash);
         const newHashWithoutTab = decodedURI.substring(0, decodedURI.length - 1);
         const lastHashWithoutTab = this.state.lastHash.substring(0, this.state.lastHash.length - 1);
 

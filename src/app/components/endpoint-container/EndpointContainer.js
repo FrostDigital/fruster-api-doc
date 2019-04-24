@@ -1,18 +1,12 @@
 import React from "react";
 import EndpointDetailsComponent from "../endpoint-details/EndpointDetailsComponent";
 
-
-
 export default class EndpointContainer extends React.Component {
 
     state = {
         checked: true,
         checkboxes: EndpointContainer.prepareCheckboxes(this.props.endpoints)
     };
-
-    // shouldComponentUpdate() {
-    //     return false;
-    // }
 
     static prepareCheckboxes(endpoints) {
         const returnObj = {};
@@ -23,9 +17,13 @@ export default class EndpointContainer extends React.Component {
     }
 
     getCheckedEndpoints() {
+        const endpointsBySubject = {};
+
+        this.props.endpoints.forEach(e => endpointsBySubject[e.subject] = { hidden: e.hidden });
+
         return Object.keys(this.state.checkboxes)
             .map(subject => {
-                if (this.state.checkboxes[subject])
+                if (this.state.checkboxes[subject] && !endpointsBySubject[subject].hidden)
                     return subject;
             })
             .filter(subject => !!subject)
