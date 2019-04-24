@@ -51,10 +51,22 @@ export default class EndpointDetailsComponent extends React.Component {
         setTimeout(() => this.reactToHashChange());
     }
 
+    componentWillUnmount() {
+        removeEventListener("hashchange", () => this.reactToHashChange(), false);
+    }
+
     async reactToHashChange() {
         const decodedURI = decodeURI(window.location.hash);
+        const decodedURIWithoutHash = decodedURI.replace("#", "");
+        const parsedSubject = this.getParsedSubject();
 
-        if (this.props.endpoint.hidden || this.state.isOpen || this.state.lastHash == decodedURI)
+
+        if (this.props.endpoint.hidden
+            || this.state.isOpen
+            || this.state.lastHash == decodedURI
+            || (!decodedURIWithoutHash.includes(this.props.endpoint.subject)
+                && !decodedURIWithoutHash.includes(`${parsedSubject.method}-to-${parsedSubject.url}`))
+        )
             return;
 
         const newHashWithoutTab = decodedURI.substring(0, decodedURI.length - 1);
@@ -73,12 +85,12 @@ export default class EndpointDetailsComponent extends React.Component {
                 this.reactToClickHash();
 
                 if (this.state.requestSchema && decodedURI.includes(`?modal=${this.state.requestSchema.id}`)) {
-                    if ($) $(".modal").modal("hide");
+                    // if ($) $(".modal").modal("hide");
 
                     if (this.requestBodyModal)
                         this.requestBodyModal.openModal();
                 } else if (this.state.responseSchema && decodedURI.includes(`?modal=${this.state.responseSchema.id}`)) {
-                    if ($) $(".modal").modal("hide");
+                    // if ($) $(".modal").modal("hide");
 
                     if (this.responseBodyModal)
                         this.responseBodyModal.openModal();
