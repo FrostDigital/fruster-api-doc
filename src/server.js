@@ -150,7 +150,7 @@ function startServer() {
                 sortAfterEndpointName(endpointsByType[endpointType]);
             });
 
-            const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints, config };
+            const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints, config, generatedDate: new Date() };
             const appString = renderToString(<App {...state} />);
             const renderedHtml = template({
                 body: appString,

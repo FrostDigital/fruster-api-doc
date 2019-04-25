@@ -59,7 +59,9 @@ export default class App extends React.Component {
                         <h1>{this.props.config.projectName ? this.props.config.projectName + " " : ""}API</h1>
                     </a>
 
-                    <p style={{ fontSize: "12px" }}>Documentation was generated on {new Date().toJSON()}</p>
+                    <p style={{ fontSize: "12px" }}>Documentation was generated on {
+                        // @ts-ignore
+                        this.props.generatedDate ? this.props.generatedDate : "n/a"}</p>
 
                     <h4>Table of contents</h4>
 
