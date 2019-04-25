@@ -61,7 +61,7 @@ export default class App extends React.Component {
 
                     <p style={{ fontSize: "12px" }}>Documentation was generated on {
                         // @ts-ignore
-                        this.props.generatedDate ? this.props.generatedDate : "n/a"}</p>
+                        !!this.props.generatedDate ? new Date(this.props.generatedDate).toJSON() : "n/a"}</p>
 
                     <h4>Table of contents</h4>
 
