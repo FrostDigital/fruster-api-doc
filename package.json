@@ -4,8 +4,10 @@
     "private": true,
     "scripts": {
         "start": "npm-run-all --parallel watch:server watch:build",
+        "startnodemon": "npm-run-all --parallel watch:nodemon:server watch:build",
         "watch:build": "node_modules/.bin/webpack --watch",
-        "watch:server": "cd dist && nodemon server.js",
+        "watch:server": "cd dist && node server.js",
+        "watch:nodemon:server": "cd dist && nodemon server.js",
         "run": "cd dist && node server",
         "docker": "node_modules/.bin/webpack && cd dist && node server",
         "build": "node_modules/.bin/webpack",

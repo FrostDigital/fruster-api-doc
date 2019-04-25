@@ -215,40 +215,48 @@ export default class JsonSchemaModalComponent extends React.Component {
     }
 
     async openModal() {
-        await this.setInitialOpenState();
+        if (this.props.hidden)
+            return;
 
-        history.replaceState(undefined, undefined, `#${this.props.endpointUrl}?modal=${this.state.schema.id}&tab=${this.state.currentTabIndex}`)
+        try {
+            await this.setInitialOpenState();
 
-        const schemaToJson = ViewUtils.sortObject(Object.assign({}, this.state.schema));
-        delete schemaToJson.sample;
+            history.replaceState(undefined, undefined, `#${this.props.endpointUrl}?modal=${this.state.schema.id}&tab=${this.state.currentTabIndex}`)
 
-        /**
-         * Only works when frontend is loaded with bootstrap / jquery
-         */
-        if ($) {
-            // @ts-ignore
-            $(this.state.modal).modal();
-            $(this.state.modal).on("hide.bs.modal", () => {
-                this.resetModalHash();
-            });
-        }
+            const schemaToJson = ViewUtils.sortObject(Object.assign({}, this.state.schema));
+            delete schemaToJson.sample;
 
-        if (!this.props.isError) {
-            const docson = nodeDocson();
-            docson.doc(schemaToJson, `docson-${cssFriendlify(this.props.endpointUrl)}-${this.state.schema.id}`);
+            /**
+             * Only works when frontend is loaded with bootstrap / jquery
+             */
+            if ($) {
+                // @ts-ignore
+                $(this.state.modal).modal();
+                $(this.state.modal).on("hide.bs.modal", () => {
+                    this.resetModalHash();
+                });
+            }
+
+            if (!this.props.isError) {
+                const docson = nodeDocson();
+                docson.doc(schemaToJson, `docson-${cssFriendlify(this.props.endpointUrl)}-${this.state.schema.id}`);
+            }
+        } catch (err) {
+            console.warn(err);
         }
     }
 
     closeModal() {
         this.resetModalHash();
 
-        if ($)
+        if ($ && !this.props.hidden)
             // @ts-ignore
             $(this.state.modal).modal("hide");
     }
 
     resetModalHash() {
-        history.replaceState(undefined, undefined, `#${this.props.endpointUrl}`);
+        if (!this.props.hidden)
+            history.replaceState(undefined, undefined, `#${this.props.endpointUrl}`);
     }
 
     async goToTab(index) {

@@ -4,7 +4,7 @@ const nodeExternals = require("webpack-node-externals");
 
 const isProduction = process.env.NODE_ENV === "production";
 const productionPluginDefine = [];
-const clientLoaders =  productionPluginDefine.concat([
+const clientLoaders = productionPluginDefine.concat([
     new webpack.optimize.DedupePlugin(),
     new webpack.optimize.OccurrenceOrderPlugin(),
     new webpack.optimize.UglifyJsPlugin({ compress: { warnings: false }, sourceMap: false })
@@ -27,6 +27,7 @@ module.exports = [
             libraryTarget: "commonjs2",
             publicPath: "/"
         },
+        devtool: "eval-source-map",
         target: "node",
         node: {
             console: false,
@@ -54,6 +55,7 @@ module.exports = [
             publicPath: "/",
             filename: "client.js"
         },
+        devtool: "eval-source-map",
         plugins: clientLoaders.concat([
             new ExtractTextPlugin("index.css")
         ]),

@@ -20,8 +20,6 @@ export default class CopyToClipboardComponent extends React.Component {
         this.input.hidden = true;
     }
 
-    shouldComponentUpdate() {
-        return false;
-    }
+    shouldComponentUpdate() { return false; }
 
 }

@@ -139,10 +139,12 @@ class ViewUtils {
      *
      * @param {Object | Array} toLoop
      * @param {Function} handler
+     * 
+     * @return {Array}
     */
     static sortedForEach(toLoop, handler) {
         if (!toLoop || Object.keys(toLoop).length === 0)
-            return ``;
+            return [];
 
         let i = 0;
 

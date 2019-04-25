@@ -5,7 +5,6 @@ import { ApiDocContext } from "../../Context";
 import JsonSchemaModalComponent from "../modal/JsonSchemaModalComponent";
 import CopyAsCurlComponent from "./copy-as-curl/CopyAsCurlComponent";
 
-
 export default class EndpointDetailsComponent extends React.Component {
 
     state = {
@@ -52,8 +51,24 @@ export default class EndpointDetailsComponent extends React.Component {
         setTimeout(() => this.reactToHashChange());
     }
 
+    componentWillUnmount() {
+        removeEventListener("hashchange", () => this.reactToHashChange(), false);
+    }
+
     async reactToHashChange() {
         const decodedURI = decodeURI(window.location.hash);
+        const decodedURIWithoutHash = decodedURI.replace("#", "");
+        const parsedSubject = this.getParsedSubject();
+
+
+        if (this.props.endpoint.hidden
+            || this.state.isOpen
+            || this.state.lastHash == decodedURI
+            || (!decodedURIWithoutHash.includes(this.props.endpoint.subject)
+                && !decodedURIWithoutHash.includes(`${parsedSubject.method}-to-${parsedSubject.url}`))
+        )
+            return;
+
         const newHashWithoutTab = decodedURI.substring(0, decodedURI.length - 1);
         const lastHashWithoutTab = this.state.lastHash.substring(0, this.state.lastHash.length - 1);
 
@@ -70,13 +85,15 @@ export default class EndpointDetailsComponent extends React.Component {
                 this.reactToClickHash();
 
                 if (this.state.requestSchema && decodedURI.includes(`?modal=${this.state.requestSchema.id}`)) {
-                    if ($) $(".modal").modal("hide");
+                    // if ($) $(".modal").modal("hide");
 
-                    this.requestBodyModal.openModal();
+                    if (this.requestBodyModal)
+                        this.requestBodyModal.openModal();
                 } else if (this.state.responseSchema && decodedURI.includes(`?modal=${this.state.responseSchema.id}`)) {
-                    if ($) $(".modal").modal("hide");
+                    // if ($) $(".modal").modal("hide");
 
-                    this.responseBodyModal.openModal();
+                    if (this.responseBodyModal)
+                        this.responseBodyModal.openModal();
                 }
         }
 
@@ -176,6 +193,7 @@ export default class EndpointDetailsComponent extends React.Component {
                                         subject={this.props.endpoint.subject}
                                         schema={this.state.requestSchema}
                                         endpointUrl={this.state.urlSubjectLink}
+                                        hidden={this.state.hidden}
                                         isError={this.state.requestSchema ? this.state.requestSchema._error : false}
                                     />}
 
@@ -185,6 +203,7 @@ export default class EndpointDetailsComponent extends React.Component {
                                         subject={this.props.endpoint.subject}
                                         schema={this.state.responseSchema}
                                         endpointUrl={this.state.urlSubjectLink}
+                                        hidden={this.state.hidden}
                                         isError={this.state.responseSchema ? this.state.responseSchema._error : false}
                                     />}
 
@@ -332,6 +351,9 @@ export default class EndpointDetailsComponent extends React.Component {
      * @param {Object} e 
      */
     openRequestBodyModal(e) {
+        if (this.props.endpoint.hidden || !this.state.isOpen)
+            return;
+
         if (e.nativeEvent.which !== 2) {
             e.preventDefault();
 
@@ -346,6 +368,9 @@ export default class EndpointDetailsComponent extends React.Component {
      * @param {Object} e 
      */
     openResponseBodyModal(e) {
+        if (this.props.endpoint.hidden || !this.state.isOpen)
+            return;
+
         if (e.nativeEvent.which !== 2) {
             e.preventDefault();
 

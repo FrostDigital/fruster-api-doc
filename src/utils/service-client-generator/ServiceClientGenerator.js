@@ -41,7 +41,7 @@ class ServiceClientGenerator {
      * @param {Object} options 
      * @param {String} options.serviceName
      * @param {Array<Object>} options.endpoints
-     * @param {Array<String>} options.subjects
+     * @param {String} options.subjects
      */
     constructor(options) {
         this.customTypeDefs = {};
@@ -55,8 +55,10 @@ class ServiceClientGenerator {
         this.serviceName = options.serviceName;
         this.className = ViewUtils.replaceAll(Utils.toTitleCase(this.serviceName), " ", "") + "Client";
 
+        const inputtedSubjects = options.subjects.split(",");
+
         options.endpoints.forEach(endpoint => {
-            if (options.subjects && options.subjects.length !== 0 && !options.subjects.includes(endpoint.subject))
+            if (inputtedSubjects && inputtedSubjects.length !== 0 && (!inputtedSubjects.some(s => s === endpoint.subject)))
                 return;
 
             const constant = this._getEndpointConstant(endpoint);
@@ -491,13 +493,13 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
             const inputType = returnType ? returnType.name ? returnType.name : returnType : "Void";
 
             return Utils.typeToTitleCase(inputType);
+            // TODO: Fix at some point
+            // if (returnType && returnType.includes("Array<") && returnType[returnType.length - 1] === ">") {
+            //     const titleCased = Utils.typeToTitleCase(inputType.replace("Array<", ""));
 
-            if (returnType && returnType.includes("Array<") && returnType[returnType.length - 1] === ">") {
-                const titleCased = Utils.typeToTitleCase(inputType.replace("Array<", ""));
-
-                return `Array<${titleCased}>`;
-            } else
-                return Utils.typeToTitleCase(inputType);
+            //     return `Array<${titleCased}>`;
+            // } else
+            //     return Utils.typeToTitleCase(inputType);
         }
     }
 
