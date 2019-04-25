@@ -47,12 +47,12 @@ export default class EndpointDetailsComponent extends React.Component {
     }
 
     componentDidMount() {
-        addEventListener("hashchange", () => this.reactToHashChange(), false);
+        window.addEventListener("hashchange", () => this.reactToHashChange(), false);
         setTimeout(() => this.reactToHashChange());
     }
 
     componentWillUnmount() {
-        removeEventListener("hashchange", () => this.reactToHashChange(), false);
+        window.removeEventListener("hashchange", () => this.reactToHashChange(), false);
     }
 
     async reactToHashChange() {
