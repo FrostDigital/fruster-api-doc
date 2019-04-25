@@ -36,8 +36,7 @@ export default class ToolbarComponent extends React.Component {
                         location.hash = "";
                         break;
                 }
-        }, false)
-
+        }, false);
     }
 
     shouldComponentUpdate() {
