@@ -23,6 +23,8 @@ export default class App extends React.Component {
             endpointsByType: this.props.endpointsByType,
             isFilteredResult: false,
             filter: async (e) => {
+                window.location.hash = "";
+
                 this.filter(e);
 
                 if (this.state.currentFilter === "") {
