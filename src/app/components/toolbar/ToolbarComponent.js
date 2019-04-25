@@ -11,6 +11,34 @@ export default class ToolbarComponent extends React.Component {
         this.allEndpointsOpen = false;
     }
 
+    componentDidMount() {
+        window.addEventListener("keydown", (e) => {
+            if (document.activeElement.id !== "filter")
+                switch (e.key) {
+                    case "f":
+                        // Focus filter input
+                        setTimeout(() => {
+                            const backupValue = this.filterInput.value;
+                            this.filterInput.value = "";
+                            this.filterInput.focus();
+                            this.filterInput.value = backupValue;
+
+                        }, 10);
+                        break;
+                    case "r":
+                        // reset filter
+                        this.resetButton.click();
+                        break;
+                    case "t":
+                        // scroll to top
+                        document.body.scrollTop = 0;
+                        document.documentElement.scrollTop = 0;
+                        location.hash = "";
+                        break;
+                }
+        }, false);
+    }
+
     shouldComponentUpdate() {
         return false;
     }
@@ -32,6 +60,7 @@ export default class ToolbarComponent extends React.Component {
                             <div className="float-right">
                                 <button
                                     className="btn btn-xs btn-danger"
+                                    title="Reset filter (R)"
                                     onClick={() => this.resetCache()}>
                                     Reset cache
                             </button>
@@ -52,6 +81,7 @@ export default class ToolbarComponent extends React.Component {
     }
 
     renderFiltering(context) {
+        this.context = context;
         context.filterResetCallback = () => this.callback();
 
         return (
@@ -61,6 +91,7 @@ export default class ToolbarComponent extends React.Component {
                     <input
                         type="text"
                         className="form-control"
+                        title="Filter (F)"
                         id="filter"
                         ref={ref => this.filterInput = ref}
                         onChange={(e) => {
@@ -74,6 +105,7 @@ export default class ToolbarComponent extends React.Component {
                     &nbsp;
                     <button
                         className="btn btn-xs btn-danger"
+                        ref={ref => this.resetButton = ref}
                         onClick={() => {
                             context.resetFilter();
                             this.callback();

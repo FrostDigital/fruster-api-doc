@@ -78,7 +78,6 @@ export default class App extends React.Component {
 
                     <div className="clearfix" />
 
-                    {/* {this.state.isFilteredResult ? this.hasEndpoints("http") : true && */}
                     <span>
                         <a href="#http-endpoints">
                             <h1 id="http-endpoints">Http endpoints</h1>
@@ -86,8 +85,6 @@ export default class App extends React.Component {
                         {this.listEndpointDetails("http")}
                     </span>
 
-
-                    {/* {this.state.isFilteredResult ? this.hasEndpoints("ws") : true && */}
                     <span>
                         <a href="#ws-endpoints">
                             <h1 id="ws-endpoints">Ws endpoints</h1>
@@ -95,8 +92,6 @@ export default class App extends React.Component {
                         {this.listEndpointDetails("ws")}
                     </span>
 
-
-                    {/* {this.state.isFilteredResult ? this.hasEndpoints("service") : true && */}
                     <span>
                         <a href="#service-endpoints">
                             <h1 id="service-endpoints">Service endpoints</h1>
