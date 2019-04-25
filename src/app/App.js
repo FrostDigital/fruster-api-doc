@@ -59,6 +59,8 @@ export default class App extends React.Component {
                         <h1>{this.props.config.projectName ? this.props.config.projectName + " " : ""}API</h1>
                     </a>
 
+                    <p style={{ fontSize: "12px" }}>Documentation was generated on {new Date().toJSON()}</p>
+
                     <h4>Table of contents</h4>
 
                     <div className="row table-of-contents">
@@ -66,7 +68,7 @@ export default class App extends React.Component {
                         {
                             this.state.isFilteredResult &&
                             <h5 style={{ marginLeft: "15px", color: "#ff6969" }}>
-                                <b>Note:</b><i>Showing filtered result by <b>"{this.state.currentFilter}"</b></i>. <a className="clickable" onClick={this.resetFilter}>Reset</a>
+                                <b>Note:</b><i>Showing filtered result by <b>"{this.state.currentFilter}"</b></i>. <a className="clickable" title="Reset filter (R)" onClick={this.resetFilter}>Reset</a>
                             </h5>
                         }
 

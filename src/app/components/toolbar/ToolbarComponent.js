@@ -60,7 +60,6 @@ export default class ToolbarComponent extends React.Component {
                             <div className="float-right">
                                 <button
                                     className="btn btn-xs btn-danger"
-                                    title="Reset filter (R)"
                                     onClick={() => this.resetCache()}>
                                     Reset cache
                             </button>
@@ -87,11 +86,11 @@ export default class ToolbarComponent extends React.Component {
         return (
             <div className="filter-container">
                 <div className="form-group">
-                    <label htmlFor="filter">Filter:</label>
+                    <label htmlFor="filter" title="Filter (F)">Filter:</label>
                     <input
+                        title="Filter (F)"
                         type="text"
                         className="form-control"
-                        title="Filter (F)"
                         id="filter"
                         ref={ref => this.filterInput = ref}
                         onChange={(e) => {
@@ -106,6 +105,7 @@ export default class ToolbarComponent extends React.Component {
                     <button
                         className="btn btn-xs btn-danger"
                         ref={ref => this.resetButton = ref}
+                        title="Reset filter (R)"
                         onClick={() => {
                             context.resetFilter();
                             this.callback();
@@ -114,7 +114,9 @@ export default class ToolbarComponent extends React.Component {
                     </button>
                 </div>
 
-                <div className="form-group">
+                <div
+                    className="form-group"
+                    title="Filter by">
                     <label htmlFor="filter-by">Filter by:</label>
                     <select
                         value={context.filterBy}
