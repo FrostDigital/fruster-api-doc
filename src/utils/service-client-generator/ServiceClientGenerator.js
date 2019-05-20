@@ -569,7 +569,7 @@ class ArrayParameter extends Parameter {
     constructor(name, type, description, params, required) {
         super(name, type, description, required);
         this.params = params;
-        this.required = !params.filter(p => !p.required);
+        this.required = !params.filter(p => !p.required) || required;
         this._type = "_ArrayParamter";
     }
 
