@@ -144,10 +144,15 @@ module.exports = ${this.className};`;
         if (!schema)
             return null;
 
-        if (this.customTypeDefs[schema.id])
-            return this.customTypeDefs[schema.id];
+        let outputIsArray = schema.type === "array";
 
-        let outputIsArray = false;
+        if (this.customTypeDefs[schema.id]) {
+            if (isEndpointReturn)
+                if (outputIsArray)
+                    return `Array<${this.customTypeDefs[schema.id].name}>`;
+
+            return this.customTypeDefs[schema.id];
+        }
 
         const name = schema.id;
         const params = this._getEndpointParameters(schema);
@@ -187,10 +192,11 @@ module.exports = ${this.className};`;
         } else
             output = typeDef.type;
 
-        if (isEndpointReturn && outputIsArray)
-            return `Array<${output}>`;
-        else
-            return output;
+        if (isEndpointReturn)
+            if (outputIsArray)
+                return `Array<${output}>`;
+
+        return output;
     }
 
     /** 
@@ -204,12 +210,8 @@ module.exports = ${this.className};`;
         if (!schema || !schema.id)
             return [];
 
-        let isPatternProperties = false;
         const parameters = [];
         const properties = getProperties();
-
-        if (schema.patternProperties)
-            isPatternProperties = true;
 
         if (!properties)
             return [];
@@ -236,7 +238,7 @@ module.exports = ${this.className};`;
                         property.items.format));
 
                 const propertySchema = { ...property, id: `${schema.id}${Utils.toTitleCase(propertyKeys[i])}` }
-                const type = this._getEndpointTypeDef(propertySchema);
+                const type = this._getEndpointTypeDef(propertySchema, false);
 
                 parameter = new ArrayParameter(
                     cleanName(propertyKeys[i]),
@@ -258,7 +260,7 @@ module.exports = ${this.className};`;
 
                 if (!parameter.required && subParams.length > 0) {
                     const propertySchema = { ...property, id: `${schema.id}${Utils.toTitleCase(parameter.name)}` }
-                    const type = this._getEndpointTypeDef(propertySchema);
+                    const type = this._getEndpointTypeDef(propertySchema, false);
 
                     parameter = new Parameter(
                         cleanName(propertyKeys[i]),
