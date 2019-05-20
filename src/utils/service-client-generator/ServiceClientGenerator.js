@@ -186,7 +186,10 @@ module.exports = ${this.className};`;
         } else
             output = typeDef.type;
 
-        return output;
+        if (outputIsArray)
+            return `Array<${output}>`;
+        else
+            return output;
     }
 
     /**
@@ -200,8 +203,12 @@ module.exports = ${this.className};`;
         if (!schema || !schema.id)
             return [];
 
+        let isPatternProperties = false;
         const parameters = [];
-        const properties = schema.properties ? schema.properties : schema.items ? schema.items.properties : {};
+        const properties = getProperties();
+
+        if (schema.patternProperties)
+            isPatternProperties = true;
 
         if (!properties)
             return [];
@@ -221,7 +228,7 @@ module.exports = ${this.className};`;
 
                 if (subParams.length === 0 && property.items && "type" in property.items)
                     subParams.push(new Parameter(
-                        propertyKeys[i],
+                        cleanName(propertyKeys[i]),
                         property.items.type,
                         property.items.description,
                         false,
@@ -231,14 +238,14 @@ module.exports = ${this.className};`;
                 const type = this._getEndpointTypeDef(propertySchema);
 
                 parameter = new ArrayParameter(
-                    propertyKeys[i],
-                    type.name ? type.name : type,
+                    cleanName(propertyKeys[i]),
+                    cleanName(type.name ? type.name : type),
                     property.description,
                     subParams,
                     schema.required ? schema.required.includes(propertyKeys[i]) : true);
             } else {
                 parameter = new Parameter(
-                    propertyKeys[i],
+                    cleanName(propertyKeys[i]),
                     property.type,
                     property.description,
                     schema.required ? schema.required.includes(propertyKeys[i]) : false,
@@ -253,14 +260,14 @@ module.exports = ${this.className};`;
                     const type = this._getEndpointTypeDef(propertySchema);
 
                     parameter = new Parameter(
-                        propertyKeys[i],
-                        type,
+                        cleanName(propertyKeys[i]),
+                        cleanName(type),
                         property.description,
                         schema.required ? schema.required.includes(propertyKeys[i]) : false,
                         property.format);
                 } else {
                     subParams.forEach(param => {
-                        param.name = `${propertyKeys[i]}.${param.name}`;
+                        param.name = cleanName(`${propertyKeys[i]}.${param.name}`);
                         parameters.push(param);
                     });
                 }
@@ -270,6 +277,27 @@ module.exports = ${this.className};`;
         }
 
         return parameters;
+
+        function cleanName(name) {
+            const replaceChars = ["/", "[", "]", "{", "}", "-", "(", ")"];
+
+            for (const char of replaceChars)
+                name = ViewUtils.replaceAll(name, char, "");
+
+            if (!isNaN(Number.parseInt(name[0])))
+                name = "_" + name;
+
+            return name;
+        }
+
+        function getProperties() {
+            if (schema.properties)
+                return schema.properties;
+            else if (schema.items)
+                return schema.items.properties;
+            else
+                return {};
+        }
     }
 
     /**
@@ -464,7 +492,7 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
      *
      * @return {${returnType}}
      */
-    static async ${this.endpointName}({${functionParams}}){
+    static async ${this.endpointName}({ ${functionParams} }){
         ${this.deprecatedReason ? `log.warn("Using deprecated endpoint ${this.endpointName}")` : ""}
         return (await bus.request({
             subject: ${this.urlConstant},
@@ -490,16 +518,17 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
          * @param {String|Object} returnType 
          */
         function getReturnType(returnType) {
-            const inputType = returnType ? returnType.name ? returnType.name : returnType : "Void";
+            let inputType;
+
+            if (returnType) {
+                if (returnType.name)
+                    inputType = returnType.name;
+                else
+                    inputType = returnType;
+            } else
+                inputType = "Void";
 
             return Utils.typeToTitleCase(inputType);
-            // TODO: Fix at some point
-            // if (returnType && returnType.includes("Array<") && returnType[returnType.length - 1] === ">") {
-            //     const titleCased = Utils.typeToTitleCase(inputType.replace("Array<", ""));
-
-            //     return `Array<${titleCased}>`;
-            // } else
-            //     return Utils.typeToTitleCase(inputType);
         }
     }
 

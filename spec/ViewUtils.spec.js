@@ -61,7 +61,6 @@ describe("ViewUtils", () => {
 
     it("sortedForEach sort inputted array and loop through it", () => {
         const obj = { c: 3, a: 1, b: 2 };
-        const keys = Object.keys(obj);
         const loopedValues = [];
 
         ViewUtils.sortedForEach(obj, (value, key, i) => loopedValues.push(key));
