@@ -65,7 +65,7 @@ class ServiceClientGenerator {
             const requestSchema = endpoint.schemas.find(schema => schema.id === endpoint.requestSchema);
             const responseSchema = endpoint.schemas.find(schema => schema.id === endpoint.responseSchema);
             const endpointParameters = this._getEndpointParameters(requestSchema);
-            const returnType = this._getEndpointTypeDef(responseSchema);
+            const returnType = this._getEndpointTypeDef(responseSchema, true);
             const constantNameCombined = `${this.className}.endpoints.${constant.constantName}`;
             const description = endpoint.docs ? endpoint.docs.description : "";
             const constantsWithSameName = this.endpointConstants.filter(c => c.constantName === constant.constantName);
@@ -136,10 +136,11 @@ module.exports = ${this.className};`;
      * Gets response typeDef from a schema
      * 
      * @param {Object} schema response schema
+     * @param {Boolean} isEndpointReturn response schema
      * 
      * @return {String|TypeDefArrayProperty|TypeDefProperty}
      */
-    _getEndpointTypeDef(schema) {
+    _getEndpointTypeDef(schema, isEndpointReturn = false) {
         if (!schema)
             return null;
 
@@ -186,13 +187,13 @@ module.exports = ${this.className};`;
         } else
             output = typeDef.type;
 
-        if (outputIsArray)
+        if (isEndpointReturn && outputIsArray)
             return `Array<${output}>`;
         else
             return output;
     }
 
-    /**
+    /** 
      * Gets endpoint paramters from a schema
      * 
      * @param {Object} schema 
