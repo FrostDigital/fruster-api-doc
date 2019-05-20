@@ -43,26 +43,37 @@ export default class EndpointContainer extends React.Component {
     }
 
     render() {
+        let { serviceName } = this.props;
+
+        const isWsUserIdEndpoint = serviceName === ":userId";
+
+        if (isWsUserIdEndpoint)
+            serviceName = "out";
+
         return (
             <div
-                id={this.props.serviceName + "-" + (this.props.type || "service")}
-                className={"service-container " + this.props.serviceName + "-"}>
+                id={serviceName + "-" + (this.props.type || "service")}
+                className={"service-container " + serviceName + "-"}>
 
-                <a href={"#" + this.props.serviceName + "-" + (this.props.type || "service")}><h2>{this.props.serviceName}</h2></a>
+                {
+                    // To not break old links to #:userId-ws
+                    isWsUserIdEndpoint && <div id=":userId-ws" />
+                }
+                <a href={"#" + serviceName + "-" + (this.props.type || "service")}><h2>{serviceName}</h2></a>
 
                 {
                     this.props.type === "service" &&
                     <span className="service-btn">
                         <label
-                            htmlFor={this.props.serviceName + "-" + (this.props.type || "service") + "-" + "select-all"}>
+                            htmlFor={serviceName + "-" + (this.props.type || "service") + "-" + "select-all"}>
                             Select / deselect all
                         </label> <input
-                            id={this.props.serviceName + "-" + (this.props.type || "service") + "-" + "select-all"}
+                            id={serviceName + "-" + (this.props.type || "service") + "-" + "select-all"}
                             onChange={e => this.checkAll()}
                             checked={this.state.checked}
                             type="checkbox" /> |
 
-                        <a href={`/service-client/${this.props.serviceName}?subjects=${encodeURIComponent(this.getCheckedEndpoints())}`}>
+                        <a href={`/service-client/${serviceName}?subjects=${encodeURIComponent(this.getCheckedEndpoints())}`}>
                             <button className="action">Download service client <span className="glyphicon glyphicon-download"></span></button>
                         </a>
                     </span>

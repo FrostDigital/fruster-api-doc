@@ -60,7 +60,6 @@ export default class EndpointDetailsComponent extends React.Component {
         const decodedURIWithoutHash = decodedURI.replace("#", "");
         const parsedSubject = this.getParsedSubject();
 
-
         if (this.props.endpoint.hidden
             || this.state.isOpen
             || this.state.lastHash == decodedURI

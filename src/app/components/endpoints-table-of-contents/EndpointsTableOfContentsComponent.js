@@ -90,6 +90,9 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                 if (endpoints.length === 0)
                     return;
 
+                if (serviceName === ":userId")
+                    serviceName = "out";
+
                 return (
                     <span
                         key={`${this.props.type.toLowerCase()}-${serviceName}`}>
