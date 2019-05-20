@@ -43,7 +43,7 @@ export default class EndpointContainer extends React.Component {
     }
 
     render() {
-        let { serviceName } = this.props;
+        let { serviceName, type } = this.props;
 
         const isWsUserIdEndpoint = serviceName === ":userId";
 
@@ -52,23 +52,23 @@ export default class EndpointContainer extends React.Component {
 
         return (
             <div
-                id={serviceName + "-" + (this.props.type || "service")}
+                id={serviceName + "-" + (type || "service")}
                 className={"service-container " + serviceName + "-"}>
 
                 {
                     // To not break old links to #:userId-ws
                     isWsUserIdEndpoint && <div id=":userId-ws" />
                 }
-                <a href={"#" + serviceName + "-" + (this.props.type || "service")}><h2>{serviceName}</h2></a>
+                <a href={"#" + serviceName + "-" + (type || "service")}><h2>{serviceName}</h2></a>
 
                 {
-                    this.props.type === "service" &&
+                    type === "service" &&
                     <span className="service-btn">
                         <label
-                            htmlFor={serviceName + "-" + (this.props.type || "service") + "-" + "select-all"}>
+                            htmlFor={serviceName + "-" + (type || "service") + "-" + "select-all"}>
                             Select / deselect all
                         </label> <input
-                            id={serviceName + "-" + (this.props.type || "service") + "-" + "select-all"}
+                            id={serviceName + "-" + (type || "service") + "-" + "select-all"}
                             onChange={e => this.checkAll()}
                             checked={this.state.checked}
                             type="checkbox" /> |
@@ -93,7 +93,9 @@ export default class EndpointContainer extends React.Component {
      * Prepares all endpoints within this category
      */
     getEndpoints() {
-        return this.props.endpoints
+        const { endpoints, allEndpoints, type } = this.props;
+
+        return endpoints
             .filter(endpoint => !endpoint.hidden)
             .map(endpoint => {
                 const schemas = endpoint.schemas
@@ -127,10 +129,10 @@ export default class EndpointContainer extends React.Component {
                     <span key={`endpoint-${endpoint.subject}`}>
                         <hr />
                         <EndpointDetailsComponent
-                            type={this.props.type}
+                            type={type}
                             endpoint={endpoint}
                             schemas={schemas}
-                            allEndpoints={this.props.allEndpoints}
+                            allEndpoints={allEndpoints}
                             onCheck={e => this.onCheckboxChecked(e)}
                             checked={this.state.checkboxes[endpoint.subject]}
                         />
