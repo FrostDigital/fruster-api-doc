@@ -268,6 +268,12 @@ export default class App extends React.Component {
                         endpoints.forEach(endpoint => {
                             const flatEndpointObj = this.squishObject(endpoint.docs);
 
+                            if (endpoint.deprecated)
+                                flatEndpointObj.deprecated = "deprecated";
+
+                            if (endpoint.pending)
+                                flatEndpointObj.pending = "pending";
+
                             let comparisonString = "";
 
                             if (flatEndpointObj)

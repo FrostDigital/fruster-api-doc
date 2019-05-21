@@ -112,6 +112,20 @@ export default class EndpointDetailsComponent extends React.Component {
     }
 
     render() {
+        const {
+            endpoint: {
+                deprecated,
+                pending,
+                instanceId,
+                cUrl,
+                subject,
+                docs
+            },
+            type,
+            checked,
+            onCheck
+        } = this.props;
+
         return (
             <ApiDocContext.Consumer>
                 {context => (
@@ -120,7 +134,9 @@ export default class EndpointDetailsComponent extends React.Component {
                             ref={ref => this.markup = ref}
                             id={this.state.urlSubjectLink}
                             className={`
-                                ${this.props.endpoint.deprecated ? "deprecated-container" : ""} container endpoint-container
+                                ${deprecated ? "deprecated-container" : ""} 
+                                ${pending ? "pending-container" : ""} 
+                                container endpoint-container
                                 ${this.state.selected ? "selected-animated" : ""}
                             `}>
                             <span>
@@ -136,22 +152,25 @@ export default class EndpointDetailsComponent extends React.Component {
                                     <a href={"#" + this.state.urlSubjectLink} onClick={() => this.reactToClickHash()}>
                                         <h3
                                             style={{ display: "inline-block" }}
-                                            className={this.props.endpoint.deprecated ? "deprecated" : ""}>
+                                            className={`
+                                                ${deprecated ? "deprecated" : ""}
+                                                ${pending ? "pending" : ""}
+                                            `}>
                                             <span dangerouslySetInnerHTML={{ __html: this.state.urlSubject, }}></span>
                                         </h3>
                                     </a>
                                 </span>
 
                                 <span className="endpoint-second-row">
-                                    from {this.props.endpoint.instanceId} {this.getDeprecationNote()}
+                                    from {instanceId} {this.getInformationNote()}
 
-                                    <CopyAsCurlComponent cUrl={this.props.endpoint.cUrl} />
+                                    <CopyAsCurlComponent cUrl={cUrl} />
 
-                                    {this.props.type === "service" && <input
+                                    {type === "service" && <input
                                         type="checkbox"
-                                        name={this.props.endpoint.subject}
-                                        checked={this.props.checked}
-                                        onChange={this.props.onCheck}
+                                        name={subject}
+                                        checked={checked}
+                                        onChange={onCheck}
                                         style={{ float: "right" }} />}
 
                                 </span>
@@ -170,13 +189,16 @@ export default class EndpointDetailsComponent extends React.Component {
                                     </span>
 
                                     :
-                                    this.props.endpoint.docs
-                                    && this.props.endpoint.docs.description
+                                    docs
+                                    && docs.description
                                     && <span
                                         onClick={e => this.toggleFolded()}
-                                        title={this.props.endpoint.docs ? this.props.endpoint.docs.description : ""}
+                                        title={docs ? docs.description : ""}
                                         className="short-description"
-                                        dangerouslySetInnerHTML={{ __html: markdown.markdown.toHTML(this.props.endpoint.docs.description) }} />
+                                        dangerouslySetInnerHTML={{
+                                            // @ts-ignore
+                                            __html: markdown.markdown.toHTML(docs.description)
+                                        }} />
                             }
 
                         </div>
@@ -189,7 +211,7 @@ export default class EndpointDetailsComponent extends React.Component {
                                 {this.state.requestSchema &&
                                     <JsonSchemaModalComponent
                                         ref={ref => { this.requestBodyModal = ref; }}
-                                        subject={this.props.endpoint.subject}
+                                        subject={subject}
                                         schema={this.state.requestSchema}
                                         endpointUrl={this.state.urlSubjectLink}
                                         hidden={this.state.hidden}
@@ -199,7 +221,7 @@ export default class EndpointDetailsComponent extends React.Component {
                                 {this.state.responseSchema &&
                                     <JsonSchemaModalComponent
                                         ref={ref => { this.responseBodyModal = ref; }}
-                                        subject={this.props.endpoint.subject}
+                                        subject={subject}
                                         schema={this.state.responseSchema}
                                         endpointUrl={this.state.urlSubjectLink}
                                         hidden={this.state.hidden}
@@ -226,6 +248,18 @@ export default class EndpointDetailsComponent extends React.Component {
      * @param {Object} context
      */
     getEndpointDetailsTable(context) {
+        const {
+            endpoint: {
+                subject,
+                serviceName,
+                requestSchema,
+                responseSchema,
+                permissions,
+                mustBeLoggedIn
+            },
+            type
+        } = this.props;
+
         return (
             <table
                 className="table table">
@@ -241,20 +275,20 @@ export default class EndpointDetailsComponent extends React.Component {
                 <tbody>
                     <tr>
                         {/* Subject */}
-                        <td>{this.props.endpoint.subject}</td>
+                        <td>{subject}</td>
                         {/* Request body */}
                         <td
                             onClick={e => this.openRequestBodyModal(e)}
                             className={`
                             request-schema
-                            ${this.props.endpoint.serviceName} 
-                            ${this.props.endpoint.requestSchema} 
-                            ${(this.props.endpoint.requestSchema ? " " : "deactivated")}
+                            ${serviceName} 
+                            ${requestSchema} 
+                            ${(requestSchema ? " " : "deactivated")}
                             ${this.state.requestSchema && this.state.requestSchema._error ? "has-error" : ""}`}>
-                            <a href={this.props.endpoint.requestSchema ? `#${this.state.urlSubjectLink}?modal=${this.props.endpoint.requestSchema}` : "#"}
-                                className={this.props.endpoint.requestSchema ? "" : "deactivated"}>
-                                {this.props.endpoint.requestSchema || <span className="not-available"> n/a</span>}
-                                {this.props.endpoint.requestSchema && <span className="glyphicon glyphicon-new-window"></span>}
+                            <a href={requestSchema ? `#${this.state.urlSubjectLink}?modal=${requestSchema}` : "#"}
+                                className={requestSchema ? "" : "deactivated"}>
+                                {requestSchema || <span className="not-available"> n/a</span>}
+                                {requestSchema && <span className="glyphicon glyphicon-new-window"></span>}
                             </a>
                         </td>
                         {/* Required permissions */}
@@ -276,7 +310,7 @@ export default class EndpointDetailsComponent extends React.Component {
                     <tr>
                         {/* Url */}
                         <td>{
-                            this.props.type === "http"
+                            type === "http"
                                 ? context.config.apiRoot + this.state.parsedSubject.url
                                 : <span className="not-available">n/a</span>
                         }</td>
@@ -286,21 +320,21 @@ export default class EndpointDetailsComponent extends React.Component {
                             onClick={e => this.openResponseBodyModal(e)}
                             className={`
                             response-schema
-                            ${this.props.endpoint.serviceName} 
-                            ${this.props.endpoint.responseSchema} 
-                            ${(this.props.endpoint.responseSchema ? " " : "deactivated")}
+                            ${serviceName} 
+                            ${responseSchema} 
+                            ${(responseSchema ? " " : "deactivated")}
                             ${this.state.responseSchema && this.state.responseSchema._error ? "has-error" : ""}`}>
-                            <a href={this.props.endpoint.responseSchema ? `#${this.state.urlSubjectLink}?modal=${this.props.endpoint.responseSchema}` : "#"}
-                                className={this.props.endpoint.responseSchema ? "" : "deactivated"}>
-                                {this.props.endpoint.responseSchema || <span className="not-available">n/a</span>}
-                                {this.props.endpoint.responseSchema && <span className="glyphicon glyphicon-new-window"></span>}
+                            <a href={responseSchema ? `#${this.state.urlSubjectLink}?modal=${responseSchema}` : "#"}
+                                className={responseSchema ? "" : "deactivated"}>
+                                {responseSchema || <span className="not-available">n/a</span>}
+                                {responseSchema && <span className="glyphicon glyphicon-new-window"></span>}
                             </a>
                         </td>
 
                         {/* Must be logged in */}
                         <td
-                            className={(this.props.endpoint.permissions && this.props.endpoint.permissions.length > 0) ? true.toString() : this.props.endpoint.mustBeLoggedIn.toString()}>
-                            {(this.props.endpoint.permissions && this.props.endpoint.permissions.length > 0) ? true.toString() : this.props.endpoint.mustBeLoggedIn.toString()}
+                            className={(permissions && permissions.length > 0) ? true.toString() : mustBeLoggedIn.toString()}>
+                            {(permissions && permissions.length > 0) ? true.toString() : mustBeLoggedIn.toString()}
                         </td>
                     </tr>
                 </tbody>
@@ -313,6 +347,8 @@ export default class EndpointDetailsComponent extends React.Component {
      * Prepares the description table
      */
     getDocumentationTable() {
+        const { endpoint: { docs } } = this.props;
+
         return (
             <table
                 className="table table">
@@ -326,15 +362,18 @@ export default class EndpointDetailsComponent extends React.Component {
                 <tbody>
                     <tr>
                         <td className="description">
-                            {this.props.endpoint.docs ?
+                            {docs ?
                                 <div>
-                                    {this.props.endpoint.docs.description && <div className="doc-entry-title">Description</div>}
-                                    {this.props.endpoint.docs.description
-                                        ? <span className="description-value" dangerouslySetInnerHTML={{ __html: markdown.markdown.toHTML(this.props.endpoint.docs.description), }}></span>
+                                    {docs.description && <div className="doc-entry-title">Description</div>}
+                                    {docs.description
+                                        ? <span className="description-value" dangerouslySetInnerHTML={{
+                                            // @ts-ignore
+                                            __html: markdown.markdown.toHTML(docs.description),
+                                        }}></span>
                                         : <span className="not-available">n/a</span>}
-                                    <span className="url-params-desc">{this.props.endpoint.docs.params ? this.getDocEntry(this.props.endpoint.docs.params, "Url parameters") : ""}</span>
-                                    <span className="query-params-desc">{this.props.endpoint.docs.query ? this.getDocEntry(this.props.endpoint.docs.query, "Query parameters") : ""}</span>
-                                    <span className="errors-desc">{this.props.endpoint.docs.errors ? this.getDocEntry(this.props.endpoint.docs.errors, "Errors") : ""}</span>
+                                    <span className="url-params-desc">{docs.params ? this.getDocEntry(docs.params, "Url parameters") : ""}</span>
+                                    <span className="query-params-desc">{docs.query ? this.getDocEntry(docs.query, "Query parameters") : ""}</span>
+                                    <span className="errors-desc">{docs.errors ? this.getDocEntry(docs.errors, "Errors") : ""}</span>
                                 </div> : <span className="not-available">n/a</span>}
                         </td>
                     </tr>
@@ -446,17 +485,29 @@ export default class EndpointDetailsComponent extends React.Component {
     }
 
     /**
-     * Returns styled and "linkified" deprecation note
+     * Returns note for special case endpoints
+     * For instance a styled and "linkified" deprecation note
      */
-    getDeprecationNote() {
-        if (this.props.endpoint.deprecated && typeof this.props.endpoint.deprecated === "string") {
-            return (
-                <span>
-                    | <span className="deprecated-description">Note: </span>
-                    <span className="deprecated-note" dangerouslySetInnerHTML={{ __html: this.getDeprecatedHtml(this.props.endpoint.deprecated) }} ></span>
-                </span>
-            );
+    getInformationNote() {
+        const { endpoint: { deprecated, pending } } = this.props;
+
+        if (!deprecated && !pending)
+            return <span />;
+
+        const getNote = () => {
+            if (deprecated && typeof deprecated === "string") {
+                return (<span className="deprecated-note" dangerouslySetInnerHTML={{ __html: this.getDeprecatedHtml(deprecated) }} ></span>);
+            } else if (pending) {
+                return (<span>This endpoint is not yet implemented!</span>);
+            }
         }
+
+        return (
+            <span>
+                | <span className="deprecated-description">Note: </span>
+                {getNote()}
+            </span>
+        );
     }
 
     /**
@@ -467,6 +518,7 @@ export default class EndpointDetailsComponent extends React.Component {
     getDeprecatedHtml(description) {
         const parts = description.split(" ");
         const partsWithEndpoint = {};
+
         let endpointsExists = false;
 
         for (let i = 0; i < parts.length; i++) {

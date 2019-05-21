@@ -51,7 +51,10 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                                         <li
                                             key={`table-of-contents-http-${serviceName}-${endpoint.subject}`}
                                             title={endpoint.docs ? endpoint.docs.description : ""}
-                                            className={endpoint.deprecated ? "deprecated" : ""}>
+                                            className={`
+                                                ${endpoint.deprecated ? "deprecated" : ""}
+                                                ${endpoint.pending ? "pending" : ""}
+                                            `}>
                                             <a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
                                                 <span className={parsedSubject.method}>
                                                     {parsedSubject.method}
@@ -93,6 +96,8 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                 if (serviceName === ":userId")
                     serviceName = "out";
 
+
+                
                 return (
                     <span
                         key={`${this.props.type.toLowerCase()}-${serviceName}`}>
@@ -106,7 +111,10 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                                     return (
                                         <li key={`table-of-contents-${this.props.type}-${serviceName}-${endpoint.subject}`}
                                             title={endpoint.docs ? endpoint.docs.description : ""}
-                                            className={endpoint.deprecated ? "deprecated" : ""}>
+                                            className={`
+                                                ${endpoint.deprecated ? "deprecated" : ""}
+                                                ${endpoint.pending ? "pending" : ""}
+                                            `}>
                                             <a
                                                 href={"#" + endpoint.subject}
                                                 dangerouslySetInnerHTML={{ __html: ViewUtils.getColorCodedTitle(endpoint.subject) }} />

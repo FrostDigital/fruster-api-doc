@@ -56,7 +56,7 @@ function startServer() {
                 res.end("<html><body><h1>No data found</h1><h2>run the api doc at least once and try again</h2></body></html>");
                 return;
             }
-            
+
             const options = { serviceName, type, endpoints, subjects: req.query.subjects };
 
             const serviceClientGenerator = new ServiceClientGenerator(options);
