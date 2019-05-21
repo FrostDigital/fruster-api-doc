@@ -285,6 +285,9 @@ module.exports = ${this.className};`;
 
         return parameters;
 
+        /**
+         * Cleans names from characters not possible to have in variable names
+         */
         function cleanName(name) {
             const replaceChars = ["/", "[", "]", "{", "}", "-", "(", ")"];
 
@@ -297,6 +300,9 @@ module.exports = ${this.className};`;
             return name;
         }
 
+        /**
+         * Gets the current properties
+         */
         function getProperties() {
             if (schema.properties)
                 return schema.properties;
