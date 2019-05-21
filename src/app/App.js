@@ -70,7 +70,11 @@ export default class App extends React.Component {
                         {
                             this.state.isFilteredResult &&
                             <h5 style={{ marginLeft: "15px", color: "#ff6969" }}>
-                                <b>Note:</b><i>Showing filtered result by <b>"{this.state.currentFilter}"</b></i>. <a className="clickable" title="Reset filter (R)" onClick={this.resetFilter}>Reset</a>
+                                <b>Note: </b><i>Showing filtered result by <b>"{this.state.currentFilter}"</b></i>.
+                                <a
+                                    className="clickable"
+                                    title="Reset filter (R)"
+                                    onClick={this.resetFilter}>Reset</a>
                             </h5>
                         }
 
@@ -268,11 +272,28 @@ export default class App extends React.Component {
                         endpoints.forEach(endpoint => {
                             const flatEndpointObj = this.squishObject(endpoint.docs);
 
+                            /** 
+                             * Further fields to be possible to search w/ filter by `docs` can be added here,
+                             * the key name doesn't matter, just has to be unique but the value is what is used to compare:
+                             */
+
                             if (endpoint.deprecated)
                                 flatEndpointObj.deprecated = "deprecated";
 
                             if (endpoint.pending)
                                 flatEndpointObj.pending = "pending";
+
+                            if (endpoint.requestSchema)
+                                flatEndpointObj.requestSchema = endpoint.requestSchema;
+
+                            if (endpoint.responseSchema)
+                                flatEndpointObj.responseSchema = endpoint.responseSchema;
+
+                            if (endpoint.docs.errors) {
+                                Object.keys(endpoint.docs.errors).forEach(key => {
+                                    flatEndpointObj["_ERROR_CODE_" + key] = key;  // prefix to be sure we are not overwriting anything else
+                                });
+                            }
 
                             let comparisonString = "";
 
