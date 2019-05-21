@@ -3,7 +3,7 @@ module.exports = {
     bus: process.env.BUS || "nats://localhost:4222",
 
     /** Port to be running webserver on */
-    port: parseInt((process.env.PORT || 8080), 10),
+    port: Number.parseInt((process.env.PORT || 8080)),
 
     /** The url to the api root, in order to display accurate urls */
     apiRoot: process.env.API_ROOT || "{{host}}",
@@ -16,8 +16,10 @@ module.exports = {
      * Note: It goes through this list in reverse order so any extension words should be latter; e.g. `create,created` = it will look for created first and then created. 
     */
     colorCodedWords: parseColorCodedWords(process.env.COLOR_CODED_WORDS ||
-        "GET:get,find;read;DELETE:delete,deleted,remove,removed,cancel,canceled,cancelled,decline,declined,unregister,unregistered;POST:create,created,post,posted,add,added,generate,generated,approve,approved,send,sent,resend,resent,set,validate,validated,verify,verified,authenticate,authenticated,decode,decode;PUT:put,update,updated,change,changed,reset;PUB:pub")
+        "GET:get,find;read;DELETE:delete,deleted,remove,removed,cancel,canceled,cancelled,decline,declined,unregister,unregistered;POST:create,created,post,posted,add,added,generate,generated,approve,approved,send,sent,resend,resent,set,validate,validated,verify,verified,authenticate,authenticated,decode,decode;PUT:put,update,updated,change,changed,reset;PUB:pub"),
 
+    // rerenderRate: Number.parseInt(process.env.RERENDER_RATE || 1000 * 60) // TODO: REVERT
+    rerenderRate: Number.parseInt(process.env.RERENDER_RATE || 1000)
 };
 
 function parseColorCodedWords(string) {

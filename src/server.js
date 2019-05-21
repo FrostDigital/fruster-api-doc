@@ -18,6 +18,8 @@ const utils = require("./utils/utils");
 const ViewUtils = require("./utils/ViewUtils");
 const config = require("../config");
 const port = config.port || 3100;
+const { promisify } = require("util");
+const writeFile = promisify(fs.writeFile);
 
 const ServiceClientGenerator = require("./utils/service-client-generator/ServiceClientGenerator");
 const _ = require("lodash");
@@ -33,6 +35,8 @@ let cachedHtml;
     require("fruster-health").start();
 
     await startServer();
+
+    renderWebPage();
 
 }());
 
@@ -77,92 +81,8 @@ function startServer() {
     app.get("/", async (req, res) => {
         try {
             res.setHeader("Cache-Control", "max-age=300");
-
-            if (req.query.resetCache)
-                resetCache();
-
-            /** If there is cached html we send this right away but let the server process the rest, this will speed up avarage load times. */
-            if (cachedHtml)
-                res.send(cachedHtml);
-
-            let metadataResponses = [];
-
-            if (req.query.project) { /** Lets you input an url to log viewer in order to use that to get metadata */
-                const url = `http://${req.query.project}-log-viewer.c4.fruster.se/api/bus/request`;
-
-                console.log("using", url);
-
-                metadataResponses = await utils.httpRequest("POST", url, {
-                    maxResponses: 10000,
-                    message: {},
-                    subject: "metadata"
-                });
-            } else
-                metadataResponses = await bus.requestMany({
-                    skipOptionsRequest: true,
-                    subject: "metadata",
-                    maxResponses: 10000,
-                    message: { reqId: uuid.v4() }
-                });
-
-
-            let schemasWithErrors;
-            const promises = [];
-            const allEndpoints = {};
-
-            metadataResponses.forEach(response => {
-                if (!response.from) /** Just in case this happens we don't want the whole page to not load. */
-                    response.from = { service: "", instanceId: "" };
-
-                const serviceName = response.from && response.from.service === "n/a" ? response.from.instanceId : response.from ? response.from.service : "na";
-                const fixedServiceName = serviceName.replace("n/a", "na");
-
-                if (!response.data)
-                    return;
-
-                const promise = utils.derefJsonSchema(response.data.schemas, fixedServiceName)
-                    .then((derefResp) => {
-                        if (!derefResp)
-                            return;
-
-                        const schemas = derefResp.schemas;
-
-                        if (derefResp.errors && Object.keys(derefResp.errors).length > 0) {
-                            schemasWithErrors = {};
-                            schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
-                        }
-
-                        response.data.exposing.map((object, i) => {
-                            allEndpoints[object.subject] = object.subject;
-
-                            if (object.subject.includes("http")) parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
-                            else if (object.subject.includes("ws")) parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
-                            else parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
-                        });
-                    });
-
-                promises.push(promise);
-            });
-
-            await Promise.all(promises);
-
-            Object.keys(endpointsByType).forEach(endpointType => {
-                sortAfterEndpointName(endpointsByType[endpointType]);
-            });
-
-            const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints, config, generatedDate: new Date().toJSON() };
-            const appString = renderToString(<App {...state} />);
-            const renderedHtml = template({
-                body: appString,
-                title: `${config.projectName} API documentation`,
-                initialState: JSON.stringify(state)
-            });
-
-            cachedHtml = renderedHtml;
-
-            if (!res.headersSent)
-                res.send(cachedHtml);
-
+            res.setHeader("Content-Type", "text/html");
+            fs.createReadStream("index.html").pipe(res);
         } catch (err) {
             log.error(err);
             res.json(err);
@@ -170,6 +90,7 @@ function startServer() {
     });
 
     app.listen(port);
+
     console.log(` 
 
 ================================================
@@ -187,6 +108,93 @@ function startServer() {
     `);
     console.log(`Server running at http://localhost:${port}/`);
 }
+
+async function renderWebPage(query = { project: undefined }) {
+    console.log("Rendering web page");
+
+    const start = Date.now();
+
+    resetCache();
+
+    // TODO: Cache the responses outside the generated html as well so that we can see what was updated etc. 
+
+    let metadataResponses = [];
+
+    if (query.project) { /** Lets you input an url to log viewer in order to use that to get metadata */
+        const url = `http://${query.project}-log-viewer.c4.fruster.se/api/bus/request`;
+
+        console.log("using", url);
+
+        metadataResponses = await utils.httpRequest("POST", url, {
+            maxResponses: 10000,
+            message: {},
+            subject: "metadata"
+        });
+    } else
+        metadataResponses = await bus.requestMany({
+            skipOptionsRequest: true,
+            subject: "metadata",
+            maxResponses: 100000,
+            message: { reqId: uuid.v4() }
+        });
+
+
+    let schemasWithErrors;
+    const promises = [];
+    const allEndpoints = {};
+
+    metadataResponses.forEach(response => {
+        if (!response.from) /** Just in case this happens we don't want the whole page to not load. */
+            response.from = { service: "", instanceId: "" };
+
+        const serviceName = response.from && response.from.service === "n/a" ? response.from.instanceId : response.from ? response.from.service : "na";
+        const fixedServiceName = serviceName.replace("n/a", "na");
+
+        if (!response.data)
+            return;
+
+        const promise = utils.derefJsonSchema(response.data.schemas, fixedServiceName)
+            .then((derefResp) => {
+                if (!derefResp)
+                    return;
+
+                const schemas = derefResp.schemas;
+
+                if (derefResp.errors && Object.keys(derefResp.errors).length > 0) {
+                    schemasWithErrors = {};
+                    schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
+                }
+
+                response.data.exposing.map((object, i) => {
+                    allEndpoints[object.subject] = object.subject;
+
+                    if (object.subject.includes("http")) parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
+                    else if (object.subject.includes("ws")) parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
+                    else parseEndpoint(object, 0, "service", schemas, fixedServiceName, response.from.instanceId);
+                });
+            });
+
+        promises.push(promise);
+    });
+
+    await Promise.all(promises);
+
+    Object.keys(endpointsByType).forEach(endpointType => sortAfterEndpointName(endpointsByType[endpointType]));
+
+    const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints, config, generatedDate: new Date().toJSON() };
+    const appString = renderToString(<App {...state} />);
+    const renderedHtml = template({
+        body: appString,
+        title: `${config.projectName} API documentation`,
+        initialState: JSON.stringify(state),
+        stylesheet: fs.readFileSync("./assets/index.css")
+    });
+
+    await writeFile("index.html", renderedHtml);
+
+    console.log("It took", Date.now() - start, "ms");
+    setTimeout(() => renderWebPage(), config.rerenderRate);
+};
 
 /**
  * Parses an endpoint into a format that can be used by the renderer.
@@ -276,16 +284,16 @@ function sortAfterEndpointName(endpoints) {
 }
 
 function resetCache() {
-    console.log("Resetting cache");
+    // console.log("Resetting cache");
 
     schemasPerService = {};
     endpointsByType = { http: {}, service: {}, ws: {} };
     cachedHtml = undefined;
 
-    console.log("Reset result:",
-        "\n endpointsByType.http:", Object.keys(endpointsByType.http).length,
-        "\n endpointsByType.service:", Object.keys(endpointsByType.service).length,
-        "\n endpointsByType.ws:", Object.keys(endpointsByType.ws).length,
-        "\n schemasPerService:", Object.keys(schemasPerService).length,
-        "\n cachedHtml === undefined:", cachedHtml === undefined);
+    // console.log("Reset result:",
+    //     "\n endpointsByType.http:", Object.keys(endpointsByType.http).length,
+    //     "\n endpointsByType.service:", Object.keys(endpointsByType.service).length,
+    //     "\n endpointsByType.ws:", Object.keys(endpointsByType.ws).length,
+    //     "\n schemasPerService:", Object.keys(schemasPerService).length,
+    //     "\n cachedHtml === undefined:", cachedHtml === undefined);
 }
