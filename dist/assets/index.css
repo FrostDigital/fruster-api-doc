@@ -93,7 +93,7 @@ select {
 }
 
 .filter-container .form-group label {
-    font-weight: normal;
+    font-weight: normal !important;
     margin: 0px;
 }
 
@@ -469,4 +469,15 @@ button.action:hover {
     color: #d9534f !important;
     background-color: transparent !important;
     border-color: #d9534f !important;
+}
+
+.endpoint-second-row input[type="checkbox"] {
+    width: 50px;
+    height: 50px;
+    margin-top: -49px;
+    background-color: grey;
+}
+
+label {
+    font-weight: normal !important;
 }
