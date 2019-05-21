@@ -4,6 +4,7 @@ import ViewUtils from "../../../utils/ViewUtils";
 import { ApiDocContext } from "../../Context";
 import JsonSchemaModalComponent from "../modal/JsonSchemaModalComponent";
 import CopyAsCurlComponent from "./copy-as-curl/CopyAsCurlComponent";
+import CopyToClipboardButtonComponent from "../copy-to-clipboard/CopyToClipboardButtonComponent";
 
 export default class EndpointDetailsComponent extends React.Component {
 
@@ -275,7 +276,12 @@ export default class EndpointDetailsComponent extends React.Component {
                 <tbody>
                     <tr>
                         {/* Subject */}
-                        <td>{subject}</td>
+                        <td>
+                            {subject}
+                            <CopyToClipboardButtonComponent
+                                copyData={subject}
+                                copyDescription="subject" />
+                        </td>
                         {/* Request body */}
                         <td
                             onClick={e => this.openRequestBodyModal(e)}
@@ -285,15 +291,26 @@ export default class EndpointDetailsComponent extends React.Component {
                             ${requestSchema} 
                             ${(requestSchema ? " " : "deactivated")}
                             ${this.state.requestSchema && this.state.requestSchema._error ? "has-error" : ""}`}>
-                            <a href={requestSchema ? `#${this.state.urlSubjectLink}?modal=${requestSchema}` : "#"}
+                            <a
+                                href={requestSchema ? `#${this.state.urlSubjectLink}?modal=${requestSchema}` : "#"}
                                 className={requestSchema ? "" : "deactivated"}>
                                 {requestSchema || <span className="not-available"> n/a</span>}
                                 {requestSchema && <span className="glyphicon glyphicon-new-window"></span>}
                             </a>
+
+                            {requestSchema
+                                && <CopyToClipboardButtonComponent
+                                    copyData={requestSchema}
+                                    copyDescription="request schema name" />}
                         </td>
                         {/* Required permissions */}
                         <td>
-                            {this.getPermissions()}
+                            <span>{this.getPermissions()}</span>
+
+                            {permissions && permissions.length > 0
+                                && <CopyToClipboardButtonComponent
+                                    copyData={permissions.join(",")}
+                                    copyDescription="request schema name" />}
                         </td>
                     </tr>
                 </tbody>
@@ -311,8 +328,15 @@ export default class EndpointDetailsComponent extends React.Component {
                         {/* Url */}
                         <td>{
                             type === "http"
-                                ? context.config.apiRoot + this.state.parsedSubject.url
+                                ? <span>
+                                    {context.config.apiRoot + this.state.parsedSubject.url}
+
+                                    <CopyToClipboardButtonComponent
+                                        copyData={context.config.apiRoot + this.state.parsedSubject.url}
+                                        copyDescription="url" />
+                                </span>
                                 : <span className="not-available">n/a</span>
+
                         }</td>
 
                         {/* Response body */}
@@ -324,17 +348,31 @@ export default class EndpointDetailsComponent extends React.Component {
                             ${responseSchema} 
                             ${(responseSchema ? " " : "deactivated")}
                             ${this.state.responseSchema && this.state.responseSchema._error ? "has-error" : ""}`}>
-                            <a href={responseSchema ? `#${this.state.urlSubjectLink}?modal=${responseSchema}` : "#"}
+                            <a
+                                href={responseSchema ? `#${this.state.urlSubjectLink}?modal=${responseSchema}` : "#"}
                                 className={responseSchema ? "" : "deactivated"}>
                                 {responseSchema || <span className="not-available">n/a</span>}
                                 {responseSchema && <span className="glyphicon glyphicon-new-window"></span>}
                             </a>
+
+                            {responseSchema
+                                && <CopyToClipboardButtonComponent
+                                    copyData={responseSchema}
+                                    copyDescription="response schema name" />}
                         </td>
 
                         {/* Must be logged in */}
                         <td
-                            className={(permissions && permissions.length > 0) ? true.toString() : mustBeLoggedIn.toString()}>
-                            {(permissions && permissions.length > 0) ? true.toString() : mustBeLoggedIn.toString()}
+                            className={
+                                (permissions
+                                    && permissions.length > 0)
+                                    ? true.toString()
+                                    : mustBeLoggedIn.toString()
+                            }>
+                            {(permissions
+                                && permissions.length > 0)
+                                ? true.toString()
+                                : mustBeLoggedIn.toString()}
                         </td>
                     </tr>
                 </tbody>
@@ -392,7 +430,9 @@ export default class EndpointDetailsComponent extends React.Component {
         if (this.props.endpoint.hidden || !this.state.isOpen)
             return;
 
-        if (e.nativeEvent.which !== 2) {
+        if (e.nativeEvent.which !== 2 // if we mouse click with the middle mouse we want the browser to do its thing
+            && !e.target.className.includes("copy") // if the pressed target has class name "copy", we're hitting the copy to clipboard button 
+        ) {
             e.preventDefault();
 
             if (this.requestBodyModal)
@@ -409,7 +449,9 @@ export default class EndpointDetailsComponent extends React.Component {
         if (this.props.endpoint.hidden || !this.state.isOpen)
             return;
 
-        if (e.nativeEvent.which !== 2) {
+        if (e.nativeEvent.which !== 2 // if we mouse click with the middle mouse we want the browser to do its thing
+            && !e.target.className.includes("copy") // if the pressed target has class name "copy", we're hitting the copy to clipboard button 
+        ) {
             e.preventDefault();
 
             if (this.responseBodyModal)

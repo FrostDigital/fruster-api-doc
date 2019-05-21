@@ -270,7 +270,8 @@ export default class App extends React.Component {
                         const endpoints = this.props.endpointsByType[type][serviceName];
 
                         endpoints.forEach(endpoint => {
-                            const flatEndpointObj = this.squishObject(endpoint.docs);
+                            const docs = docs || {};
+                            const flatEndpointObj = this.squishObject(docs);
 
                             /** 
                              * Further fields to be possible to search w/ filter by `docs` can be added here,
@@ -289,8 +290,8 @@ export default class App extends React.Component {
                             if (endpoint.responseSchema)
                                 flatEndpointObj.responseSchema = endpoint.responseSchema;
 
-                            if (endpoint.docs.errors) {
-                                Object.keys(endpoint.docs.errors).forEach(key => {
+                            if (docs.errors) {
+                                Object.keys(docs.errors).forEach(key => {
                                     flatEndpointObj["_ERROR_CODE_" + key] = key;  // prefix to be sure we are not overwriting anything else
                                 });
                             }

@@ -44,12 +44,12 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                         {
                             endpoints
                                 .filter(endpoint => !endpoint.hidden)
-                                .map((endpoint) => {
+                                .map((endpoint, i) => {
                                     const parsedSubject = ViewUtils.parseSubjectToAPIUrl(endpoint.subject);
 
                                     return (
                                         <li
-                                            key={`table-of-contents-http-${serviceName}-${endpoint.subject}`}
+                                            key={`table-of-contents-http-${serviceName}-${endpoint.subject}-${endpoint.instanceId}`}
                                             title={endpoint.docs ? endpoint.docs.description : ""}
                                             className={`
                                                 ${endpoint.deprecated ? "deprecated" : ""}
@@ -105,9 +105,9 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                         {
                             endpoints
                                 .filter(endpoint => !endpoint.hidden)
-                                .map((endpoint, index) => {
+                                .map((endpoint, i) => {
                                     return (
-                                        <li key={`table-of-contents-${this.props.type}-${serviceName}-${endpoint.subject}`}
+                                        <li key={`table-of-contents-${this.props.type}-${serviceName}-${endpoint.subject}-${endpoint.instanceId}`}
                                             title={endpoint.docs ? endpoint.docs.description : ""}
                                             className={`
                                                 ${endpoint.deprecated ? "deprecated" : ""}

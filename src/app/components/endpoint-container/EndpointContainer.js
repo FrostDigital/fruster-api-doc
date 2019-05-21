@@ -126,7 +126,7 @@ export default class EndpointContainer extends React.Component {
                 }
 
                 return (
-                    <span key={`endpoint-${endpoint.subject}`}>
+                    <span key={`endpoint-${endpoint.subject}-${endpoint.instanceId}`}>
                         <hr />
                         <EndpointDetailsComponent
                             type={type}

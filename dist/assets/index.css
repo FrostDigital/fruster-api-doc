@@ -493,3 +493,11 @@ button.action:hover {
 label {
     font-weight: normal !important;
 }
+
+td .btn-copy{
+    opacity: 0;
+}
+
+td:hover .btn-copy{
+    opacity: 1;
+}
