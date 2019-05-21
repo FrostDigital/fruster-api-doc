@@ -121,7 +121,6 @@ module.exports = ${this.className};`;
      * @return {String}
      */
     _formatJavascript(string) {
-        // string = string.split("\n\n").join("\n"); // Removes double line breaks
         string = string.split("    /**\n\n").join("    /**\n"); // removes new empty lines within comment blocks
         string = string.split("    /**\n     *\n").join("    /**\n"); // removes double new lines in comments
         string = string.split("{\n        \n        return ").join("{\n        return "); // removes new lines before return statement in functions
@@ -229,7 +228,9 @@ module.exports = ${this.className};`;
             if (property.type === "array") {
                 const subParams = this._getEndpointParameters(property);
 
-                if (subParams.length === 0 && property.items && "type" in property.items)
+                if (subParams.length === 0
+                    && property.items
+                    && "type" in property.items)
                     subParams.push(new Parameter(
                         cleanName(propertyKeys[i]),
                         property.items.type,
@@ -256,6 +257,9 @@ module.exports = ${this.className};`;
             }
 
             if (property.type === "object") {
+                if (!property.id)
+                    property.id = propertyKeys[i];
+
                 const subParams = this._getEndpointParameters(property);
 
                 if (!parameter.required && subParams.length > 0) {
