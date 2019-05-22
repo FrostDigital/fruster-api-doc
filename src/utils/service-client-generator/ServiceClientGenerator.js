@@ -246,7 +246,7 @@ module.exports = ${this.className};`;
                     cleanName(type.name ? type.name : type),
                     property.description,
                     subParams,
-                    schema.required ? schema.required.includes(propertyKeys[i]) : true);
+                    schema.required ? schema.required.includes(propertyKeys[i]) : false);
             } else {
                 parameter = new Parameter(
                     cleanName(propertyKeys[i]),
