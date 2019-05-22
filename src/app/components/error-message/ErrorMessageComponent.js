@@ -12,21 +12,36 @@ export default class ErrorMessageComponent extends React.Component {
     }
 
     render() {
+        const { numberOfEndpoints, schemasWithErrors } = this.props;
+
+        if (!schemasWithErrors && numberOfEndpoints !== 0)
+            return <React.Fragment />;
+
         return (
-            <span>
-                <div className="alert alert-danger"
-                    id="try-again-warning"
-                    hidden={this.props.numberOfEndpoints !== 0}>
+            <div
+                title="error message"
+                className="alert alert-danger">
 
-                    <strong>Note:</strong> Something went wrong or there are no endpoints registered; <a id="refresh-page" href="#" onClick={() => this.refreshPage()}>
-                        please refresh the page.
-                    </a>
+                {numberOfEndpoints === 0 && this.getMissingEndpointsText()}
 
-                </div>
+                {schemasWithErrors && this.getSchemasWithErrors()}
 
-                {this.getSchemasWithErrors()}
-            </span>
+            </div>
         )
+    }
+
+    shouldComponentUpdate() {
+        return false;
+    }
+
+    getMissingEndpointsText() {
+        return (
+            <React.Fragment>
+                <strong>Note:</strong> Something went wrong or there are no endpoints registered; <a id="refresh-page" href="#" onClick={() => this.refreshPage()}>
+                    please refresh the page.
+                </a>
+            </React.Fragment>
+        );
     }
 
     /**
@@ -51,13 +66,12 @@ export default class ErrorMessageComponent extends React.Component {
      * Displays all schemas with errors and makes it possible to open each in a modal.
      */
     getSchemasWithErrors() {
-        if (this.props.schemasWithErrors)
-            return (
-                <div
-                    className="alert alert-danger"
-                    id="schemas-contains-errors">
-                    <strong>Note:</strong> Error(s) were detected in the following json schemas:
-{
+        return (
+            <React.Fragment>
+                <p title=" Error(s) were detected in the following json schemas"><strong>Note:</strong> Error(s) were detected in the following json schemas:</p>
+
+                <ul id="errors-list" title="schemas with errors">
+                    {
                         ViewUtils.sortedForEach(this.props.schemasWithErrors, (schemas, serviceName) => {
 
                             return ViewUtils.sortedForEach(schemas, (schemaWithError, index, i) => {
@@ -80,8 +94,9 @@ export default class ErrorMessageComponent extends React.Component {
                             })
                         })
                     }
-                </div>
-            );
+                </ul>
+            </React.Fragment>
+        );
     }
 
     /**

@@ -11,15 +11,16 @@
         "run": "cd dist && node server",
         "docker": "node_modules/.bin/webpack && cd dist && node server",
         "build": "node_modules/.bin/webpack",
-        "test": "node ./spec/support/jasmine-runner.js"
+        "test": "node ./spec/support/jasmine-runner.js",
+        "testnyc": "nyc --reporter=html --check-coverage --lines 90 node ./spec/support/jasmine-runner.js"
     },
     "license": "MIT",
     "dependencies": {
         "@types/react": "^16.3.11",
         "express": "^4.16.3",
-        "fruster-bus": "^0.5.2",
-        "fruster-health": "^0.0.12",
-        "fruster-log": "^0.0.16",
+        "fruster-bus": "^0.5.6",
+        "fruster-health": "^0.0.13",
+        "fruster-log": "^0.0.18",
         "highlight.js": "^9.12.0",
         "jquery": "^3.3.1",
         "json-schema-faker": "0.5.0-rc15",
@@ -27,8 +28,8 @@
         "markdown": "^0.5.0",
         "node-docson": "^0.4.6",
         "opn": "^5.3.0",
-        "react": "^16.3.1",
-        "react-dom": "^16.3.1",
+        "react": "^16.8.6",
+        "react-dom": "^16.8.6",
         "request": "^2.88.0",
         "uuid": "3.1.0"
     },
@@ -53,7 +54,8 @@
         "webpack-node-externals": "^1.2.0",
         "@types/jasmine": "^2.8.6",
         "jasmine": "^2.8.0",
-        "jasmine-spec-reporter": "^4.2.1"
+        "jasmine-spec-reporter": "^4.2.1",
+        "nyc": "^13.0.1"
     },
     "engines": {
         "node": "7.9.0"

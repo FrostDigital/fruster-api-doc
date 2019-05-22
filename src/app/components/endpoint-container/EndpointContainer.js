@@ -43,26 +43,37 @@ export default class EndpointContainer extends React.Component {
     }
 
     render() {
+        let { serviceName, type } = this.props;
+
+        const isWsUserIdEndpoint = serviceName === ":userId";
+
+        if (isWsUserIdEndpoint)
+            serviceName = "out";
+
         return (
             <div
-                id={this.props.serviceName + "-" + (this.props.type || "service")}
-                className={"service-container " + this.props.serviceName + "-"}>
-
-                <a href={"#" + this.props.serviceName + "-" + (this.props.type || "service")}><h2>{this.props.serviceName}</h2></a>
+                id={serviceName + "-" + (type || "service")}
+                className={"service-container " + serviceName + "-"}>
 
                 {
-                    this.props.type === "service" &&
+                    // To not break old links to #:userId-ws
+                    isWsUserIdEndpoint && <div id=":userId-ws" />
+                }
+                <a href={"#" + serviceName + "-" + (type || "service")}><h2>{serviceName}</h2></a>
+
+                {
+                    type === "service" &&
                     <span className="service-btn">
                         <label
-                            htmlFor={this.props.serviceName + "-" + (this.props.type || "service") + "-" + "select-all"}>
+                            htmlFor={serviceName + "-" + (type || "service") + "-" + "select-all"}>
                             Select / deselect all
                         </label> <input
-                            id={this.props.serviceName + "-" + (this.props.type || "service") + "-" + "select-all"}
+                            id={serviceName + "-" + (type || "service") + "-" + "select-all"}
                             onChange={e => this.checkAll()}
                             checked={this.state.checked}
                             type="checkbox" /> |
 
-                        <a href={`/service-client/${this.props.serviceName}?subjects=${encodeURIComponent(this.getCheckedEndpoints())}`}>
+                        <a href={`/service-client/${serviceName}?subjects=${encodeURIComponent(this.getCheckedEndpoints())}`}>
                             <button className="action">Download service client <span className="glyphicon glyphicon-download"></span></button>
                         </a>
                     </span>
@@ -82,7 +93,9 @@ export default class EndpointContainer extends React.Component {
      * Prepares all endpoints within this category
      */
     getEndpoints() {
-        return this.props.endpoints
+        const { endpoints, allEndpoints, type } = this.props;
+
+        return endpoints
             .filter(endpoint => !endpoint.hidden)
             .map(endpoint => {
                 const schemas = endpoint.schemas
@@ -113,17 +126,17 @@ export default class EndpointContainer extends React.Component {
                 }
 
                 return (
-                    <span key={`endpoint-${endpoint.subject}`}>
+                    <React.Fragment key={`endpoint-${endpoint.subject}-${endpoint.instanceId}`}>
                         <hr />
                         <EndpointDetailsComponent
-                            type={this.props.type}
+                            type={type}
                             endpoint={endpoint}
                             schemas={schemas}
-                            allEndpoints={this.props.allEndpoints}
+                            allEndpoints={allEndpoints}
                             onCheck={e => this.onCheckboxChecked(e)}
                             checked={this.state.checkboxes[endpoint.subject]}
                         />
-                    </span>
+                    </React.Fragment>
                 )
             });
     }

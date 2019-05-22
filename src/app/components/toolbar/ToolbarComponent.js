@@ -13,7 +13,11 @@ export default class ToolbarComponent extends React.Component {
 
     componentDidMount() {
         window.addEventListener("keydown", (e) => {
-            if (document.activeElement.id !== "filter")
+            if (
+                document.activeElement.id !== "filter" // make sure we are not currently typing in the filter box
+                && !e.ctrlKey // make sure ctrl is not held down (To not interfere with browser shortcuts)
+                && !e.metaKey // make sure cmd is not held down (To not interfere with browser shortcuts)
+            ) {
                 switch (e.key) {
                     case "f":
                         // Focus filter input
@@ -36,6 +40,7 @@ export default class ToolbarComponent extends React.Component {
                         location.hash = "";
                         break;
                 }
+            }
         }, false);
     }
 

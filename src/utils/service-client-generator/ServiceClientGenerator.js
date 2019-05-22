@@ -65,7 +65,7 @@ class ServiceClientGenerator {
             const requestSchema = endpoint.schemas.find(schema => schema.id === endpoint.requestSchema);
             const responseSchema = endpoint.schemas.find(schema => schema.id === endpoint.responseSchema);
             const endpointParameters = this._getEndpointParameters(requestSchema);
-            const returnType = this._getEndpointTypeDef(responseSchema);
+            const returnType = this._getEndpointTypeDef(responseSchema, true);
             const constantNameCombined = `${this.className}.endpoints.${constant.constantName}`;
             const description = endpoint.docs ? endpoint.docs.description : "";
             const constantsWithSameName = this.endpointConstants.filter(c => c.constantName === constant.constantName);
@@ -121,7 +121,6 @@ module.exports = ${this.className};`;
      * @return {String}
      */
     _formatJavascript(string) {
-        // string = string.split("\n\n").join("\n"); // Removes double line breaks
         string = string.split("    /**\n\n").join("    /**\n"); // removes new empty lines within comment blocks
         string = string.split("    /**\n     *\n").join("    /**\n"); // removes double new lines in comments
         string = string.split("{\n        \n        return ").join("{\n        return "); // removes new lines before return statement in functions
@@ -136,17 +135,23 @@ module.exports = ${this.className};`;
      * Gets response typeDef from a schema
      * 
      * @param {Object} schema response schema
+     * @param {Boolean} isEndpointReturn response schema
      * 
      * @return {String|TypeDefArrayProperty|TypeDefProperty}
      */
-    _getEndpointTypeDef(schema) {
+    _getEndpointTypeDef(schema, isEndpointReturn = false) {
         if (!schema)
             return null;
 
-        if (this.customTypeDefs[schema.id])
-            return this.customTypeDefs[schema.id];
+        let outputIsArray = schema.type === "array";
 
-        let outputIsArray = false;
+        if (this.customTypeDefs[schema.id]) {
+            if (isEndpointReturn)
+                if (outputIsArray)
+                    return `Array<${this.customTypeDefs[schema.id].name}>`;
+
+            return this.customTypeDefs[schema.id];
+        }
 
         const name = schema.id;
         const params = this._getEndpointParameters(schema);
@@ -186,10 +191,14 @@ module.exports = ${this.className};`;
         } else
             output = typeDef.type;
 
+        if (isEndpointReturn)
+            if (outputIsArray)
+                return `Array<${output}>`;
+
         return output;
     }
 
-    /**
+    /** 
      * Gets endpoint paramters from a schema
      * 
      * @param {Object} schema 
@@ -201,7 +210,7 @@ module.exports = ${this.className};`;
             return [];
 
         const parameters = [];
-        const properties = schema.properties ? schema.properties : schema.items ? schema.items.properties : {};
+        const properties = getProperties();
 
         if (!properties)
             return [];
@@ -219,26 +228,28 @@ module.exports = ${this.className};`;
             if (property.type === "array") {
                 const subParams = this._getEndpointParameters(property);
 
-                if (subParams.length === 0 && property.items && "type" in property.items)
+                if (subParams.length === 0
+                    && property.items
+                    && "type" in property.items)
                     subParams.push(new Parameter(
-                        propertyKeys[i],
+                        cleanName(propertyKeys[i]),
                         property.items.type,
                         property.items.description,
                         false,
                         property.items.format));
 
                 const propertySchema = { ...property, id: `${schema.id}${Utils.toTitleCase(propertyKeys[i])}` }
-                const type = this._getEndpointTypeDef(propertySchema);
+                const type = this._getEndpointTypeDef(propertySchema, false);
 
                 parameter = new ArrayParameter(
-                    propertyKeys[i],
-                    type.name ? type.name : type,
+                    cleanName(propertyKeys[i]),
+                    cleanName(type.name ? type.name : type),
                     property.description,
                     subParams,
-                    schema.required ? schema.required.includes(propertyKeys[i]) : true);
+                    schema.required ? schema.required.includes(propertyKeys[i]) : false);
             } else {
                 parameter = new Parameter(
-                    propertyKeys[i],
+                    cleanName(propertyKeys[i]),
                     property.type,
                     property.description,
                     schema.required ? schema.required.includes(propertyKeys[i]) : false,
@@ -246,21 +257,24 @@ module.exports = ${this.className};`;
             }
 
             if (property.type === "object") {
+                if (!property.id)
+                    property.id = propertyKeys[i];
+
                 const subParams = this._getEndpointParameters(property);
 
                 if (!parameter.required && subParams.length > 0) {
                     const propertySchema = { ...property, id: `${schema.id}${Utils.toTitleCase(parameter.name)}` }
-                    const type = this._getEndpointTypeDef(propertySchema);
+                    const type = this._getEndpointTypeDef(propertySchema, false);
 
                     parameter = new Parameter(
-                        propertyKeys[i],
-                        type,
+                        cleanName(propertyKeys[i]),
+                        cleanName(type),
                         property.description,
                         schema.required ? schema.required.includes(propertyKeys[i]) : false,
                         property.format);
                 } else {
                     subParams.forEach(param => {
-                        param.name = `${propertyKeys[i]}.${param.name}`;
+                        param.name = cleanName(`${propertyKeys[i]}.${param.name}`);
                         parameters.push(param);
                     });
                 }
@@ -270,6 +284,33 @@ module.exports = ${this.className};`;
         }
 
         return parameters;
+
+        /**
+         * Cleans names from characters not possible to have in variable names
+         */
+        function cleanName(name) {
+            const replaceChars = ["/", "[", "]", "{", "}", "-", "(", ")"];
+
+            for (const char of replaceChars)
+                name = ViewUtils.replaceAll(name, char, "");
+
+            if (!isNaN(Number.parseInt(name[0])))
+                name = "_" + name;
+
+            return name;
+        }
+
+        /**
+         * Gets the current properties
+         */
+        function getProperties() {
+            if (schema.properties)
+                return schema.properties;
+            else if (schema.items)
+                return schema.items.properties;
+            else
+                return {};
+        }
     }
 
     /**
@@ -464,7 +505,7 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
      *
      * @return {${returnType}}
      */
-    static async ${this.endpointName}({${functionParams}}){
+    static async ${this.endpointName}({ ${functionParams} }){
         ${this.deprecatedReason ? `log.warn("Using deprecated endpoint ${this.endpointName}")` : ""}
         return (await bus.request({
             subject: ${this.urlConstant},
@@ -490,16 +531,17 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
          * @param {String|Object} returnType 
          */
         function getReturnType(returnType) {
-            const inputType = returnType ? returnType.name ? returnType.name : returnType : "Void";
+            let inputType;
+
+            if (returnType) {
+                if (returnType.name)
+                    inputType = returnType.name;
+                else
+                    inputType = returnType;
+            } else
+                inputType = "Void";
 
             return Utils.typeToTitleCase(inputType);
-            // TODO: Fix at some point
-            // if (returnType && returnType.includes("Array<") && returnType[returnType.length - 1] === ">") {
-            //     const titleCased = Utils.typeToTitleCase(inputType.replace("Array<", ""));
-
-            //     return `Array<${titleCased}>`;
-            // } else
-            //     return Utils.typeToTitleCase(inputType);
         }
     }
 
@@ -569,7 +611,7 @@ class ArrayParameter extends Parameter {
     constructor(name, type, description, params, required) {
         super(name, type, description, required);
         this.params = params;
-        this.required = !params.filter(p => !p.required);
+        this.required = !params.filter(p => !p.required) || required;
         this._type = "_ArrayParamter";
     }
 

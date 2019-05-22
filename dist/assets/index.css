@@ -93,7 +93,7 @@ select {
 }
 
 .filter-container .form-group label {
-    font-weight: normal;
+    font-weight: normal !important;
     margin: 0px;
 }
 
@@ -261,11 +261,19 @@ a.deactivated, a:visited.deactivated, a:active.deactivated, a:hover.deactivated 
 }
 
 .alert-danger li {
-    margin-left: 12px;
+    /* margin-left: 12px; */
 }
 
 h3.deprecated, .deprecated a, .deprecated a:active, .deprecated a:hover {
     text-decoration: line-through;
+}
+
+.pending::after {
+    content: "pending";
+    font-size: 12px;
+    color: rgb(90, 90, 90);
+    margin-left: 5px;
+    display: inline-block;
 }
 
 .deprecated::after {
@@ -308,7 +316,7 @@ h3.deprecated, .deprecated a, .deprecated a:active, .deprecated a:hover {
 }
 
 li {
-    margin-left: 14px;
+    /* margin-left: 14px; */
 }
 
 a h4:hover::before, a h3:hover::before, a h2:hover::before, a h1:hover::before, a h4:active::before, a h3:active::before, a h2:active::before, a h1:active::before {
@@ -347,6 +355,10 @@ a h4:hover::before, a h3:hover::before, a h2:hover::before, a h1:hover::before, 
 
 .deprecated-container {
     background-color: hsla(0, 100%, 91%, 0.2) !important;
+}
+
+.pending-container {
+    background-color:rgba(230, 230, 230, 0.54) !important;
 }
 
 pre {
@@ -469,4 +481,23 @@ button.action:hover {
     color: #d9534f !important;
     background-color: transparent !important;
     border-color: #d9534f !important;
+}
+
+.endpoint-second-row input[type="checkbox"] {
+    width: 50px;
+    height: 50px;
+    margin-top: -49px;
+    background-color: grey;
+}
+
+label {
+    font-weight: normal !important;
+}
+
+td .btn-copy{
+    opacity: 0;
+}
+
+td:hover .btn-copy{
+    opacity: 1;
 }
