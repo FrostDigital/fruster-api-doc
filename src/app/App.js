@@ -270,7 +270,7 @@ export default class App extends React.Component {
                         const endpoints = this.props.endpointsByType[type][serviceName];
 
                         endpoints.forEach(endpoint => {
-                            const docs = docs || {};
+                            const docs = endpoint.docs || {};
                             const flatEndpointObj = this.squishObject(docs);
 
                             /** 
