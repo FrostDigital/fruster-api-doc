@@ -139,7 +139,7 @@ export default class JsonSchemaModalComponent extends React.Component {
             return <span />;
 
         return (
-            <span>
+            <React.Fragment>
 
                 <button
                     style={{
@@ -168,7 +168,7 @@ export default class JsonSchemaModalComponent extends React.Component {
                         dangerouslySetInnerHTML={{ __html: this.state.jsonSample }} />
                 </pre>
 
-            </span>
+            </React.Fragment>
         );
     }
 
@@ -177,7 +177,7 @@ export default class JsonSchemaModalComponent extends React.Component {
             return <span />;
 
         return (
-            <span>
+            <React.Fragment>
                 <button
                     style={{
                         display: "inline",
@@ -196,7 +196,7 @@ export default class JsonSchemaModalComponent extends React.Component {
                 </button>
 
                 {this.state.jsonSchema.length > 0 ?
-                    <span>
+                    <React.Fragment>
 
                         <div className="clearfix" />
 
@@ -208,9 +208,9 @@ export default class JsonSchemaModalComponent extends React.Component {
                                 dangerouslySetInnerHTML={{ __html: this.state.jsonSchema }} />
                         </pre>
 
-                    </span> : "No further details available."}
+                    </React.Fragment> : "No further details available."}
 
-            </span>
+            </React.Fragment>
         );
     }
 

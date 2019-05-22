@@ -130,7 +130,7 @@ export default class EndpointDetailsComponent extends React.Component {
         return (
             <ApiDocContext.Consumer>
                 {context => (
-                    <span>
+                    <React.Fragment>
                         <div
                             ref={ref => this.markup = ref}
                             id={this.state.urlSubjectLink}
@@ -140,8 +140,8 @@ export default class EndpointDetailsComponent extends React.Component {
                                 container endpoint-container
                                 ${this.state.selected ? "selected-animated" : ""}
                             `}>
-                            <span>
-                                <span>
+                            <React.Fragment>
+                                <React.Fragment>
                                     <span
                                         className={`endpoint-fold-btn ${this.state.isOpen ? "open" : ""}`}
                                         onClick={() => this.toggleFolded()}>
@@ -160,40 +160,41 @@ export default class EndpointDetailsComponent extends React.Component {
                                             <span dangerouslySetInnerHTML={{ __html: this.state.urlSubject, }}></span>
                                         </h3>
                                     </a>
-                                </span>
+                                </React.Fragment>
 
                                 <span className="endpoint-second-row">
                                     from {instanceId} {this.getInformationNote()}
 
                                     <CopyAsCurlComponent cUrl={cUrl} />
 
-                                    {type === "service" && <input
-                                        type="checkbox"
-                                        name={subject}
-                                        checked={checked}
-                                        onChange={onCheck}
-                                        style={{ float: "right" }} />}
+                                    {type === "service"
+                                        && <input
+                                            type="checkbox"
+                                            name={subject}
+                                            checked={checked}
+                                            onChange={onCheck}
+                                            style={{ float: "right" }} />}
 
                                 </span>
 
-                            </span>
+                            </React.Fragment>
 
                             {
                                 this.state.isOpen ?
 
-                                    <span>
+                                    <React.Fragment>
 
                                         {this.getEndpointDetailsTable(context)}
 
                                         {this.getDocumentationTable()}
 
-                                    </span>
+                                    </React.Fragment>
 
                                     :
                                     docs
                                     && docs.description
                                     && <span
-                                        onClick={e => this.toggleFolded()}
+                                        onClick={() => this.toggleFolded()}
                                         title={docs ? docs.description : ""}
                                         className="short-description"
                                         dangerouslySetInnerHTML={{
@@ -207,7 +208,7 @@ export default class EndpointDetailsComponent extends React.Component {
                         {
                             this.state.isOpen &&
 
-                            <span>
+                            <React.Fragment>
 
                                 {this.state.requestSchema &&
                                     <JsonSchemaModalComponent
@@ -229,10 +230,10 @@ export default class EndpointDetailsComponent extends React.Component {
                                         isError={this.state.responseSchema ? this.state.responseSchema._error : false}
                                     />}
 
-                            </span>
+                            </React.Fragment>
                         }
 
-                    </span>
+                    </React.Fragment>
 
                 )}
             </ApiDocContext.Consumer>
@@ -305,7 +306,10 @@ export default class EndpointDetailsComponent extends React.Component {
                         </td>
                         {/* Required permissions */}
                         <td>
-                            <span>{this.getPermissions()}</span>
+                            <span
+                                className="quickfix">{ /** Note: Quickfix: this has to be span to prevent "or", "and" etc to appear because of the copy button */}
+                                {this.getPermissions()}
+                            </span>
 
                             {permissions && permissions.length > 0
                                 && <CopyToClipboardButtonComponent
@@ -328,13 +332,13 @@ export default class EndpointDetailsComponent extends React.Component {
                         {/* Url */}
                         <td>{
                             type === "http"
-                                ? <span>
+                                ? <React.Fragment>
                                     {context.config.apiRoot + this.state.parsedSubject.url}
 
                                     <CopyToClipboardButtonComponent
                                         copyData={context.config.apiRoot + this.state.parsedSubject.url}
                                         copyDescription="url" />
-                                </span>
+                                </React.Fragment>
                                 : <span className="not-available">n/a</span>
 
                         }</td>
@@ -401,18 +405,18 @@ export default class EndpointDetailsComponent extends React.Component {
                     <tr>
                         <td className="description">
                             {docs ?
-                                <div>
+                                <React.Fragment>
                                     {docs.description && <div className="doc-entry-title">Description</div>}
                                     {docs.description
                                         ? <span className="description-value" dangerouslySetInnerHTML={{
                                             // @ts-ignore
                                             __html: markdown.markdown.toHTML(docs.description),
-                                        }}></span>
+                                        }} />
                                         : <span className="not-available">n/a</span>}
                                     <span className="url-params-desc">{docs.params ? this.getDocEntry(docs.params, "Url parameters") : ""}</span>
                                     <span className="query-params-desc">{docs.query ? this.getDocEntry(docs.query, "Query parameters") : ""}</span>
                                     <span className="errors-desc">{docs.errors ? this.getDocEntry(docs.errors, "Errors") : ""}</span>
-                                </div> : <span className="not-available">n/a</span>}
+                                </React.Fragment> : <span className="not-available">n/a</span>}
                         </td>
                     </tr>
                 </tbody>
@@ -506,7 +510,7 @@ export default class EndpointDetailsComponent extends React.Component {
     getDocEntry(input, title) {
         if (Object.keys(input).length > 0) {
             return (
-                <div>
+                <React.Fragment>
                     <div className="doc-entry-title">{title}</div>
                     {
                         Object.keys(input).map((key, index) => {
@@ -521,7 +525,7 @@ export default class EndpointDetailsComponent extends React.Component {
                             );
                         })
                     }
-                </div>
+                </React.Fragment>
             )
         }
     }
@@ -534,21 +538,20 @@ export default class EndpointDetailsComponent extends React.Component {
         const { endpoint: { deprecated, pending } } = this.props;
 
         if (!deprecated && !pending)
-            return <span />;
+            return <React.Fragment />;
 
         const getNote = () => {
-            if (deprecated && typeof deprecated === "string") {
+            if (deprecated && typeof deprecated === "string")
                 return (<span className="deprecated-note" dangerouslySetInnerHTML={{ __html: this.getDeprecatedHtml(deprecated) }} ></span>);
-            } else if (pending) {
-                return (<span>This endpoint is not yet implemented!</span>);
-            }
+            else if (pending)
+                return (<React.Fragment>This endpoint is not yet implemented!</React.Fragment>);
         }
 
         return (
-            <span>
+            <React.Fragment>
                 | <span className="deprecated-description">Note: </span>
                 {getNote()}
-            </span>
+            </React.Fragment>
         );
     }
 
@@ -609,7 +612,7 @@ export default class EndpointDetailsComponent extends React.Component {
                 output.push(pt);
         });
 
-        return `<span>${output.join(" ")}</span>`;
+        return `${output.join(" ")}`;
     }
 
 }

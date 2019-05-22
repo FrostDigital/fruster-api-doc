@@ -4,21 +4,26 @@ import CopyToClipboardComponent from "../../copy-to-clipboard/CopyToClipboardCom
 export default class CopyAsCurlComponent extends React.Component {
 
     render() {
+        const { cUrl = false } = this.props;
+
+        if (!cUrl)
+            return <React.Fragment />;
+
         return (
-            <span hidden={!this.props.cUrl}>
+            <React.Fragment>
                 <button
                     className="action copy-as-curl btn-copy"
-                    onClick={(e) => this.copyAsCurl()}>
+                    onClick={() => this.copyAsCurl()}>
 
                     <CopyToClipboardComponent
                         ref={ref => this.copyToClipboard = ref}
-                        copyData={this.props.cUrl} />
+                        copyData={cUrl} />
 
                     Copy as cUrl <span className="glyphicon glyphicon-copy"></span>
                 </button>
 
                 <div className="clearfix" />
-            </span>
+            </React.Fragment>
         );
     }
 

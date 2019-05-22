@@ -126,7 +126,7 @@ export default class EndpointContainer extends React.Component {
                 }
 
                 return (
-                    <span key={`endpoint-${endpoint.subject}-${endpoint.instanceId}`}>
+                    <React.Fragment key={`endpoint-${endpoint.subject}-${endpoint.instanceId}`}>
                         <hr />
                         <EndpointDetailsComponent
                             type={type}
@@ -136,7 +136,7 @@ export default class EndpointContainer extends React.Component {
                             onCheck={e => this.onCheckboxChecked(e)}
                             checked={this.state.checkboxes[endpoint.subject]}
                         />
-                    </span>
+                    </React.Fragment>
                 )
             });
     }

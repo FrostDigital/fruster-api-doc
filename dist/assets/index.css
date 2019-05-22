@@ -261,7 +261,7 @@ a.deactivated, a:visited.deactivated, a:active.deactivated, a:hover.deactivated 
 }
 
 .alert-danger li {
-    margin-left: 12px;
+    /* margin-left: 12px; */
 }
 
 h3.deprecated, .deprecated a, .deprecated a:active, .deprecated a:hover {
@@ -316,7 +316,7 @@ h3.deprecated, .deprecated a, .deprecated a:active, .deprecated a:hover {
 }
 
 li {
-    margin-left: 14px;
+    /* margin-left: 14px; */
 }
 
 a h4:hover::before, a h3:hover::before, a h2:hover::before, a h1:hover::before, a h4:active::before, a h3:active::before, a h2:active::before, a h1:active::before {

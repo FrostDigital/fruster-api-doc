@@ -9,7 +9,9 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
             <ApiDocContext.Consumer>
                 {context => (
 
-                    <div className="col-md-6">
+                    <div
+                        title={this.props.type + " endpoints"}
+                        className="col-md-6">
 
                         {this.props.type === "Http"
                             ? this.httpEndpoints(context)
@@ -41,29 +43,34 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                         <a href={"#" + serviceName + "-http"}>
                             <h4>{serviceName}</h4>
                         </a>
-                        {
-                            endpoints
-                                .filter(endpoint => !endpoint.hidden)
-                                .map((endpoint, i) => {
-                                    const parsedSubject = ViewUtils.parseSubjectToAPIUrl(endpoint.subject);
 
-                                    return (
-                                        <li
-                                            key={`table-of-contents-http-${serviceName}-${endpoint.subject}-${endpoint.instanceId}`}
-                                            title={endpoint.docs ? endpoint.docs.description : ""}
-                                            className={`
+                        <ul
+                            className="http"
+                            title={`${serviceName} endpoints`}>
+                            {
+                                endpoints
+                                    .filter(endpoint => !endpoint.hidden)
+                                    .map((endpoint, i) => {
+                                        const parsedSubject = ViewUtils.parseSubjectToAPIUrl(endpoint.subject);
+
+                                        return (
+                                            <li
+                                                key={`table-of-contents-http-${serviceName}-${endpoint.subject}-${endpoint.instanceId}`}
+                                                title={endpoint.docs ? endpoint.docs.description : ""}
+                                                className={`
                                                 ${endpoint.deprecated ? "deprecated" : ""}
                                                 ${endpoint.pending ? "pending" : ""}
                                             `}>
-                                            <a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
-                                                <span className={parsedSubject.method}>
-                                                    {parsedSubject.method}
-                                                </span> to {parsedSubject.url}
-                                            </a>
-                                        </li>
-                                    )
-                                })
-                        }
+                                                <a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
+                                                    <span className={parsedSubject.method}>
+                                                        {parsedSubject.method}
+                                                    </span> to {parsedSubject.url}
+                                                </a>
+                                            </li>
+                                        )
+                                    })
+                            }
+                        </ul>
 
                     </span>
                 )
@@ -72,7 +79,8 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
             .filter(elem => !!elem);
 
         return (
-            <ul className="http">
+
+            <React.Fragment>
 
                 <a href="#http-endpoints">
                     <h3>Http endpoints</h3>
@@ -80,7 +88,7 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
 
                 {elems.length > 0 ? elems : this.getNoEndpointsText()}
 
-            </ul>
+            </React.Fragment>
         );
     }
 
@@ -102,24 +110,29 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                         <a href={"#" + serviceName + "-" + this.props.type.toLowerCase()}>
                             <h4>{serviceName}</h4>
                         </a>
-                        {
-                            endpoints
-                                .filter(endpoint => !endpoint.hidden)
-                                .map((endpoint, i) => {
-                                    return (
-                                        <li key={`table-of-contents-${this.props.type}-${serviceName}-${endpoint.subject}-${endpoint.instanceId}`}
-                                            title={endpoint.docs ? endpoint.docs.description : ""}
-                                            className={`
+
+                        <ul
+                            title={`${serviceName} endpoints`}
+                            className={this.props.type.toLowerCase()}>
+                            {
+                                endpoints
+                                    .filter(endpoint => !endpoint.hidden)
+                                    .map((endpoint, i) => {
+                                        return (
+                                            <li key={`table-of-contents-${this.props.type}-${serviceName}-${endpoint.subject}-${endpoint.instanceId}`}
+                                                title={endpoint.docs ? endpoint.docs.description : ""}
+                                                className={`
                                                 ${endpoint.deprecated ? "deprecated" : ""}
                                                 ${endpoint.pending ? "pending" : ""}
                                             `}>
-                                            <a
-                                                href={"#" + endpoint.subject}
-                                                dangerouslySetInnerHTML={{ __html: ViewUtils.getColorCodedTitle(endpoint.subject) }} />
-                                        </li>
-                                    )
-                                })
-                        }
+                                                <a
+                                                    href={"#" + endpoint.subject}
+                                                    dangerouslySetInnerHTML={{ __html: ViewUtils.getColorCodedTitle(endpoint.subject) }} />
+                                            </li>
+                                        )
+                                    })
+                            }
+                        </ul>
                     </span>
                 )
             })
@@ -127,19 +140,19 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
             .filter(elem => !!elem);
 
         return (
-            <ul className={this.props.type.toLowerCase()}>
+            <React.Fragment>
                 <a href={"#" + this.props.type.toLowerCase() + "-endpoints"}>
                     <h3>{this.props.type} endpoints</h3>
                 </a>
 
                 {elems.length > 0 ? elems : this.getNoEndpointsText()}
 
-            </ul>
+            </React.Fragment>
         );
     }
 
     getNoEndpointsText() {
-        return <span>No endpoints</span>;
+        return <React.Fragment>No endpoints</React.Fragment>;
     }
 
     sortEndpoints(a, b) {
