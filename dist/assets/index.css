@@ -502,6 +502,7 @@ td:hover .btn-copy{
     opacity: 1;
 }
 
-.docson .signature * {
-    cursor: text;
+.docson .signature {
+    line-break: auto;
+    word-break: break-all;
 }
