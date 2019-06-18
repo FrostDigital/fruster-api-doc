@@ -27,7 +27,7 @@ let schemasPerService = {};
 let endpointsByType = { http: {}, service: {}, ws: {} };
 let cachedHtml;
 
-(async function () {
+(async function() {
 
     await bus.connect({ address: config.bus });
 
@@ -132,7 +132,15 @@ function startServer() {
 
                         if (derefResp.errors && Object.keys(derefResp.errors).length > 0) {
                             schemasWithErrors = {};
-                            schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
+                            schemasWithErrors[fixedServiceName] = []
+
+                            for (const error of derefResp.errors){
+                                console.log(error);
+                                const jsonSchemaForError = response.data.schemas.find(s => s.id === error.id);
+                                error.schema = jsonSchemaForError;
+
+                                schemasWithErrors[fixedServiceName].push(error);
+                            }
                         }
 
                         response.data.exposing.map((object, i) => {
@@ -147,12 +155,10 @@ function startServer() {
                 promises.push(promise);
             });
 
-
             await Promise.all(promises);
 
-            Object.keys(endpointsByType).forEach(endpointType => {
-                sortAfterEndpointName(endpointsByType[endpointType]);
-            });
+
+            Object.keys(endpointsByType).forEach(endpointType => sortAfterEndpointName(endpointsByType[endpointType]));
 
             const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints: Array.from(allEndpoints), config, generatedDate: new Date().toJSON() };
             const appString = renderToString(<App {...state} />);
@@ -225,8 +231,8 @@ function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceI
     if (!object.cUrl && object.subject.includes("http"))
         object.cUrl = getCUrlFromEndpoint(object, schemas);
 
-    if (!schemasPerService[serviceName])
-        schemasPerService[serviceName] = schemas;
+    // if (!schemasPerService[serviceName])
+    //     schemasPerService[serviceName] = schemas;
 }
 
 

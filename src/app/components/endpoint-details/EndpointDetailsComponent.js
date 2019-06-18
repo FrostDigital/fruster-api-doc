@@ -6,6 +6,9 @@ import JsonSchemaModalComponent from "../modal/JsonSchemaModalComponent";
 import CopyAsCurlComponent from "./copy-as-curl/CopyAsCurlComponent";
 import CopyToClipboardButtonComponent from "../copy-to-clipboard/CopyToClipboardButtonComponent";
 
+const RESPONSE_BODY = "RESPONSE_BODY";
+const REQUEST_BODY = "REQUEST_BODY";
+
 export default class EndpointDetailsComponent extends React.Component {
 
     state = {
@@ -85,13 +88,9 @@ export default class EndpointDetailsComponent extends React.Component {
                 this.reactToClickHash();
 
                 if (this.state.requestSchema && decodedURI.includes(`?modal=${this.state.requestSchema.id}`)) {
-                    // if ($) $(".modal").modal("hide");
-
                     if (this.requestBodyModal)
                         this.requestBodyModal.openModal();
                 } else if (this.state.responseSchema && decodedURI.includes(`?modal=${this.state.responseSchema.id}`)) {
-                    // if ($) $(".modal").modal("hide");
-
                     if (this.responseBodyModal)
                         this.responseBodyModal.openModal();
                 }
@@ -285,7 +284,7 @@ export default class EndpointDetailsComponent extends React.Component {
                         </td>
                         {/* Request body */}
                         <td
-                            onClick={e => this.openRequestBodyModal(e)}
+                            onClick={e => this.openBodyModal(e, REQUEST_BODY)}
                             className={`
                             request-schema
                             ${serviceName} 
@@ -345,7 +344,7 @@ export default class EndpointDetailsComponent extends React.Component {
 
                         {/* Response body */}
                         <td
-                            onClick={e => this.openResponseBodyModal(e)}
+                            onClick={e => this.openBodyModal(e, RESPONSE_BODY)}
                             className={`
                             response-schema
                             ${serviceName} 
@@ -430,7 +429,9 @@ export default class EndpointDetailsComponent extends React.Component {
      * 
      * @param {Object} e 
      */
-    openRequestBodyModal(e) {
+    openBodyModal(e, type) {
+        console.log(this);
+
         if (this.props.endpoint.hidden || !this.state.isOpen)
             return;
 
@@ -439,8 +440,13 @@ export default class EndpointDetailsComponent extends React.Component {
         ) {
             e.preventDefault();
 
-            if (this.requestBodyModal)
-                this.requestBodyModal.openModal();
+            if (type === "REQUEST_BODY") {
+                if (this.requestBodyModal)
+                    this.requestBodyModal.openModal();
+            } else if (type === "RESPONSE_BODY") {
+                if (this.responseBodyModal)
+                    this.responseBodyModal.openModal();
+            }
         }
     }
 
@@ -450,6 +456,8 @@ export default class EndpointDetailsComponent extends React.Component {
      * @param {Object} e 
      */
     openResponseBodyModal(e) {
+        console.log(e);
+
         if (this.props.endpoint.hidden || !this.state.isOpen)
             return;
 
@@ -458,8 +466,7 @@ export default class EndpointDetailsComponent extends React.Component {
         ) {
             e.preventDefault();
 
-            if (this.responseBodyModal)
-                this.responseBodyModal.openModal();
+
         }
     }
 
@@ -475,7 +482,7 @@ export default class EndpointDetailsComponent extends React.Component {
                     permissionsHmtl = permissions.map((permission, index) => {
                         return (
                             <span
-                                key={`permissions-${index}`}
+                                key={`permissions-${permission}`}
                                 className="permission">
                                 {permission}
                             </span>
@@ -486,7 +493,7 @@ export default class EndpointDetailsComponent extends React.Component {
 
                 return (
                     <span
-                        key={`this-props-endpoint-permissions-${index}`}
+                        key={`this-props-endpoint-permissions-${permissions.join ? permissions.join(",") : permissions}`}
                         className="permission-group">
                         {permissionsHmtl}
                     </span>
@@ -517,7 +524,7 @@ export default class EndpointDetailsComponent extends React.Component {
                             const value = input[key];
 
                             return (
-                                <span key={`get-doc-entry-${index}`}>
+                                <span key={`get-doc-entry-${key}`}>
                                     <div className="description-item">
                                         <span className="description-key">{key}</span>: <span className="description-value">{value}</span>
                                     </div>

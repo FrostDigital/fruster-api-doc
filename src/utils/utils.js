@@ -38,7 +38,7 @@ class Utils {
         schemas.forEach(schema => schemaPromises.push(
             jsonSchemaCruncher.getSchema(schema.id)
                 .then(Utils._decirlularizeObject)
-                .then(prepareSchema)
+                .then(schema => prepareSchema(schema))
                 .catch(err => {
                     let errorString = err;
 
@@ -63,7 +63,7 @@ class Utils {
         /**
          * @param {Object} schema 
          */
-        function prepareSchema(schema) {
+        async function prepareSchema(schema) {
             try {
                 Utils._setFakerSpecificAttrs(schema);
 
@@ -71,7 +71,7 @@ class Utils {
                     try {
                         schema.sample = jsf(schema);
                     } catch (err) {
-                        schema.sample = "Unable to generate sample, most likely due to circular json schema reference structure. See json schema instead";
+                        schema.sample = `Unable to generate sample; ${err.message ? err.message : "most likely due to circular json schema reference structure"}. See json schema instead`;
                     }
                 }
 
@@ -210,7 +210,7 @@ class Utils {
                 json: true
             };
 
-            request(options, function(error, resp, body) {
+            request(options, function (error, resp, body) {
                 if (error) reject(error);
                 else resolve(body.data);
             });
