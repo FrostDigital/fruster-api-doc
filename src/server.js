@@ -27,7 +27,7 @@ let schemasPerService = {};
 let endpointsByType = { http: {}, service: {}, ws: {} };
 let cachedHtml;
 
-(async function() {
+(async function () {
 
     await bus.connect({ address: config.bus });
 
@@ -134,7 +134,7 @@ function startServer() {
                             schemasWithErrors = {};
                             schemasWithErrors[fixedServiceName] = []
 
-                            for (const error of derefResp.errors){
+                            for (const error of derefResp.errors) {
                                 console.log(error);
                                 const jsonSchemaForError = response.data.schemas.find(s => s.id === error.id);
                                 error.schema = jsonSchemaForError;
