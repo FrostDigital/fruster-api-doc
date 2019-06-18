@@ -18,6 +18,7 @@ const utils = require("./utils/utils");
 const ViewUtils = require("./utils/ViewUtils");
 const config = require("../config");
 const port = config.port || 3100;
+const compress = require('compression');
 
 const ServiceClientGenerator = require("./utils/service-client-generator/ServiceClientGenerator");
 const _ = require("lodash");
@@ -37,6 +38,8 @@ let cachedHtml;
 }());
 
 function startServer() {
+    app.use(compress());
+
     app.use("/assets", express.static(path.resolve(`${__dirname}/assets`)));
 
     app.post("/reset-cache", (req, res) => {
@@ -108,7 +111,7 @@ function startServer() {
 
             let schemasWithErrors;
             const promises = [];
-            const allEndpoints = {};
+            const allEndpoints = new Set();
 
             metadataResponses.forEach(response => {
                 if (!response.from) /** Just in case this happens we don't want the whole page to not load. */
@@ -129,11 +132,19 @@ function startServer() {
 
                         if (derefResp.errors && Object.keys(derefResp.errors).length > 0) {
                             schemasWithErrors = {};
-                            schemasWithErrors[fixedServiceName] = derefResp.errors.map(e => e.id);
+                            schemasWithErrors[fixedServiceName] = []
+
+                            for (const error of derefResp.errors) {
+                                console.log(error);
+                                const jsonSchemaForError = response.data.schemas.find(s => s.id === error.id);
+                                error.schema = jsonSchemaForError;
+
+                                schemasWithErrors[fixedServiceName].push(error);
+                            }
                         }
 
                         response.data.exposing.map((object, i) => {
-                            allEndpoints[object.subject] = object.subject;
+                            allEndpoints.add(object.subject);
 
                             if (object.subject.includes("http")) parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
                             else if (object.subject.includes("ws")) parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
@@ -146,16 +157,15 @@ function startServer() {
 
             await Promise.all(promises);
 
-            Object.keys(endpointsByType).forEach(endpointType => {
-                sortAfterEndpointName(endpointsByType[endpointType]);
-            });
 
-            const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints, config, generatedDate: new Date().toJSON() };
+            Object.keys(endpointsByType).forEach(endpointType => sortAfterEndpointName(endpointsByType[endpointType]));
+
+            const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints: Array.from(allEndpoints), config, generatedDate: new Date().toJSON() };
             const appString = renderToString(<App {...state} />);
             const renderedHtml = template({
                 body: appString,
                 title: `${config.projectName} API documentation`,
-                initialState: JSON.stringify(state)
+                initialState: JSON.stringify(state).split("\n").join("")
             });
 
             cachedHtml = renderedHtml;
@@ -211,7 +221,7 @@ function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceI
 
     object.instanceId = instanceId;
     object.serviceName = serviceName;
-    object.schemas = schemas;
+    object.schemas = schemas.filter(s => s.id === object.requestSchema || s.id === object.responseSchema);
 
     if (!endpointsByType[type][splits[splitIndex]])
         endpointsByType[type][splits[splitIndex]] = [];
@@ -221,9 +231,10 @@ function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceI
     if (!object.cUrl && object.subject.includes("http"))
         object.cUrl = getCUrlFromEndpoint(object, schemas);
 
-    if (!schemasPerService[serviceName])
-        schemasPerService[serviceName] = schemas;
+    // if (!schemasPerService[serviceName])
+    //     schemasPerService[serviceName] = schemas;
 }
+
 
 /**
  * Generates a cUrl from an endpoint.

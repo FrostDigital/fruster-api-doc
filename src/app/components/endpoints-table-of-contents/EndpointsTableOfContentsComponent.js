@@ -79,7 +79,6 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
             .filter(elem => !!elem);
 
         return (
-
             <React.Fragment>
 
                 <a href="#http-endpoints">

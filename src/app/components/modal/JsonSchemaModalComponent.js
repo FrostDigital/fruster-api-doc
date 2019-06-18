@@ -35,11 +35,14 @@ export default class JsonSchemaModalComponent extends React.Component {
         if (this.props.schema) {
             // @ts-ignore
             this.state = this.state || {};
+
             this.state.schema = this.props.schema;
 
             const schemaToJson = Object.assign({}, this.state.schema);
             this.state.jsonSample = schemaToJson && schemaToJson.sample ? JSON.stringify(ViewUtils.sortObject(schemaToJson.sample), null, 2) : undefined;
-            delete schemaToJson.sample;
+
+            if (!props.isError)
+                delete schemaToJson.sample;
 
             this.state.jsonSchema = JSON.stringify(ViewUtils.sortObject(schemaToJson), null, 2);
         } else
@@ -54,10 +57,12 @@ export default class JsonSchemaModalComponent extends React.Component {
     };
 
     async setInitialOpenState() {
+        const hashIndex = getTabFromHash();
+
         if (this.props.isError)
             await this.goToTab(1);
         else
-            await this.goToTab(getTabFromHash());
+            await this.goToTab(hashIndex);
     }
 
     render() {
@@ -91,7 +96,7 @@ export default class JsonSchemaModalComponent extends React.Component {
                                         <a className={`nav-link ${this.state.currentTabIndex === 1 ? "active" : ""}`} onClick={() => this.goToTab(1)}>Error message</a>
                                     </li>
                                     <li className="nav-item clickable">
-                                        <a className={`nav-link ${this.state.currentTabIndex === 2 ? "active" : ""}`} onClick={() => this.goToTab(2)}>Full error</a>
+                                        <a className={`nav-link ${this.state.currentTabIndex === 2 ? "active" : ""}`} onClick={() => this.goToTab(2)}>Full error & Json Schema</a>
                                     </li>
                                 </ul>
                                 :
@@ -215,13 +220,17 @@ export default class JsonSchemaModalComponent extends React.Component {
     }
 
     async openModal() {
+        console.log(this);
         if (this.props.hidden)
             return;
 
         try {
             await this.setInitialOpenState();
 
-            history.replaceState(undefined, undefined, `#${this.props.endpointUrl}?modal=${this.state.schema.id}&tab=${this.state.currentTabIndex}`)
+            if (this.props.isError && this.props.isOpenedFromErrorsMenu)
+                history.replaceState(undefined, undefined, `#`);
+            else
+                history.replaceState(undefined, undefined, `#${this.props.endpointUrl}?modal=${this.state.schema.id}&tab=${this.state.currentTabIndex}`);
 
             const schemaToJson = ViewUtils.sortObject(Object.assign({}, this.state.schema));
             delete schemaToJson.sample;
@@ -255,8 +264,10 @@ export default class JsonSchemaModalComponent extends React.Component {
     }
 
     resetModalHash() {
-        if (!this.props.hidden)
+        if (!this.props.hidden && (!this.props.isError || !this.props.isOpenedFromErrorsMenu))
             history.replaceState(undefined, undefined, `#${this.props.endpointUrl}`);
+        else
+            history.replaceState(undefined, undefined, `#`);
     }
 
     async goToTab(index) {

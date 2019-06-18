@@ -63,15 +63,14 @@ class Utils {
         /**
          * @param {Object} schema 
          */
-        function prepareSchema(schema) {
+        async function prepareSchema(schema) {
             try {
                 Utils._setFakerSpecificAttrs(schema);
-
                 if (!schema.sample) {
                     try {
                         schema.sample = jsf(schema);
                     } catch (err) {
-                        schema.sample = "Unable to generate sample, most likely due to circular json schema reference structure. See json schema instead";
+                        schema.sample = `Unable to generate sample; ${err.message ? err.message : "most likely due to circular json schema reference structure"}. See json schema instead`;
                     }
                 }
 
@@ -163,39 +162,43 @@ class Utils {
                     if (object.hasOwnProperty(key)) {
                         if (object && typeof object[key] === "object")
                             Utils._setFakerSpecificAttrs(object[key]);
+                        else {
 
-                        switch (object[key]) {
-                            case "uuid":
-                                object["faker"] = "random.uuid";
-                                break;
-                            case "uri":
-                                object["faker"] = "internet.url";
-                                break;
-                        }
+                            if (typeof object === "object")
+                                switch (object[key]) {
+                                    case "uuid":
+                                        object["faker"] = "random.uuid";
+                                        break;
+                                    case "uri":
+                                        object["faker"] = "internet.url";
+                                        break;
+                                }
 
-                        switch (key) {
-                            case "email":
-                                object[key]["faker"] = "internet.email";
-                                break;
-                            case "password":
-                                object[key]["faker"] = "internet.password";
-                                break;
+                            if (typeof object[key] === "object")
+                                switch (key) {
+                                    case "email":
+                                        object[key]["faker"] = "internet.email";
+                                        break;
+                                    case "password":
+                                        object[key]["faker"] = "internet.password";
+                                        break;
 
-                            case "firstName":
-                                object[key]["faker"] = "name.firstName";
-                                break;
-                            case "middleName":
-                                object[key]["faker"] = "name.firstName";
-                                break;
-                            case "lastName":
-                                object[key]["faker"] = "name.lastName";
-                                break;
+                                    case "firstName":
+                                        object[key]["faker"] = "name.firstName";
+                                        break;
+                                    case "middleName":
+                                        object[key]["faker"] = "name.firstName";
+                                        break;
+                                    case "lastName":
+                                        object[key]["faker"] = "name.lastName";
+                                        break;
+                                }
                         }
                     }
                 });
             }
         } catch (err) {
-            log.silly("setFakerSpecificAttrs", err);
+            log.debug("setFakerSpecificAttrs", err);
         }
     }
 

@@ -52,12 +52,11 @@ export default class ErrorMessageComponent extends React.Component {
             Object.keys(this.props.schemasWithErrors).forEach(serviceName => {
                 const schemas = this.props.schemasWithErrors[serviceName];
 
-                schemas.forEach(schemaName => {
-                    if (!this.preparedSchemasWithErrors[`${serviceName}-${schemaName}`])
-                        this.preparedSchemasWithErrors[`${serviceName}-${schemaName}`] = {};
+                schemas.forEach(schema => {
+                    if (!this.preparedSchemasWithErrors[`${serviceName}-${schema.id}`])
+                        this.preparedSchemasWithErrors[`${serviceName}-${schema.id}`] = {};
 
-                    if (this.props.schemasPerService[serviceName])
-                        this.preparedSchemasWithErrors[`${serviceName}-${schemaName}`].schema = this.props.schemasPerService[serviceName].find(schema => schema.id === schemaName);
+                    this.preparedSchemasWithErrors[`${serviceName}-${schema.id}`].schema = schema;
                 });
             });
     }
@@ -78,16 +77,17 @@ export default class ErrorMessageComponent extends React.Component {
 
                                 return (
                                     <li
-                                        key={i}
-                                        className={"request-schema" + " " + serviceName + " " + schemaWithError}>
-                                        <a href="" onClick={(e) => { this.openSchemaWithError(e, serviceName, schemaWithError) }}>
-                                            {schemaWithError} <span className="glyphicon glyphicon-new-window"></span>
+                                        key={schemaWithError.id}
+                                        className={"request-schema" + " " + serviceName + " " + schemaWithError.id}>
+                                        <a href="" onClick={(e) => { this.openSchemaWithError(e, serviceName, schemaWithError.id) }}>
+                                            {schemaWithError.id} <span className="glyphicon glyphicon-new-window"></span>
                                         </a> from {serviceName}
 
                                         <JsonSchemaModalComponent
-                                            ref={ref => { this.preparedSchemasWithErrors[`${serviceName}-${schemaWithError}`].ref = ref; }}
-                                            subject={schemaWithError}
-                                            schema={this.preparedSchemasWithErrors[`${serviceName}-${schemaWithError}`].schema}
+                                            endpointUrl={"error"}
+                                            ref={`${serviceName}-${schemaWithError.id}`}
+                                            schema={this.preparedSchemasWithErrors[`${serviceName}-${schemaWithError.id}`].schema}
+                                            isOpenedFromErrorsMenu={true}
                                             isError={true} />
                                     </li>
                                 );
@@ -102,11 +102,11 @@ export default class ErrorMessageComponent extends React.Component {
     /**
      * Opens a specific error in a modal.
      */
-    openSchemaWithError(e, serviceName, schemaWithError) {
+    openSchemaWithError(e, serviceName, schemaId) {
         e.preventDefault();
 
-        if (this.preparedSchemasWithErrors[`${serviceName}-${schemaWithError}`].ref)
-            this.preparedSchemasWithErrors[`${serviceName}-${schemaWithError}`].ref.openModal();
+        if (this.refs[`${serviceName}-${schemaId}`])
+            this.refs[`${serviceName}-${schemaId}`].openModal();
     }
 
     /**
