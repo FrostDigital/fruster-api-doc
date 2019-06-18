@@ -430,8 +430,6 @@ export default class EndpointDetailsComponent extends React.Component {
      * @param {Object} e 
      */
     openBodyModal(e, type) {
-        console.log(this);
-
         if (this.props.endpoint.hidden || !this.state.isOpen)
             return;
 
@@ -447,26 +445,6 @@ export default class EndpointDetailsComponent extends React.Component {
                 if (this.responseBodyModal)
                     this.responseBodyModal.openModal();
             }
-        }
-    }
-
-    /**
-     * Opens a modal with the response json schema.
-     * 
-     * @param {Object} e 
-     */
-    openResponseBodyModal(e) {
-        console.log(e);
-
-        if (this.props.endpoint.hidden || !this.state.isOpen)
-            return;
-
-        if (e.nativeEvent.which !== 2 // if we mouse click with the middle mouse we want the browser to do its thing
-            && !e.target.className.includes("copy") // if the pressed target has class name "copy", we're hitting the copy to clipboard button 
-        ) {
-            e.preventDefault();
-
-
         }
     }
 

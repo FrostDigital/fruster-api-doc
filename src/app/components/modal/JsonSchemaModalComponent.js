@@ -59,9 +59,9 @@ export default class JsonSchemaModalComponent extends React.Component {
     async setInitialOpenState() {
         const hashIndex = getTabFromHash();
 
-        if (this.props.isError) {
-            await this.goToTab(hashIndex > 0 ? hashIndex : 1);
-        } else
+        if (this.props.isError)
+            await this.goToTab(1);
+        else
             await this.goToTab(hashIndex);
     }
 
