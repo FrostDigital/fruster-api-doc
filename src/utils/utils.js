@@ -163,39 +163,40 @@ class Utils {
                     if (object.hasOwnProperty(key)) {
                         if (object && typeof object[key] === "object")
                             Utils._setFakerSpecificAttrs(object[key]);
+                        else {
+                            switch (object[key]) {
+                                case "uuid":
+                                    object["faker"] = "random.uuid";
+                                    break;
+                                case "uri":
+                                    object["faker"] = "internet.url";
+                                    break;
+                            }
 
-                        switch (object[key]) {
-                            case "uuid":
-                                object["faker"] = "random.uuid";
-                                break;
-                            case "uri":
-                                object["faker"] = "internet.url";
-                                break;
-                        }
+                            switch (key) {
+                                case "email":
+                                    object[key]["faker"] = "internet.email";
+                                    break;
+                                case "password":
+                                    object[key]["faker"] = "internet.password";
+                                    break;
 
-                        switch (key) {
-                            case "email":
-                                object[key]["faker"] = "internet.email";
-                                break;
-                            case "password":
-                                object[key]["faker"] = "internet.password";
-                                break;
-
-                            case "firstName":
-                                object[key]["faker"] = "name.firstName";
-                                break;
-                            case "middleName":
-                                object[key]["faker"] = "name.firstName";
-                                break;
-                            case "lastName":
-                                object[key]["faker"] = "name.lastName";
-                                break;
+                                case "firstName":
+                                    object[key]["faker"] = "name.firstName";
+                                    break;
+                                case "middleName":
+                                    object[key]["faker"] = "name.firstName";
+                                    break;
+                                case "lastName":
+                                    object[key]["faker"] = "name.lastName";
+                                    break;
+                            }
                         }
                     }
                 });
             }
         } catch (err) {
-            log.silly("setFakerSpecificAttrs", err);
+            log.debug("setFakerSpecificAttrs", err);
         }
     }
 
@@ -209,7 +210,7 @@ class Utils {
                 json: true
             };
 
-            request(options, function (error, resp, body) {
+            request(options, function(error, resp, body) {
                 if (error) reject(error);
                 else resolve(body.data);
             });

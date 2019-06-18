@@ -575,7 +575,7 @@ export default class EndpointDetailsComponent extends React.Component {
                 partHasDot = true;
             }
 
-            if (this.props.allEndpoints[partToCompare]) {
+            if (this.props.allEndpoints.includes(partToCompare)) {
                 endpointsExists = true;
                 parts[i] = partToCompare;
 

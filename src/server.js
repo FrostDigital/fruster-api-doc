@@ -27,7 +27,7 @@ let schemasPerService = {};
 let endpointsByType = { http: {}, service: {}, ws: {} };
 let cachedHtml;
 
-(async function() {
+(async function () {
 
     await bus.connect({ address: config.bus });
 
@@ -38,7 +38,7 @@ let cachedHtml;
 }());
 
 function startServer() {
-    app.use(compress()); 
+    app.use(compress());
 
     app.use("/assets", express.static(path.resolve(`${__dirname}/assets`)));
 
@@ -111,7 +111,7 @@ function startServer() {
 
             let schemasWithErrors;
             const promises = [];
-            const allEndpoints = {};
+            const allEndpoints = new Set();
 
             metadataResponses.forEach(response => {
                 if (!response.from) /** Just in case this happens we don't want the whole page to not load. */
@@ -136,7 +136,7 @@ function startServer() {
                         }
 
                         response.data.exposing.map((object, i) => {
-                            allEndpoints[object.subject] = object.subject;
+                            allEndpoints.add(object.subject);
 
                             if (object.subject.includes("http")) parseEndpoint(object, 2, "http", schemas, fixedServiceName, response.from.instanceId);
                             else if (object.subject.includes("ws")) parseEndpoint(object, 2, "ws", schemas, fixedServiceName, response.from.instanceId);
@@ -154,7 +154,7 @@ function startServer() {
                 sortAfterEndpointName(endpointsByType[endpointType]);
             });
 
-            const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints, config, generatedDate: new Date().toJSON() };
+            const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints: Array.from(allEndpoints), config, generatedDate: new Date().toJSON() };
             const appString = renderToString(<App {...state} />);
             const renderedHtml = template({
                 body: appString,
@@ -215,7 +215,7 @@ function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceI
 
     object.instanceId = instanceId;
     object.serviceName = serviceName;
-    object.schemas = schemas;
+    object.schemas = schemas.filter(s => s.id === object.requestSchema || s.id === object.responseSchema);
 
     if (!endpointsByType[type][splits[splitIndex]])
         endpointsByType[type][splits[splitIndex]] = [];
@@ -228,6 +228,7 @@ function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceI
     if (!schemasPerService[serviceName])
         schemasPerService[serviceName] = schemas;
 }
+
 
 /**
  * Generates a cUrl from an endpoint.
