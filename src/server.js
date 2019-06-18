@@ -18,9 +18,6 @@ const utils = require("./utils/utils");
 const ViewUtils = require("./utils/ViewUtils");
 const config = require("../config");
 const port = config.port || 3100;
-const zlib = require("zlib");
-const { promisify } = require("util");
-const gzipAsync = promisify(zlib.gzip);
 const compress = require('compression');
 
 const ServiceClientGenerator = require("./utils/service-client-generator/ServiceClientGenerator");
