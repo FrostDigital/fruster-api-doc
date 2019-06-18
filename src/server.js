@@ -18,6 +18,10 @@ const utils = require("./utils/utils");
 const ViewUtils = require("./utils/ViewUtils");
 const config = require("../config");
 const port = config.port || 3100;
+const zlib = require("zlib");
+const { promisify } = require("util");
+const gzipAsync = promisify(zlib.gzip);
+const compress = require('compression');
 
 const ServiceClientGenerator = require("./utils/service-client-generator/ServiceClientGenerator");
 const _ = require("lodash");
@@ -26,7 +30,7 @@ let schemasPerService = {};
 let endpointsByType = { http: {}, service: {}, ws: {} };
 let cachedHtml;
 
-(async function () {
+(async function() {
 
     await bus.connect({ address: config.bus });
 
@@ -37,6 +41,8 @@ let cachedHtml;
 }());
 
 function startServer() {
+    app.use(compress()); 
+
     app.use("/assets", express.static(path.resolve(`${__dirname}/assets`)));
 
     app.post("/reset-cache", (req, res) => {
@@ -144,6 +150,7 @@ function startServer() {
                 promises.push(promise);
             });
 
+
             await Promise.all(promises);
 
             Object.keys(endpointsByType).forEach(endpointType => {
@@ -155,7 +162,7 @@ function startServer() {
             const renderedHtml = template({
                 body: appString,
                 title: `${config.projectName} API documentation`,
-                initialState: JSON.stringify(state)
+                initialState: JSON.stringify(state).split("\n").join("")
             });
 
             cachedHtml = renderedHtml;
