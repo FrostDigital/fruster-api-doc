@@ -38,7 +38,7 @@ class Utils {
         schemas.forEach(schema => schemaPromises.push(
             jsonSchemaCruncher.getSchema(schema.id)
                 .then(Utils._decirlularizeObject)
-                .then(schema => prepareSchema(schema))
+                .then(prepareSchema)
                 .catch(err => {
                     let errorString = err;
 
@@ -66,7 +66,6 @@ class Utils {
         async function prepareSchema(schema) {
             try {
                 Utils._setFakerSpecificAttrs(schema);
-
                 if (!schema.sample) {
                     try {
                         schema.sample = jsf(schema);
@@ -164,33 +163,36 @@ class Utils {
                         if (object && typeof object[key] === "object")
                             Utils._setFakerSpecificAttrs(object[key]);
                         else {
-                            switch (object[key]) {
-                                case "uuid":
-                                    object["faker"] = "random.uuid";
-                                    break;
-                                case "uri":
-                                    object["faker"] = "internet.url";
-                                    break;
-                            }
 
-                            switch (key) {
-                                case "email":
-                                    object[key]["faker"] = "internet.email";
-                                    break;
-                                case "password":
-                                    object[key]["faker"] = "internet.password";
-                                    break;
+                            if (typeof object === "object")
+                                switch (object[key]) {
+                                    case "uuid":
+                                        object["faker"] = "random.uuid";
+                                        break;
+                                    case "uri":
+                                        object["faker"] = "internet.url";
+                                        break;
+                                }
 
-                                case "firstName":
-                                    object[key]["faker"] = "name.firstName";
-                                    break;
-                                case "middleName":
-                                    object[key]["faker"] = "name.firstName";
-                                    break;
-                                case "lastName":
-                                    object[key]["faker"] = "name.lastName";
-                                    break;
-                            }
+                            if (typeof object[key] === "object")
+                                switch (key) {
+                                    case "email":
+                                        object[key]["faker"] = "internet.email";
+                                        break;
+                                    case "password":
+                                        object[key]["faker"] = "internet.password";
+                                        break;
+
+                                    case "firstName":
+                                        object[key]["faker"] = "name.firstName";
+                                        break;
+                                    case "middleName":
+                                        object[key]["faker"] = "name.firstName";
+                                        break;
+                                    case "lastName":
+                                        object[key]["faker"] = "name.lastName";
+                                        break;
+                                }
                         }
                     }
                 });
