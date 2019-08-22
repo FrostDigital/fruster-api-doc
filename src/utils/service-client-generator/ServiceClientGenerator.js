@@ -121,9 +121,9 @@ module.exports = ${this.className};`;
 	 * @return {String}
 	 */
 	_formatJavascript(string) {
-		string = string.split("	/**\n\n").join("	/**\n"); // removes new empty lines within comment blocks
-		string = string.split("	/**\n	 *\n").join("	/**\n"); // removes double new lines in comments
-		string = string.split("{\n		\n		return ").join("{\n		return "); // removes new lines before return statement in functions
+		string = string.split("\t/**\n\n").join("\t/**\n"); // removes new empty lines within comment blocks
+		string = string.split("\t/**\n	 *\n").join("\t/**\n"); // removes double new lines in comments
+		string = string.split("{\n\t\t\n\t\treturn ").join("{\n	\treturn "); // removes new lines before return statement in functions
 
 		if (string.includes("log.warn") || string.includes("log.error") || string.includes("log.debug")) // adds fruster-log require if fruster-log is used anywhere
 			string = "const log = require(\"fruster-log\");\n" + string;
