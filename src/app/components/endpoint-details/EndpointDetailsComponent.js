@@ -310,10 +310,11 @@ export default class EndpointDetailsComponent extends React.Component {
 								{this.getPermissions()}
 							</span>
 
-							{permissions && permissions.length > 0
+							{permissions
+								&& permissions.length > 0
 								&& <CopyToClipboardButtonComponent
 									copyData={permissions.join(",")}
-									copyDescription="request schema name" />}
+									copyDescription="permissions" />}
 						</td>
 					</tr>
 				</tbody>
