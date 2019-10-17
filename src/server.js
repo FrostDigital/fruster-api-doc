@@ -49,6 +49,23 @@ function startServer() {
 		res.end();
 	});
 
+	app.get("/service-list", async (req, res) => {
+		if (!endpointsByType.service.length)
+			await handleGenerateApiDoc(req, res, true);
+
+		res.json({ services: Object.keys(endpointsByType.service) });
+	});
+
+	app.get("/service/:serviceName/endpoints", async (req, res) => {
+		if (!endpointsByType.service.length)
+			await handleGenerateApiDoc(req, res, true);
+
+		const serviceName = req.params.serviceName;
+		const endpoints = endpointsByType.service[serviceName].map(({ subject, docs: { description } }) => ({ subject, description }));
+
+		res.json({ endpoints });
+	});
+
 	app.get("/service-client/:serviceName", async (req, res) => {
 		try {
 			const type = "service";
