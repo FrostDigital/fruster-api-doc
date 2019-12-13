@@ -35,6 +35,20 @@ let cachedHtml;
 
 	await startServer();
 
+	bus.subscribe({
+		subject: "yo",
+		requestSchema: {
+			id: "yo",
+			properties: {
+				yo: {
+					type: "string",
+					enum: ["yo", "hello", "whazzup"]
+				}
+			}
+		},
+		handle: req => req
+	});
+
 }());
 
 function startServer() {

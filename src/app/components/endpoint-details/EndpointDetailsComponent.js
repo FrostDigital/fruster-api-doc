@@ -119,7 +119,8 @@ export default class EndpointDetailsComponent extends React.Component {
 				instanceId,
 				cUrl,
 				subject,
-				docs
+				docs,
+				sourceVersion
 			},
 			type,
 			checked,
@@ -161,7 +162,7 @@ export default class EndpointDetailsComponent extends React.Component {
 									</a>
 								</React.Fragment>
 
-								<span className="endpoint-second-row">
+								<span className="endpoint-second-row" title={sourceVersion}>
 									from {instanceId} {this.getInformationNote()}
 
 									<CopyAsCurlComponent cUrl={cUrl} />

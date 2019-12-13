@@ -84,6 +84,15 @@ export default class ToolbarComponent extends React.Component {
 			this.filterInput.value = "";
 	}
 
+	handleNewFilterValue(e, context) {
+		e.persist();
+
+		if (this.timeout)
+			clearTimeout(this.timeout);
+
+		this.timeout = setTimeout(() => context.filter(e), 300);
+	}
+
 	renderFiltering(context) {
 		this.context = context;
 		context.filterResetCallback = () => this.callback();
@@ -98,14 +107,9 @@ export default class ToolbarComponent extends React.Component {
 						className="form-control"
 						id="filter"
 						ref={ref => this.filterInput = ref}
-						onChange={(e) => {
-							e.persist();
-
-							if (this.timeout)
-								clearTimeout(this.timeout);
-
-							this.timeout = setTimeout(() => context.filter(e), 300);
-						}} />
+						onPaste={(e) => this.handleNewFilterValue(e, context)}
+						onChange={(e) => this.handleNewFilterValue(e, context)}
+					/>
 					&nbsp;
                     <button
 						className="btn btn-xs btn-danger"
