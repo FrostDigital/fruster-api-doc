@@ -511,3 +511,20 @@ td:hover .btn-copy{
 .hljs, #header, p {
 	cursor: text !important;
 }
+
+/** To fix chrome's buggy text selection */
+.property-name:before {
+    content: " ";
+    display: block;
+    height: 1px;
+    width: 1px;
+}
+
+.signature-type:before {
+    content: " ";
+    display: block;
+    height: 1px;
+    width: 1px;
+    position: relative;
+    margin-top: -2px;
+}
