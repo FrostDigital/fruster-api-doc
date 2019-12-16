@@ -11,7 +11,7 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
 
 					<div
 						title={this.props.type + " endpoints"}
-						className="col-md-6">
+						className="col-md-6 endpoints">
 
 						{this.props.type === "Http"
 							? this.httpEndpoints(context)
@@ -64,9 +64,7 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
 												<a href={"#" + parsedSubject.method + "-to-" + parsedSubject.url}>
 													<span className={parsedSubject.method}>
 														{parsedSubject.method}
-													</span> to
-
-													<span dangerouslySetInnerHTML={{ __html: ViewUtils.getStyledUrlParamUrl(parsedSubject.url) }} />
+													</span> to <span dangerouslySetInnerHTML={{ __html: ViewUtils.getStyledUrlParamUrl(parsedSubject.url) }} />
 												</a>
 											</li>
 										)

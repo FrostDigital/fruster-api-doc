@@ -530,7 +530,9 @@ td:hover .btn-copy{
 }
 
 .url-param {
-	/* color: #275074; */
-	/* color: #6d7073; */
-	color: #343a40 !important;
+	color: #3c444b;
+}
+
+.table-of-contents .url-param {
+	color: #4b5968;
 }
