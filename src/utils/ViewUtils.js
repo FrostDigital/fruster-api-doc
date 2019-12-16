@@ -95,15 +95,15 @@ class ViewUtils {
 	/**
 	 * @param {String} url
 	 */
-	static getStyledUrlParamUrl(url) {
-		const urlParts = url.split("/").map(part => {
+	static getStyledUrlParamUrl(url, divider = "/") {
+		const urlParts = url.split(divider).map(part => {
 			if (part.includes(":"))
 				return `<span class="url-param">${part}</span>`;
 			else
 				return part;
 		});
 
-		return urlParts.join("/");
+		return urlParts.join(divider);
 	}
 
     /**

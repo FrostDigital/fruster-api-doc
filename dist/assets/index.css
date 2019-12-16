@@ -536,3 +536,102 @@ td:hover .btn-copy{
 .table-of-contents .url-param {
 	color: #4b5968;
 }
+
+.nightmode-button {
+	background-color: transparent;
+	border: none;
+}
+
+.nightmode {
+	background-color: #1a1d21 !important;
+	color: #d1d2d3;
+}
+
+.nightmode .service-container {
+	background-color: #1c1f24 !important;
+}
+
+.nightmode .endpoint-container {
+	background-color: #222529 !important;
+	color: #d1d2d3;
+}
+
+.nightmode .endpoint-container.selected-animated {
+	background-color: #3b3830 !important;
+}
+
+.nightmode code {
+	background-color: #2d2d2d !important;
+}
+
+.nightmode .description-key {
+	background-color: #1a1d21 !important;
+	color: #919191;
+}
+
+.nightmode hr {
+	border-top: 1px solid #242424;
+}
+
+.nightmode .endpoint-second-row {
+	box-shadow:none;
+}
+
+.nightmode .table > thead > tr > th{
+	border-bottom: 2px solid rgb(43, 43, 43);
+}
+
+.nightmode th {
+	border-top: 1px solid rgb(43, 43, 43) !important;
+}
+
+.nightmode .toolbar {
+	background-color: #111315  !important;
+}
+
+.nightmode .toolbar * {
+	opacity: 0.95;
+}
+
+.nightmode .table-of-contents{
+	background-color: #1c1f24 !important;
+}
+
+.nightmode a h1, .nightmode a h2, .nightmode a h3, .nightmode a h4, .nightmode a h5 {
+	color: #4481b7 !important;
+}
+
+.nightmode .url-param {
+	color: #5e6a75;
+}
+
+.nightmode .deprecated::after {
+	color: #aa1919;
+}
+
+.nightmode .POST,
+.nightmode .GET,
+.nightmode .PUT {
+	filter: brightness(0.85);
+}
+
+.nightmode .DELETE {
+	filter: brightness(0.8);
+}
+
+.nightmode .PUB {
+	color: #b5b5b5;
+}
+
+.nightmode pre {
+	background-color: #1a1d21 !important;
+}
+
+.nightmode pre code {
+	background-color: transparent !important;
+	color: #757575;
+}
+
+.nightmode .permission::after {
+	color: #d1d2d3;
+}

@@ -49,7 +49,7 @@ export default class EndpointDetailsComponent extends React.Component {
 
 			return `<span class="${parsedSubject.method}">${parsedSubject.method}</span> to ${parsedSubjectUrl}`;
 		} else
-			return ViewUtils.getColorCodedTitle(this.props.endpoint.subject);
+			return ViewUtils.getColorCodedTitle(ViewUtils.getStyledUrlParamUrl(this.props.endpoint.subject, "."));
 	}
 
 	componentDidMount() {

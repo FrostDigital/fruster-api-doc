@@ -40,8 +40,15 @@ export default class App extends React.Component {
 			},
 			filterResetCallback: undefined,
 			filterBy: "subject",
-			currentFilter: undefined
+			currentFilter: undefined,
+			nightmode: false
 		};
+	}
+
+	setNightMode() {
+		// TODO: persist
+		this.setState({ nightmode: true });
+		document.getElementsByTagName("body")[0].classList += "nightmode";
 	}
 
 	render() {
@@ -49,7 +56,10 @@ export default class App extends React.Component {
 			<ApiDocContext.Provider
 				value={this.state}>
 
-				<div className="container" title="content container">
+				<div
+					className={`container`}
+					title="content container"
+				>
 					<ErrorMessageComponent
 						numberOfEndpoints={this.numberOfEndpoints}
 						schemasWithErrors={this.props.schemasWithErrors}
@@ -111,7 +121,8 @@ export default class App extends React.Component {
 
 				<br />
 
-				<ToolbarComponent />
+
+				<ToolbarComponent><button className="nightmode-button" title="toggle night mode" onClick={() => this.setNightMode()}>{this.state.nightmode ? "🌞" : "🌙"}</button></ToolbarComponent>
 
 			</ApiDocContext.Provider>
 		);

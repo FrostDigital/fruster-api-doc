@@ -61,6 +61,8 @@ export default class ToolbarComponent extends React.Component {
 
 							{this.renderFiltering(context)}
 
+							{this.props.children}
+
 							{/* Buttons to the right */}
 							<div className="float-right">
 								<button

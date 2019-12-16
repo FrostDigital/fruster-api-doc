@@ -126,7 +126,7 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
                                             `}>
 												<a
 													href={"#" + endpoint.subject}
-													dangerouslySetInnerHTML={{ __html: ViewUtils.getColorCodedTitle(endpoint.subject) }} />
+													dangerouslySetInnerHTML={{ __html: ViewUtils.getColorCodedTitle(ViewUtils.getStyledUrlParamUrl(endpoint.subject, ".")) }} />
 											</li>
 										)
 									})
