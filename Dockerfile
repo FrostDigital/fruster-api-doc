@@ -10,7 +10,7 @@ ADD . .
 
 RUN \
   npm install; \
-  npm run-script docker;
+  npm run-script build;
 
 EXPOSE 4000
 
