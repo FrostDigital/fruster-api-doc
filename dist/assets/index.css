@@ -260,10 +260,6 @@ a.deactivated, a:visited.deactivated, a:active.deactivated, a:hover.deactivated 
     cursor: default !important;
 }
 
-.alert-danger li {
-    /* margin-left: 12px; */
-}
-
 h3.deprecated, .deprecated a, .deprecated a:active, .deprecated a:hover {
     text-decoration: line-through;
 }
@@ -615,14 +611,20 @@ td:hover .btn-copy{
 	color: #aa1919;
 }
 
-.nightmode .POST,
-.nightmode .GET,
+.nightmode .POST {
+	color: #5d872b;
+}
+
 .nightmode .PUT {
-	filter: brightness(0.85);
+	color: #b07323;
+}
+
+.nightmode .GET {
+	color: #665ba5;
 }
 
 .nightmode .DELETE {
-	filter: brightness(0.8);
+	color: #c23e3c !important;
 }
 
 .nightmode .PUB {
@@ -640,4 +642,42 @@ td:hover .btn-copy{
 
 .nightmode .permission::after {
 	color: #d1d2d3;
+}
+
+.nightmode .modal-content {
+	background-color: #222529;
+}
+
+.nightmode .nav-link.active {
+	background-color: #222529;
+	color: #d1d2d3;
+	border-color: #424242 #424242 #424242;
+	border-bottom:#222529 solid 1px !important;
+}
+
+.nightmode .nav-tabs {
+	border-bottom: 1px solid #424242;
+}
+
+.nightmode .nav-tabs > li > a:hover {
+	background-color: #141518;
+	border-color: #424242 #424242 #424242 !important;
+}
+
+.nightmode .docson .box,
+.nightmode .docson .box-header {
+	background-color: #1a1d21 !important;
+	border-color: #424242 #424242 #424242 !important;
+}
+
+.nightmode .box-name.title {
+	color: #d1d2d3;
+}
+
+.nightmode .docson .signature-type-number {
+	color: #d1d2d3;
+}
+
+.nightmode .hljs-attr {
+	color: #6e378d;
 }

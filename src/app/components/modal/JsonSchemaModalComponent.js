@@ -220,7 +220,6 @@ export default class JsonSchemaModalComponent extends React.Component {
 	}
 
 	async openModal() {
-		console.log(this);
 		if (this.props.hidden)
 			return;
 

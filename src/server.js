@@ -190,7 +190,6 @@ function startServer() {
 
 			await Promise.all(promises);
 
-
 			Object.keys(endpointsByType).forEach(endpointType => sortAfterEndpointName(endpointsByType[endpointType]));
 
 			const state = {
