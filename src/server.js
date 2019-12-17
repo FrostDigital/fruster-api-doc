@@ -6,11 +6,15 @@ import App from "./app/App";
 import template from "./template";
 
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const uuid = require("uuid");
 const app = express();
+const constants = require("./constants");
+
+app.use(cookieParser());
+
 const path = require("path");
 const util = require("util");
-const fs = require("fs");
 
 const bus = require("fruster-bus");
 const log = require("fruster-log");
@@ -26,6 +30,7 @@ const _ = require("lodash");
 let schemasPerService = {};
 let endpointsByType = { http: {}, service: {}, ws: {} };
 let cachedHtml;
+let cachedHtmlNightmode;
 
 (async function () {
 
@@ -34,21 +39,6 @@ let cachedHtml;
 	require("fruster-health").start();
 
 	await startServer();
-
-	bus.subscribe({
-		subject: "yo",
-		requestSchema: {
-			id: "yo",
-			properties: {
-				yo: {
-					type: "string",
-					enum: ["yo", "hello", "whazzup"]
-				}
-			}
-		},
-		handle: req => req
-	});
-
 }());
 
 function startServer() {
@@ -111,6 +101,8 @@ function startServer() {
 
 	async function handleGenerateApiDoc(req, res, returnAfter) {
 		try {
+			const nightmode = !!req.cookies[constants.NIGHTMODE_COOKIE_NAME];
+
 			if (!returnAfter)
 				res.setHeader("Cache-Control", "max-age=300");
 
@@ -118,11 +110,17 @@ function startServer() {
 				resetCache();
 
 			/** If there is cached html we send this right away but let the server process the rest, this will speed up avarage load times. */
-			if (cachedHtml)
+			if (!nightmode && cachedHtml) {
 				if (returnAfter)
 					return;
 				else
 					res.send(cachedHtml);
+			} else if (nightmode && cachedHtmlNightmode) {
+				if (returnAfter)
+					return;
+				else
+					res.send(cachedHtmlNightmode);
+			}
 
 			let metadataResponses = [];
 
@@ -195,19 +193,37 @@ function startServer() {
 
 			Object.keys(endpointsByType).forEach(endpointType => sortAfterEndpointName(endpointsByType[endpointType]));
 
-			const state = { endpointsByType, schemasPerService, schemasWithErrors, allEndpoints: Array.from(allEndpoints), config, generatedDate: new Date().toJSON() };
+			const state = {
+				nightmode,
+				endpointsByType,
+				schemasPerService,
+				schemasWithErrors,
+				allEndpoints: Array.from(allEndpoints),
+				config,
+				generatedDate: new Date().toJSON()
+			};
+
 			const appString = renderToString(<App {...state} />);
+
 			const renderedHtml = template({
 				body: appString,
 				title: `${config.projectName} API documentation`,
-				initialState: JSON.stringify(state).split("\n").join("")
+				initialState: JSON.stringify(state).split("\n").join(""),
+				nightmode
 			});
 
-			cachedHtml = renderedHtml;
+			if (nightmode)
+				cachedHtmlNightmode = renderedHtml;
+			else
+				cachedHtml = renderedHtml;
 
 			if (!returnAfter)
-				if (!res.headersSent)
-					res.send(cachedHtml);
+				if (!res.headersSent) {
+					if (nightmode)
+						res.send(cachedHtmlNightmode);
+					else
+						res.send(cachedHtml);
+				}
 		} catch (err) {
 			log.error(err);
 
@@ -216,7 +232,18 @@ function startServer() {
 		}
 	}
 
+	app.post("/nightmode", (req, res) => {
+		res.setHeader("Set-Cookie", `${constants.NIGHTMODE_COOKIE_NAME}=true;expires=Fri, 27 Dec 2030 09:03:34 GMT;`);
+		res.end();
+	});
+
+	app.delete("/nightmode", (req, res) => {
+		res.setHeader("Set-Cookie", `${constants.NIGHTMODE_COOKIE_NAME}=true;expires=Fri, 27 Dec 1970 09:03:34 GMT;`);
+		res.end();
+	});
+
 	app.listen(port);
+
 	console.log(`
 
 ================================================
@@ -329,11 +356,13 @@ function resetCache() {
 	schemasPerService = {};
 	endpointsByType = { http: {}, service: {}, ws: {} };
 	cachedHtml = undefined;
+	cachedHtmlNightmode = undefined;
 
 	console.log("Reset result:",
 		"\n endpointsByType.http:", Object.keys(endpointsByType.http).length,
 		"\n endpointsByType.service:", Object.keys(endpointsByType.service).length,
 		"\n endpointsByType.ws:", Object.keys(endpointsByType.ws).length,
 		"\n schemasPerService:", Object.keys(schemasPerService).length,
-		"\n cachedHtml === undefined:", cachedHtml === undefined);
+		"\n cachedHtml === undefined:", cachedHtml === undefined,
+		"\n cachedHtmlNightmode === undefined:", cachedHtmlNightmode === undefined);
 }

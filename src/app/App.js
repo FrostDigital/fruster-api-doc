@@ -22,6 +22,7 @@ export default class App extends React.Component {
 			backupEndpointsByType: this.props.endpointsByType,
 			endpointsByType: this.props.endpointsByType,
 			isFilteredResult: false,
+			nightmode: this.props.nightmode,
 			filter: async (e) => {
 				window.location.hash = "";
 
@@ -40,15 +41,8 @@ export default class App extends React.Component {
 			},
 			filterResetCallback: undefined,
 			filterBy: "subject",
-			currentFilter: undefined,
-			nightmode: false
+			currentFilter: undefined
 		};
-	}
-
-	setNightMode() {
-		// TODO: persist
-		this.setState({ nightmode: true });
-		document.getElementsByTagName("body")[0].classList += "nightmode";
 	}
 
 	render() {
@@ -122,7 +116,9 @@ export default class App extends React.Component {
 				<br />
 
 
-				<ToolbarComponent><button className="nightmode-button" title="toggle night mode" onClick={() => this.setNightMode()}>{this.state.nightmode ? "🌞" : "🌙"}</button></ToolbarComponent>
+				<ToolbarComponent
+					nightmode={this.state.nightmode}
+				/>
 
 			</ApiDocContext.Provider>
 		);

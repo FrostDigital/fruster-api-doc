@@ -5,10 +5,19 @@ import { ApiDocContext } from "../../Context";
 
 export default class ToolbarComponent extends React.Component {
 
-	constructor(props) {
-		super(props);
+	state = { nightmode: this.props.nightmode };
 
-		this.allEndpointsOpen = false;
+	async setNightMode() {
+		await this.setState({ nightmode: !this.state.nightmode });
+
+		if (this.state.nightmode)
+			document.getElementsByTagName("body")[0].classList.add("nightmode");
+		else
+			document.getElementsByTagName("body")[0].classList.remove("nightmode");
+
+		this.forceUpdate();
+
+		await fetch("./nightmode", { method: this.state.nightmode ? "POST" : "DELETE" });
 	}
 
 	componentDidMount() {
@@ -58,10 +67,15 @@ export default class ToolbarComponent extends React.Component {
 
 							{/* Buttons to the left */}
 							<ScrollToTopComponent />
+							<button
+								className="nightmode-button btn btn-xs btn-default"
+								title="toggle night mode"
+								onClick={() => this.setNightMode()}
+							>
+								{this.state.nightmode ? <img src="assets/sun.png" /> : <img src="assets/moon.png" />}
+							</button>
 
 							{this.renderFiltering(context)}
-
-							{this.props.children}
 
 							{/* Buttons to the right */}
 							<div className="float-right">

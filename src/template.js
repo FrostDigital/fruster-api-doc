@@ -1,4 +1,4 @@
-export default ({ body, title, initialState }) => {
+export default ({ body, title, initialState, nightmode }) => {
 	return `
     <!DOCTYPE html>
     <html>
@@ -11,7 +11,7 @@ export default ({ body, title, initialState }) => {
 			<script src="assets/jquery-3.1.0.js" integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk=" crossorigin="anonymous"></script>
         </head>
 
-        <body>
+        <body class="${nightmode ? "nightmode" : ""}">
             <div id="root">${body}</div>
         </body>
 

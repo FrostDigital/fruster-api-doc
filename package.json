@@ -17,6 +17,8 @@
 	"license": "MIT",
 	"dependencies": {
 		"@types/react": "^16.3.11",
+		"compression": "1.7.4",
+		"cookie-parser": "^1.4.4",
 		"express": "^4.16.3",
 		"fruster-bus": "0.5.10",
 		"fruster-health": "^0.0.14",
@@ -31,8 +33,7 @@
 		"react": "^16.8.6",
 		"react-dom": "^16.8.6",
 		"request": "^2.88.0",
-		"uuid": "3.1.0",
-		"compression": "1.7.4"
+		"uuid": "3.1.0"
 	},
 	"devDependencies": {
 		"babel-core": "^6.26.0",
@@ -59,7 +60,7 @@
 		"nyc": "^13.0.1"
 	},
 	"engines": {
-		"node": "7.9.0"
+		"node": "12.13.0"
 	},
 	"nodemonConfig": {
 		"ignore": [
