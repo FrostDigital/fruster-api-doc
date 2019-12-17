@@ -7,7 +7,7 @@ export default class ToolbarComponent extends React.Component {
 
 	state = { nightmode: this.props.nightmode };
 
-	async setNightMode() {
+	async toggleNightmode() {
 		await this.setState({ nightmode: !this.state.nightmode });
 
 		if (this.state.nightmode)
@@ -48,6 +48,10 @@ export default class ToolbarComponent extends React.Component {
 						document.documentElement.scrollTop = 0;
 						location.hash = "";
 						break;
+					case "n":
+						// nightmode
+						this.toggleNightmode();
+						break;
 				}
 			}
 		}, false);
@@ -71,7 +75,7 @@ export default class ToolbarComponent extends React.Component {
 								<button
 									className="nightmode-button btn btn-xs btn-default"
 									title="toggle night mode"
-									onClick={() => this.setNightMode()}
+									onClick={() => this.toggleNightmode()}
 								>
 									{this.state.nightmode ? <img src="assets/sun.png" /> : <img src="assets/moon.png" />}
 								</button>

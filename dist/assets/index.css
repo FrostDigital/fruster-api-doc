@@ -546,7 +546,7 @@ td:hover .btn-copy{
 
 .nightmode {
 	background-color: #1a1d21 !important;
-	color: #d1d2d3;
+	color: #a3a5a6;
 }
 
 .nightmode .service-container {
@@ -555,7 +555,7 @@ td:hover .btn-copy{
 
 .nightmode .endpoint-container {
 	background-color: #222529 !important;
-	color: #d1d2d3;
+	color: #a3a5a6;
 }
 
 .nightmode .endpoint-container.selected-animated {
@@ -641,16 +641,16 @@ td:hover .btn-copy{
 }
 
 .nightmode .permission::after {
-	color: #d1d2d3;
+	color: #a3a5a6;
 }
 
-.nightmode .modal-content {
+.nightmode .modal-content, .nightmode .modal-content.alert.alert-danger {
 	background-color: #222529;
 }
 
 .nightmode .nav-link.active {
 	background-color: #222529;
-	color: #d1d2d3;
+	color: #a3a5a6;
 	border-color: #424242 #424242 #424242;
 	border-bottom:#222529 solid 1px !important;
 }
@@ -671,13 +671,25 @@ td:hover .btn-copy{
 }
 
 .nightmode .box-name.title {
-	color: #d1d2d3;
+	color: #a3a5a6;
 }
 
 .nightmode .docson .signature-type-number {
-	color: #d1d2d3;
+	color: #a3a5a6;
 }
 
 .nightmode .hljs-attr {
 	color: #6e378d;
+}
+
+.nightmode .alert-danger {
+	color: inherit;
+	background-color: transparent;
+	border-color: #a94442;
+}
+
+.nightmode input, .nightmode select, .nightmode option {
+	background-color: #222529;
+	color: #999;
+	border: none;
 }
