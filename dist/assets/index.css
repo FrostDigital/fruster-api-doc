@@ -49,7 +49,7 @@ body {
 
 .toolbar .container {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     padding: 0px;
     max-width: 1684px !important;
     width: inherit;
