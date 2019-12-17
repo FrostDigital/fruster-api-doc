@@ -20,7 +20,7 @@
 		"compression": "1.7.4",
 		"cookie-parser": "^1.4.4",
 		"express": "^4.16.3",
-		"fruster-bus": "0.5.10",
+		"fruster-bus": "0.5.9",
 		"fruster-health": "^0.0.14",
 		"fruster-log": "^0.0.18",
 		"highlight.js": "^9.12.0",
