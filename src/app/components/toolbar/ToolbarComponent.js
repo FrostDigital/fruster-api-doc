@@ -10,6 +10,9 @@ export default class ToolbarComponent extends React.Component {
 	async toggleNightmode() {
 		await this.setState({ nightmode: !this.state.nightmode });
 
+		document.getElementsByTagName("body")[0].classList.remove("ready");
+		setTimeout(() => document.getElementsByTagName("body")[0].classList.add("ready"), 100);
+
 		if (this.state.nightmode)
 			document.getElementsByTagName("body")[0].classList.add("nightmode");
 		else

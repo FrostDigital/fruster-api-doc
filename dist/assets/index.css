@@ -337,7 +337,10 @@ a h4:hover::before, a h3:hover::before, a h2:hover::before, a h1:hover::before, 
     margin-top: 10px;
     width: 1120px !important;
     padding-bottom: 20px;
-    transition: background-color 2s ease !important;
+}
+
+.ready .endpoint-container {
+	transition: background-color 2s ease !important;
 }
 
 .modal-content pre {

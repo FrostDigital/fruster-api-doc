@@ -14,7 +14,7 @@ export default ({ body, title, initialState, nightmode }) => {
 				crossorigin="anonymous"></script>
         </head>
 
-        <body class="${nightmode ? "nightmode" : ""}">
+        <body class="ready ${nightmode ? "nightmode" : ""}">
             <div id="root">${body}</div>
         </body>
 
