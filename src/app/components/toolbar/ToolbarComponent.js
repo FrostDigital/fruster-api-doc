@@ -74,7 +74,7 @@ export default class ToolbarComponent extends React.Component {
 								<ScrollToTopComponent />
 								<button
 									className="nightmode-button btn btn-xs btn-default"
-									title="toggle night mode"
+									title="Toggle nightmode (N)"
 									onClick={() => this.toggleNightmode()}
 								>
 									{this.state.nightmode ? <img src="assets/sun.png" /> : <img src="assets/moon.png" />}
