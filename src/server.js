@@ -232,7 +232,7 @@ function startServer() {
 	}
 
 	app.post("/nightmode", (req, res) => {
-		res.setHeader("Set-Cookie", `${constants.NIGHTMODE_COOKIE_NAME}=true;expires=Fri, 27 Dec 2030 09:03:34 GMT;`);
+		res.setHeader("Set-Cookie", `${constants.NIGHTMODE_COOKIE_NAME}=true;expires=Fri, 27 Dec ${new Date().getFullYear() + 30} 09:03:34 GMT;`);
 		res.end();
 	});
 
