@@ -44,10 +44,12 @@ export default class EndpointDetailsComponent extends React.Component {
 	getSubject() {
 		const parsedSubject = this.getParsedSubject();
 
-		if (this.props.type === "http")
-			return `<span class="${parsedSubject.method}">${parsedSubject.method}</span> to ${parsedSubject.url}`;
-		else
-			return ViewUtils.getColorCodedTitle(this.props.endpoint.subject);
+		if (this.props.type === "http") {
+			const parsedSubjectUrl = ViewUtils.getStyledUrlParamUrl(parsedSubject.url);
+
+			return `<span class="${parsedSubject.method}">${parsedSubject.method}</span> to ${parsedSubjectUrl}`;
+		} else
+			return ViewUtils.getColorCodedTitle(ViewUtils.getStyledUrlParamUrl(this.props.endpoint.subject, "."));
 	}
 
 	componentDidMount() {
@@ -119,7 +121,8 @@ export default class EndpointDetailsComponent extends React.Component {
 				instanceId,
 				cUrl,
 				subject,
-				docs
+				docs,
+				sourceVersion
 			},
 			type,
 			checked,
@@ -156,12 +159,12 @@ export default class EndpointDetailsComponent extends React.Component {
                                                 ${deprecated ? "deprecated" : ""}
                                                 ${pending ? "pending" : ""}
                                             `}>
-											<span dangerouslySetInnerHTML={{ __html: this.state.urlSubject, }}></span>
+											<span dangerouslySetInnerHTML={{ __html: this.state.urlSubject }}></span>
 										</h3>
 									</a>
 								</React.Fragment>
 
-								<span className="endpoint-second-row">
+								<span className="endpoint-second-row" title={sourceVersion}>
 									from {instanceId} {this.getInformationNote()}
 
 									<CopyAsCurlComponent cUrl={cUrl} />

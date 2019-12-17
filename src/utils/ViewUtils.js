@@ -20,6 +20,7 @@ class ViewUtils {
      */
 	static parseSubjectToAPIUrl(subject) {
 		let outputURL = subject;
+
 		outputURL = module.exports.replaceAll(outputURL, ".", "/");
 		outputURL = outputURL.replace("http/", "");
 
@@ -44,12 +45,8 @@ class ViewUtils {
  * @return {String} {target} string with {search} replaced by {replacement}
  */
 	static replaceAll(target, search, replacement) {
-		if (!target.split) {
-			console.log("\n");
-			console.log(require("util").inspect(target, null, null, true));
-			console.log("\n");
+		if (!target.split)
 			return target;
-		}
 
 		return target.split(search).join(replacement);
 	}
@@ -93,6 +90,20 @@ class ViewUtils {
 		}
 
 		return string;
+	}
+
+	/**
+	 * @param {String} url
+	 */
+	static getStyledUrlParamUrl(url, divider = "/") {
+		const urlParts = url.split(divider).map(part => {
+			if (part.includes(":"))
+				return `<span class="url-param">${part}</span>`;
+			else
+				return part;
+		});
+
+		return urlParts.join(divider);
 	}
 
     /**

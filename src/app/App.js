@@ -22,6 +22,7 @@ export default class App extends React.Component {
 			backupEndpointsByType: this.props.endpointsByType,
 			endpointsByType: this.props.endpointsByType,
 			isFilteredResult: false,
+			nightmode: this.props.nightmode,
 			filter: async (e) => {
 				window.location.hash = "";
 
@@ -49,7 +50,10 @@ export default class App extends React.Component {
 			<ApiDocContext.Provider
 				value={this.state}>
 
-				<div className="container" title="content container">
+				<div
+					className={`container`}
+					title="content container"
+				>
 					<ErrorMessageComponent
 						numberOfEndpoints={this.numberOfEndpoints}
 						schemasWithErrors={this.props.schemasWithErrors}
@@ -111,7 +115,10 @@ export default class App extends React.Component {
 
 				<br />
 
-				<ToolbarComponent />
+
+				<ToolbarComponent
+					nightmode={this.state.nightmode}
+				/>
 
 			</ApiDocContext.Provider>
 		);

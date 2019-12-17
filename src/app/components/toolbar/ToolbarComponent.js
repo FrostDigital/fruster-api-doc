@@ -5,10 +5,22 @@ import { ApiDocContext } from "../../Context";
 
 export default class ToolbarComponent extends React.Component {
 
-	constructor(props) {
-		super(props);
+	state = { nightmode: this.props.nightmode };
 
-		this.allEndpointsOpen = false;
+	async toggleNightmode() {
+		await this.setState({ nightmode: !this.state.nightmode });
+
+		document.getElementsByTagName("body")[0].classList.remove("ready");
+		setTimeout(() => document.getElementsByTagName("body")[0].classList.add("ready"), 100);
+
+		if (this.state.nightmode)
+			document.getElementsByTagName("body")[0].classList.add("nightmode");
+		else
+			document.getElementsByTagName("body")[0].classList.remove("nightmode");
+
+		this.forceUpdate();
+
+		await fetch("./nightmode", { method: this.state.nightmode ? "POST" : "DELETE" });
 	}
 
 	componentDidMount() {
@@ -39,6 +51,10 @@ export default class ToolbarComponent extends React.Component {
 						document.documentElement.scrollTop = 0;
 						location.hash = "";
 						break;
+					case "n":
+						// nightmode
+						this.toggleNightmode();
+						break;
 				}
 			}
 		}, false);
@@ -57,7 +73,16 @@ export default class ToolbarComponent extends React.Component {
 						<div className="container">
 
 							{/* Buttons to the left */}
-							<ScrollToTopComponent />
+							<div>
+								<ScrollToTopComponent />
+								<button
+									className="nightmode-button btn btn-xs btn-default"
+									title="Toggle nightmode (N)"
+									onClick={() => this.toggleNightmode()}
+								>
+									{this.state.nightmode ? <img src="assets/sun.png" /> : <img src="assets/moon.png" />}
+								</button>
+							</div>
 
 							{this.renderFiltering(context)}
 
@@ -84,6 +109,15 @@ export default class ToolbarComponent extends React.Component {
 			this.filterInput.value = "";
 	}
 
+	handleNewFilterValue(e, context) {
+		e.persist();
+
+		if (this.timeout)
+			clearTimeout(this.timeout);
+
+		this.timeout = setTimeout(() => context.filter(e), 300);
+	}
+
 	renderFiltering(context) {
 		this.context = context;
 		context.filterResetCallback = () => this.callback();
@@ -98,14 +132,9 @@ export default class ToolbarComponent extends React.Component {
 						className="form-control"
 						id="filter"
 						ref={ref => this.filterInput = ref}
-						onChange={(e) => {
-							e.persist();
-
-							if (this.timeout)
-								clearTimeout(this.timeout);
-
-							this.timeout = setTimeout(() => context.filter(e), 300);
-						}} />
+						onPaste={(e) => this.handleNewFilterValue(e, context)}
+						onChange={(e) => this.handleNewFilterValue(e, context)}
+					/>
 					&nbsp;
                     <button
 						className="btn btn-xs btn-danger"

@@ -253,7 +253,8 @@ module.exports = ${this.className};`;
 					property.type,
 					property.description,
 					schema.required ? schema.required.includes(propertyKeys[i]) : false,
-					property.format);
+					property.format,
+					property.enum);
 			}
 
 			if (property.type === "object") {
@@ -325,6 +326,7 @@ module.exports = ${this.className};`;
 		const constantsServiceName = ViewUtils.replaceAll(this.serviceName, "-", "_").toUpperCase();
 
 		let constantName = ViewUtils.replaceAll(endpoint.subject.toUpperCase(), "-", "_");
+
 		constantName = ViewUtils.replaceAll(constantName, ".", "_");
 		constantName = constantName.replace(`${constantsServiceName}_`, "");
 		constantName = ViewUtils.replaceAll(constantName, ":", "");
@@ -555,13 +557,15 @@ class Parameter {
 	 * @param {String} description
 	 * @param {Boolean=} required
 	 * @param {String=} format
+	 * @param {Array<String>=} parameterEnum
 	 */
-	constructor(name, type, description, required, format) {
+	constructor(name, type, description, required, format, parameterEnum) {
 		this.name = name;
 		this.type = type || "any";
 		this.description = description;
 		this.required = !!required || type && type.toLowerCase && type.toLowerCase().includes("null");
 		this.format = format || null;
+		this.parameterEnum = parameterEnum;
 		this._type = "_Paramter";
 	}
 
@@ -584,6 +588,8 @@ class Parameter {
 		} else {
 			if (this.type === "string" && this.format === "date-time")
 				typeString = "Date";
+			else if (this.type === "string" && !!this.parameterEnum && this.parameterEnum.length)
+				typeString = `(${this.parameterEnum.map(e => `"${e}"`).join("|")})`;
 			else
 				typeString = Utils.typeToTitleCase(this.type);
 		}
