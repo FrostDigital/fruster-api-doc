@@ -23,6 +23,7 @@ const ViewUtils = require("./utils/ViewUtils");
 const config = require("../config");
 const port = config.port || 3100;
 const compress = require('compression');
+const https = require("https");
 
 const ServiceClientGenerator = require("./utils/service-client-generator/ServiceClientGenerator");
 const _ = require("lodash");
@@ -146,7 +147,7 @@ function startServer() {
 			const promises = [];
 			const allEndpoints = new Set();
 
-			metadataResponses.forEach(response => {
+			metadataResponses.forEach(async response => {
 				if (!response.from) /** Just in case this happens we don't want the whole page to not load. */
 					response.from = { service: "", instanceId: "" };
 
@@ -189,6 +190,11 @@ function startServer() {
 			});
 
 			await Promise.all(promises);
+
+			await Promise.all([
+				getReferencedDocumentation("http"),
+				getReferencedDocumentation("service")
+			])
 
 			Object.keys(endpointsByType).forEach(endpointType => sortAfterEndpointName(endpointsByType[endpointType]));
 
@@ -271,7 +277,7 @@ function startServer() {
  * @param {String} serviceName name of service
  * @param {String} instanceId
  */
-function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
+async function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceId) {
 	if (!object.subject) {
 		console.log("Could not parse endpoint; No subject...?", object);
 		return;
@@ -296,8 +302,52 @@ function parseEndpoint(object, splitIndex, type, schemas, serviceName, instanceI
 
 	// if (!schemasPerService[serviceName])
 	//     schemasPerService[serviceName] = schemas;
+
+	if (object.serviceDocs)/* && object.serviceDocs.label === serviceName) */
+		endpointsByType[type][splits[splitIndex]].serviceDocs = object.serviceDocs;
 }
 
+async function getReferencedDocumentation(type) {
+	const subjects = Object.keys(endpointsByType[type]);
+
+	// TODO: move to its own function
+	await Promise.all(subjects.map(async (subject) => {
+		return new Promise(async resolve => {
+			const service = endpointsByType[type][subject];
+
+			if (service && service.serviceDocs) {
+				const url = service.serviceDocs.url;
+				const urlWithoutProtocol = url.replace("http://", "").replace("https://", "");
+				const path = urlWithoutProtocol.substring(urlWithoutProtocol.indexOf("/"));
+				const host = urlWithoutProtocol.replace(path, "");
+
+				await https.get({
+					port: "",
+					host,
+					path,
+					headers: { "Authorization": "token b4edf1bdf7f2874cd8f75881d151473dafc1e222" } // TODO: make it configurable
+				}, (res) => {
+					res.setEncoding("utf8");
+
+					let markdown = "";
+
+					res.on("data", (chunk) => markdown += chunk);
+
+					res.on("end", () => {
+						endpointsByType[type][subject].serviceDocs.markdown = markdown;
+						resolve();
+					});
+
+					res.on("error", () => {
+						console.warn("ERR: ", subject);
+						resolve();
+					});
+				});
+			} else
+				resolve();
+		});
+	}));
+}
 
 /**
  * Generates a cUrl from an endpoint.

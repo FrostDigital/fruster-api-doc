@@ -19,7 +19,7 @@ export default class EndpointDetailsComponent extends React.Component {
 		urlSubject: this.getSubject(),
 		isOpen: false,
 		selected: false,
-		lastHash: ""
+		lastHash: null
 	};
 
 	getParsedSubject() {
@@ -63,6 +63,9 @@ export default class EndpointDetailsComponent extends React.Component {
 
 	async reactToHashChange() {
 		const decodedURI = decodeURI(window.location.hash);
+		if (this.props.endpoint.subject === "http.delete.product.:productId")
+			console.log(2, decodedURI, this.state.lastHash);
+
 		const decodedURIWithoutHash = decodedURI.replace("#", "");
 		const parsedSubject = this.getParsedSubject();
 
@@ -71,11 +74,13 @@ export default class EndpointDetailsComponent extends React.Component {
 			|| this.state.lastHash == decodedURI
 			|| (!decodedURIWithoutHash.includes(this.props.endpoint.subject)
 				&& !decodedURIWithoutHash.includes(`${parsedSubject.method}-to-${parsedSubject.url}`))
-		)
+		) {
+			this.setState({ lastHash: null });
 			return;
+		}
 
 		const newHashWithoutTab = decodedURI.substring(0, decodedURI.length - 1);
-		const lastHashWithoutTab = this.state.lastHash.substring(0, this.state.lastHash.length - 1);
+		const lastHashWithoutTab = this.state.lastHash ? this.state.lastHash.substring(0, this.state.lastHash.length - 1) : null;
 
 		switch (true) {
 			case decodedURI === `#${this.state.urlSubjectLink}`:
@@ -83,8 +88,10 @@ export default class EndpointDetailsComponent extends React.Component {
 				/** If hash was just a tab switch we don't do anything */
 				if (this.state.requestSchema && decodedURI.includes(`?modal=${this.state.requestSchema.id}`)
 					|| this.state.responseSchema && decodedURI.includes(`?modal=${this.state.responseSchema.id}`)) {
-					if (newHashWithoutTab === lastHashWithoutTab)
+					if (newHashWithoutTab === lastHashWithoutTab) {
+						this.setState({ lastHash: null });
 						return;
+					}
 				}
 
 				this.reactToClickHash();
@@ -243,7 +250,12 @@ export default class EndpointDetailsComponent extends React.Component {
 	}
 
 	toggleFolded() {
-		this.setState({ isOpen: !this.state.isOpen });
+		const { isOpen } = this.state;
+
+		if (isOpen)
+			history.pushState("", document.title, window.location.pathname);
+
+		this.setState({ isOpen: !isOpen, lastHash: null });
 	}
 
     /**

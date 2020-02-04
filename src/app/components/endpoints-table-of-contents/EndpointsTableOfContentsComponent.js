@@ -37,6 +37,8 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
 				if (endpoints.length === 0)
 					return;
 
+				const hasDocumentation = this.findServiceDocs(endpoints, serviceName);
+
 				return (
 					<span
 						key={`endpointsByType.http-${serviceName}`}>
@@ -47,6 +49,16 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
 						<ul
 							className="http"
 							title={`${serviceName} endpoints`}>
+
+							{
+								hasDocumentation &&
+								<li>
+									<a href={"#" + serviceName + "-" + this.props.type.toLowerCase() + "-documentation"}>
+										Documentation
+									</a>
+								</li>
+							}
+
 							{
 								endpoints
 									.filter(endpoint => !endpoint.hidden)
@@ -103,6 +115,8 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
 				if (serviceName === ":userId")
 					serviceName = "out";
 
+				const hasDocumentation = this.findServiceDocs(endpoints, serviceName);
+
 				return (
 					<span
 						key={`${this.props.type.toLowerCase()}-${serviceName}`}>
@@ -113,6 +127,16 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
 						<ul
 							title={`${serviceName} endpoints`}
 							className={this.props.type.toLowerCase()}>
+
+							{
+								hasDocumentation &&
+								<li>
+									<a href={"#" + serviceName + "-" + this.props.type.toLowerCase() + "-documentation"}>
+										Documentation
+									</a>
+								</li>
+							}
+
 							{
 								endpoints
 									.filter(endpoint => !endpoint.hidden)
@@ -161,6 +185,15 @@ export default class EndpointsTableOfContentsComponent extends React.Component {
 		if (aU > bU) return 1;
 		else if (aU < bU) return -1;
 		else return 0;
+	}
+
+	findServiceDocs(endpoints, serviceName) {
+		const endpointWithServiceDocs = endpoints.find(e => !!e.serviceDocs && e.serviceDocs.label === serviceName);
+
+		if (!!endpointWithServiceDocs)
+			return true;
+		else
+			return false;
 	}
 
 }
