@@ -63,9 +63,6 @@ export default class EndpointDetailsComponent extends React.Component {
 
 	async reactToHashChange() {
 		const decodedURI = decodeURI(window.location.hash);
-		if (this.props.endpoint.subject === "http.delete.product.:productId")
-			console.log(2, decodedURI, this.state.lastHash);
-
 		const decodedURIWithoutHash = decodedURI.replace("#", "");
 		const parsedSubject = this.getParsedSubject();
 
