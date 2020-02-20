@@ -284,6 +284,15 @@ module.exports = ${this.className};`;
 			parameters.push(parameter);
 		}
 
+		if (schema.additionalProperties) {
+			parameters.push(new Parameter(
+				"...additionalProperties",
+				"Object",
+				"additional optional/custom fields",
+				false,
+				"property.items.format"));
+		}
+
 		return parameters;
 
 		/**
@@ -496,6 +505,20 @@ class Endpoint {
 		const requestBodyParams = `${getParamsList(this.params.slice(1), true)}`;
 		const returnType = `Promise<${getReturnType(this.returnType)}>`;
 		const deprecatedReasonString = this.deprecatedReason ? `	 * @deprecated ${this.deprecatedReason}` : "";
+
+		console.log("\n");
+		console.log("=======================================");
+		console.log("{title}");
+		console.log("=======================================");
+		console.log(require("util").inspect({
+
+			functionParams,
+			requestBodyParams,
+			returnType,
+			deprecatedReasonString
+
+		}, null, null, true));
+		console.log("\n");
 
 		return `	/**
 ${deprecatedReasonString}
