@@ -312,7 +312,6 @@ module.exports = ${this.className};`;
 					"property.items.format"));
 			}
 		} catch (err) {
-			console.warn(err);
 			// quietly fail if this doesn't work since it's not a big enough error to have everything fail.
 		}
 
