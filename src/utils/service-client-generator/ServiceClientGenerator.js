@@ -24,6 +24,9 @@ const _ = require("lodash");
 *TODO: Make it impossible for two functions to get the same name (This will not happen very often)
 */
 
+const ADDITIONAL_PROPERTIES_INTERNAL = "$INTERNAL_ADDITIONAL_PROPERTIES";
+const ADDITIONAL_PROPERTIES_OUTPUT = "additionalProperties";
+
 /**
  * NOTE: all tabs and spaces in the strings are there because they should be there 😁
  */
@@ -64,7 +67,7 @@ class ServiceClientGenerator {
 			const constant = this._getEndpointConstant(endpoint);
 			const requestSchema = endpoint.schemas.find(schema => schema.id === endpoint.requestSchema);
 			const responseSchema = endpoint.schemas.find(schema => schema.id === endpoint.responseSchema);
-			const endpointParameters = this._getEndpointParameters(requestSchema);
+			const endpointParameters = this._getEndpointParameters(requestSchema, undefined, false);
 			const returnType = this._getEndpointTypeDef(responseSchema, true);
 			const constantNameCombined = `${this.className}.endpoints.${constant.constantName}`;
 			const description = endpoint.docs ? endpoint.docs.description : "";
@@ -75,7 +78,7 @@ class ServiceClientGenerator {
 
 			this.endpointConstants.push(constant);
 
-			this.endpoints.push(new Endpoint(constantNameCombined, constant.functionVariableName, endpointParameters, description, returnType, endpoint.deprecated));
+			this.endpoints.push(new Endpoint(constantNameCombined, constant.functionVariableName, endpointParameters, description, returnType, endpoint.deprecated, endpoint.subject));
 		});
 	}
 
@@ -124,6 +127,7 @@ module.exports = ${this.className};`;
 		string = string.split("\t/**\n\n").join("\t/**\n"); // removes new empty lines within comment blocks
 		string = string.split("\t/**\n	 *\n").join("\t/**\n"); // removes double new lines in comments
 		string = string.split("{\n\t\t\n\t\treturn ").join("{\n	\treturn "); // removes new lines before return statement in functions
+		string = string.split(ADDITIONAL_PROPERTIES_INTERNAL).join(ADDITIONAL_PROPERTIES_OUTPUT); // replaces the internal naming of additionalProperties to output format
 
 		if (string.includes("log.warn") || string.includes("log.error") || string.includes("log.debug")) // adds fruster-log require if fruster-log is used anywhere
 			string = "const log = require(\"fruster-log\");\n" + string;
@@ -154,7 +158,7 @@ module.exports = ${this.className};`;
 		}
 
 		const name = schema.id;
-		const params = this._getEndpointParameters(schema);
+		const params = this._getEndpointParameters(schema, undefined, true);
 		const typeDefs = params.map(param => {
 			if (param instanceof ArrayParameter)
 				return new TypeDefArrayProperty(param);
@@ -202,10 +206,12 @@ module.exports = ${this.className};`;
 	 * Gets endpoint paramters from a schema
 	 *
 	 * @param {Object} schema
+	 * @param {String=} parentKey
+	 * @param {Boolean=} isTypeDef
 	 *
 	 * @return {Array<Parameter>}
 	 */
-	_getEndpointParameters(schema) {
+	_getEndpointParameters(schema, parentKey, isTypeDef) {
 		if (!schema || !schema.id)
 			return [];
 
@@ -226,7 +232,7 @@ module.exports = ${this.className};`;
 			let parameter;
 
 			if (property.type === "array") {
-				const subParams = this._getEndpointParameters(property);
+				const subParams = this._getEndpointParameters(property, parentKey + "." + propertyKeys[i], isTypeDef);
 
 				if (subParams.length === 0
 					&& property.items
@@ -261,7 +267,7 @@ module.exports = ${this.className};`;
 				if (!property.id)
 					property.id = propertyKeys[i];
 
-				const subParams = this._getEndpointParameters(property);
+				const subParams = this._getEndpointParameters(property, parentKey + "." + propertyKeys[i], isTypeDef);
 
 				if (!parameter.required && subParams.length > 0) {
 					const propertySchema = { ...property, id: `${schema.id}${Utils.toTitleCase(parameter.name)}` }
@@ -282,6 +288,31 @@ module.exports = ${this.className};`;
 			}
 
 			parameters.push(parameter);
+		}
+
+		try {
+			const hasAdditionalProperties = !!schema.additionalProperties;
+			const schemaIsObjectWithNoProperties = (schema.type === "object" && !schema.properties);
+			const schemaHasNoDefaultValue = !schema.default; // TODO: add typedefs for default values?
+			const schemaIsNotResponseSchema = !schema.id.toLowerCase().includes("response");
+			const notSubParam = !parentKey || !parentKey.split("param0.").join("").includes(".");
+
+			if (
+				schemaIsNotResponseSchema &&
+				(hasAdditionalProperties
+					|| (schemaIsObjectWithNoProperties && schemaHasNoDefaultValue)) &&
+				notSubParam &&
+				!isTypeDef
+			) {
+				parameters.push(new Parameter(
+					ADDITIONAL_PROPERTIES_INTERNAL,
+					"Object",
+					schemaIsObjectWithNoProperties ? schema.description : "additional optional/custom fields",
+					false,
+					"property.items.format"));
+			}
+		} catch (err) {
+			// quietly fail if this doesn't work since it's not a big enough error to have everything fail.
 		}
 
 		return parameters;
@@ -474,13 +505,15 @@ class Endpoint {
 	 * @param {String} description
 	 * @param {String|Object|TypeDefProperty} returnType
 	 * @param {String} deprecatedReason
+	 * @param {String} subject
 	 */
-	constructor(urlConstant, endpointName, params, description, returnType, deprecatedReason) {
+	constructor(urlConstant, endpointName, params, description, returnType, deprecatedReason, subject) {
 		this.endpointName = endpointName;
 		this.urlConstant = urlConstant;
 		this.description = description;
 		this.returnType = returnType;
 		this.deprecatedReason = deprecatedReason;
+		this.subject = subject;
 
 		this.params = Utils.sortParams(params);
 		this.params = [new Parameter("reqId", "string", "the request id", true)].concat(this.params);
@@ -508,7 +541,7 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
 	 * @return {${returnType}}
 	 */
 	static async ${this.endpointName}({ ${functionParams} }) {
-		${this.deprecatedReason ? `log.warn("Using deprecated endpoint ${this.endpointName}")` : ""}
+		${this.deprecatedReason ? `log.warn("Using deprecated endpoint '${this.endpointName}' : ${this.subject}")` : ""}
 		return (await bus.request({
 			subject: ${this.urlConstant},
 			message: {
@@ -526,7 +559,16 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
 		 * @param {Boolean=} isRequestBody
 		 */
 		function getParamsList(params, isRequestBody) {
-			return params.filter(param => !param.name.includes(".")).map((param, i) => `${i > 0 ? " " : ""}${Utils.replaceReservedKeyword(param.name, isRequestBody)}`);
+			return params.filter(param => !param.name.includes(".")).map((param, i) => {
+				if (param.name === ADDITIONAL_PROPERTIES_INTERNAL) {
+					if (isRequestBody)
+						return ` ...${ADDITIONAL_PROPERTIES_OUTPUT}`
+					else
+						return ` ${ADDITIONAL_PROPERTIES_OUTPUT}`;
+				}
+
+				return `${i > 0 ? " " : ""}${Utils.replaceReservedKeyword(param.name, isRequestBody)}`
+			});
 		}
 
 		/**
@@ -599,6 +641,9 @@ class Parameter {
 
 		if (typeString === "Any")
 			typeString = "any";
+
+		if (this.name === ADDITIONAL_PROPERTIES_INTERNAL)
+			this.name = ADDITIONAL_PROPERTIES_OUTPUT;
 
 		return `	 * @param {${typeString}${!this.required ? "=" : ""}} param0.${Utils.replaceReservedKeyword(this.name)} ${this.description || ""}`;
 	}
