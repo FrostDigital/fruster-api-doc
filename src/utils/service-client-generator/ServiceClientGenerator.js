@@ -82,6 +82,8 @@ class ServiceClientGenerator {
 		});
 	}
 
+	// TODO: add toTypescriptClass!
+
 	/**
 	 * Converts all data to a javascript service client class
 	 */
