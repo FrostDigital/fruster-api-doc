@@ -3,141 +3,160 @@ import EndpointDetailsComponent from "../endpoint-details/EndpointDetailsCompone
 
 export default class EndpointContainer extends React.Component {
 
-    state = {
-        checked: true,
-        checkboxes: EndpointContainer.prepareCheckboxes(this.props.endpoints)
-    };
+	state = {
+		checked: true,
+		checkboxes: EndpointContainer.prepareCheckboxes(this.props.endpoints)
+	};
 
-    static prepareCheckboxes(endpoints) {
-        const returnObj = {};
+	static prepareCheckboxes(endpoints) {
+		const returnObj = {};
 
-        endpoints.forEach(endpoint => returnObj[endpoint.subject] = true);
+		endpoints.forEach(endpoint => returnObj[endpoint.subject] = true);
 
-        return returnObj;
-    }
+		return returnObj;
+	}
 
-    getCheckedEndpoints() {
-        const endpointsBySubject = {};
+	getCheckedEndpoints() {
+		const endpointsBySubject = {};
 
-        this.props.endpoints.forEach(e => endpointsBySubject[e.subject] = { hidden: e.hidden });
+		this.props.endpoints.forEach(e => endpointsBySubject[e.subject] = { hidden: e.hidden });
 
-        return Object.keys(this.state.checkboxes)
-            .map(subject => {
-                if (this.state.checkboxes[subject] && !endpointsBySubject[subject].hidden)
-                    return subject;
-            })
-            .filter(subject => !!subject)
-            .join(",");
-    }
+		return Object.keys(this.state.checkboxes)
+			.map(subject => {
+				if (this.state.checkboxes[subject] && !endpointsBySubject[subject].hidden)
+					return subject;
+			})
+			.filter(subject => !!subject)
+			.join(",");
+	}
 
-    checkAll() {
-        const newCheckedStatus = !this.state.checked;
-        const checkboxesNewStatus = {};
+	checkAll() {
+		const newCheckedStatus = !this.state.checked;
+		const checkboxesNewStatus = {};
 
-        Object.keys(this.state.checkboxes).forEach(subject => checkboxesNewStatus[subject] = newCheckedStatus);
+		Object.keys(this.state.checkboxes).forEach(subject => checkboxesNewStatus[subject] = newCheckedStatus);
 
-        this.setState({
-            checked: newCheckedStatus,
-            checkboxes: checkboxesNewStatus
-        });
-    }
+		this.setState({
+			checked: newCheckedStatus,
+			checkboxes: checkboxesNewStatus
+		});
+	}
 
-    render() {
-        let { serviceName, type } = this.props;
+	render() {
+		let { serviceName, type } = this.props;
 
-        const isWsUserIdEndpoint = serviceName === ":userId";
+		const isWsUserIdEndpoint = serviceName === ":userId";
 
-        if (isWsUserIdEndpoint)
-            serviceName = "out";
+		if (isWsUserIdEndpoint)
+			serviceName = "out";
 
-        return (
-            <div
-                id={serviceName + "-" + (type || "service")}
-                className={"service-container " + serviceName + "-"}>
+		const styleTs = {
+			backgroundColor: "#1c1f24",
+			left: "125px",
+			display: "inline-block",
+			position: "relative",
+			top: "-45px",
+			padding: "10px",
+			paddingRight: "3px",
+			borderRadius: "8px"
+		};
 
-                {
-                    // To not break old links to #:userId-ws
-                    isWsUserIdEndpoint && <div id=":userId-ws" />
-                }
-                <a href={"#" + serviceName + "-" + (type || "service")}><h2>{serviceName}</h2></a>
+		const styleJs = {
+			backgroundColor: "#1c1f24",
+			left: "67px",
+			display: "inline-block",
+			position: "relative",
+			top: "0px",
+			padding: "10px",
+			paddingRight: "3px",
+			borderRadius: "8px",
+		};
 
-                {
-                    type === "service" &&
-                    <span className="service-btn">
-                        <label
-                            htmlFor={serviceName + "-" + (type || "service") + "-" + "select-all"}>
-                            Select / deselect all
+		return (
+			<div
+				id={serviceName + "-" + (type || "service")}
+				className={"service-container " + serviceName + "-"}>
+
+				{
+					// To not break old links to #:userId-ws
+					isWsUserIdEndpoint && <div id=":userId-ws" />
+				}
+				<a href={"#" + serviceName + "-" + (type || "service")}><h2>{serviceName}</h2></a>
+
+				{
+					type === "service" &&
+					<span className="service-btn">
+						<label
+							htmlFor={serviceName + "-" + (type || "service") + "-" + "select-all"}>
+							Select / deselect all
                         </label> <input
-                            id={serviceName + "-" + (type || "service") + "-" + "select-all"}
-                            onChange={e => this.checkAll()}
-                            checked={this.state.checked}
-                            type="checkbox" /> |
+							id={serviceName + "-" + (type || "service") + "-" + "select-all"}
+							onChange={e => this.checkAll()}
+							checked={this.state.checked}
+							type="checkbox" /> | <a href={`/service-client/${serviceName}/ts?subjects=${encodeURIComponent(this.getCheckedEndpoints())}`}><button className="action"><img src="https://www.typescriptlang.org/assets/images/icons/android-chrome-192x192.png" height="15px" style={{ marginBottom: 3 }} /><span className="glyphicon glyphicon-download" style={{ top: "-7px" }}></span></button></a><a href={`/service-client/${serviceName}/js?subjects=${encodeURIComponent(this.getCheckedEndpoints())}`}><button className="action"><img src="http://seravo.fi/uploads/seravo/2013/06/JavaScript-logo.png" height="15px" style={{ marginBottom: 3 }} /><span className="glyphicon glyphicon-download" style={{ top: "-7px" }}></span></button></a>
 
-                        <a href={`/service-client/${serviceName}?subjects=${encodeURIComponent(this.getCheckedEndpoints())}`}>
-                            <button className="action">Download service client <span className="glyphicon glyphicon-download"></span></button>
-                        </a>
-                    </span>
-                }
+					</span>
+				}
 
-                {this.getEndpoints()}
+				{this.getEndpoints()}
 
-            </div>
-        );
-    }
+			</div>
+		);
+	}
 
-    onCheckboxChecked = (e) => {
-        this.setState({ checkboxes: { ...this.state.checkboxes, [e.target.name]: e.target.checked }, checked: false });
-    }
+	onCheckboxChecked = (e) => {
+		this.setState({ checkboxes: { ...this.state.checkboxes, [e.target.name]: e.target.checked }, checked: false });
+	}
 
     /**
      * Prepares all endpoints within this category
      */
-    getEndpoints() {
-        const { endpoints, allEndpoints, type } = this.props;
+	getEndpoints() {
+		const { endpoints, allEndpoints, type } = this.props;
 
-        return endpoints
-            .filter(endpoint => !endpoint.hidden)
-            .map(endpoint => {
-                const schemas = endpoint.schemas
-                    .filter(schema => {
-                        if (schema) {
-                            switch (true) {
-                                case schema.id === endpoint.requestSchema:
-                                case schema.id === endpoint.responseSchema:
-                                case endpoint.requestSchema && typeof endpoint.requestSchema === "object" && schema.id === endpoint.requestSchema.id:
-                                case endpoint.responseSchema && typeof endpoint.responseSchema && schema.id === endpoint.responseSchema.id:
-                                    return schema;
-                            }
-                        }
-                    });
+		return endpoints
+			.filter(endpoint => !endpoint.hidden)
+			.map(endpoint => {
+				const schemas = endpoint.schemas
+					.filter(schema => {
+						if (schema) {
+							switch (true) {
+								case schema.id === endpoint.requestSchema:
+								case schema.id === endpoint.responseSchema:
+								case endpoint.requestSchema && typeof endpoint.requestSchema === "object" && schema.id === endpoint.requestSchema.id:
+								case endpoint.responseSchema && typeof endpoint.responseSchema && schema.id === endpoint.responseSchema.id:
+									return schema;
+							}
+						}
+					});
 
-                if (endpoint.requestSchema && typeof endpoint.requestSchema === "object") {
-                    if (!schemas.find(schema => schema.id === endpoint.requestSchema.id))
-                        schemas.push(endpoint.requestSchema);
+				if (endpoint.requestSchema && typeof endpoint.requestSchema === "object") {
+					if (!schemas.find(schema => schema.id === endpoint.requestSchema.id))
+						schemas.push(endpoint.requestSchema);
 
-                    endpoint.requestSchema = endpoint.requestSchema.id;
-                }
+					endpoint.requestSchema = endpoint.requestSchema.id;
+				}
 
-                if (endpoint.responseSchema && typeof endpoint.responseSchema === "object") {
-                    if (!schemas.find(schema => schema.id === endpoint.responseSchema.id))
-                        schemas.push(endpoint.responseSchema);
+				if (endpoint.responseSchema && typeof endpoint.responseSchema === "object") {
+					if (!schemas.find(schema => schema.id === endpoint.responseSchema.id))
+						schemas.push(endpoint.responseSchema);
 
-                    endpoint.responseSchema = endpoint.responseSchema.id;
-                }
+					endpoint.responseSchema = endpoint.responseSchema.id;
+				}
 
-                return (
-                    <React.Fragment key={`endpoint-${endpoint.subject}-${endpoint.instanceId}`}>
-                        <hr />
-                        <EndpointDetailsComponent
-                            type={type}
-                            endpoint={endpoint}
-                            schemas={schemas}
-                            allEndpoints={allEndpoints}
-                            onCheck={e => this.onCheckboxChecked(e)}
-                            checked={this.state.checkboxes[endpoint.subject]}
-                        />
-                    </React.Fragment>
-                )
-            });
-    }
+				return (
+					<React.Fragment key={`endpoint-${endpoint.subject}-${endpoint.instanceId}`}>
+						<hr />
+						<EndpointDetailsComponent
+							type={type}
+							endpoint={endpoint}
+							schemas={schemas}
+							allEndpoints={allEndpoints}
+							onCheck={e => this.onCheckboxChecked(e)}
+							checked={this.state.checkboxes[endpoint.subject]}
+						/>
+					</React.Fragment>
+				)
+			});
+	}
 }

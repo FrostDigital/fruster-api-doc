@@ -70,8 +70,9 @@ function startServer() {
 		res.json({ endpoints });
 	});
 
-	app.get("/service-client/:serviceName", async (req, res) => {
+	app.get("/service-client/:serviceName/:type", async (req, res) => {
 		try {
+			const serviceClientType = req.params.type;
 			const type = "service";
 			const serviceName = req.params.serviceName;
 
@@ -85,10 +86,15 @@ function startServer() {
 			const serviceClientGenerator = new ServiceClientGenerator(options);
 			const className = ViewUtils.replaceAll(_.startCase(serviceName), " ", "") + "Client";
 
-			const file = serviceClientGenerator.toJavascriptClass();
+			let file;
+
+			if (serviceClientType === "js")
+				file = serviceClientGenerator.toJavascriptClass();
+			else if (serviceClientType === "ts")
+				file = serviceClientGenerator.toTypescriptClass();
 
 			res.setHeader("Content-type", "application/javascript");
-			res.setHeader("Content-disposition", `attachment; filename=${className}.js`);
+			res.setHeader("Content-disposition", `attachment; filename=${className}.${serviceClientType}`);
 
 			res.end(file);
 		} catch (err) {

@@ -24,6 +24,20 @@ const _ = require("lodash");
 *TODO: Make it impossible for two functions to get the same name (This will not happen very often)
 */
 
+const typescriptDataTypes = [
+	"Boolean",
+	"Number",
+	"String",
+	"Array",
+	"Tuple",
+	"Enum",
+	"Any",
+	"Void",
+	"Null",
+	"Undefined",
+	"Never"
+];
+
 const ADDITIONAL_PROPERTIES_INTERNAL = "$INTERNAL_ADDITIONAL_PROPERTIES";
 const ADDITIONAL_PROPERTIES_OUTPUT = "additionalProperties";
 
@@ -40,6 +54,9 @@ class ServiceClientGenerator {
 	 * @property {String} functionVariableName
 	 */
 
+	/** @type {Object<String, TypeDef>} */
+	customTypeDefs = {};
+
 	/**
 	 * @param {Object} options
 	 * @param {String} options.serviceName
@@ -47,8 +64,6 @@ class ServiceClientGenerator {
 	 * @param {String} options.subjects
 	 */
 	constructor(options) {
-		this.customTypeDefs = {};
-
 		/** @type {Array<Endpoint>} */
 		this.endpoints = [];
 
@@ -83,6 +98,45 @@ class ServiceClientGenerator {
 	}
 
 	// TODO: add toTypescriptClass!
+	// TODO: Arrays for interfaces
+
+	/**
+ * Converts all data to a javascript service client class
+ */
+	toTypescriptClass() {
+		const typeDefs = Object.keys(this.customTypeDefs).map(key => this.customTypeDefs[key].toTypescriptClass());
+		const endpoints = this.endpoints.map(endpoint => endpoint.toTypescriptClass());
+
+		this.endpoints.forEach(endpoint => typeDefs.push(endpoint.endpointInterface));
+
+		const classString = `const bus = require("fruster-bus");
+
+	${typeDefs.join("\n")}
+
+/**
+ * Note: this service client was generated automatically by api doc @ ${new Date().toJSON()}
+ */
+export default class ${this.className} {
+
+	/**
+	 * All endpoints
+	 */
+	static get endpoints() {
+
+		return {
+
+${this.endpointConstants.map(endpointConstant => `			${endpointConstant.constantName}: "${endpointConstant.subject}"`).join(",\n")}
+
+		};
+
+	}
+
+
+${endpoints.join("\n")}
+}`;
+
+		return this._formatTypecript(classString);
+	}
 
 	/**
 	 * Converts all data to a javascript service client class
@@ -117,6 +171,24 @@ ${endpoints.join("\n")}
 module.exports = ${this.className};`;
 
 		return this._formatJavascript(classString);
+	}
+
+	/**
+	 * Fixes faulty formatting
+	 *
+	 * @param {String} string
+	 * @return {String}
+	 */
+	_formatTypecript(string) {
+		string = string.split("\t/**\n\n").join("\t/**\n"); // removes new empty lines within comment blocks
+		string = string.split("\t/**\n	 *\n").join("\t/**\n"); // removes double new lines in comments
+		string = string.split("{\n\t\t\n\t\treturn ").join("{\n	\treturn "); // removes new lines before return statement in functions
+		string = string.split(ADDITIONAL_PROPERTIES_INTERNAL).join(ADDITIONAL_PROPERTIES_OUTPUT); // replaces the internal naming of additionalProperties to output format
+
+		if (string.includes("log.warn") || string.includes("log.error") || string.includes("log.debug")) // adds fruster-log require if fruster-log is used anywhere
+			string = "const log = require(\"fruster-log\");\n" + string;
+
+		return string;
 	}
 
 	/**
@@ -399,7 +471,17 @@ class TypeDef {
 		this._type = "_TypeDef";
 	}
 
-	/**s
+	toTypescriptClass() {
+		const typeDefProperties = this.properties.map(typeDefProperty => typeDefProperty.toTypescriptClass());
+
+		return `/** ${this.description || ""} */
+export interface ${this.name} {
+${typeDefProperties.length > 0 ? typeDefProperties.join("\n") : ""}
+}
+`;
+	}
+
+	/**
 	 * Converts all data to a javascript service client class
 	 */
 	toJavascriptClass() {
@@ -430,6 +512,38 @@ class TypeDefProperty {
 		this.description = parameter.description;
 		this.required = !!parameter.required || parameter.type && parameter.type.toLowerCase && parameter.type.toLowerCase().includes("null");
 		this._type = "_TypeDefProperty";
+	}
+
+	/**
+	 * Converts all data to a typescript service client class
+	 */
+	toTypescriptClass() {
+		let typeString = "";
+
+		if (Array.isArray(this.type)) {
+			typeString = this.type
+				.filter(type => type !== "null")
+				.map(type => Utils.typeToTitleCase(type)).join("|");
+		} else if (!this.type || this.type === "")
+			typeString = "any";
+		else
+			typeString = Utils.typeToTitleCase(this.type);
+
+		if (["Integer", "Float"].includes(typeString))
+			typeString = "Number";
+
+		if (typescriptDataTypes.includes(typeString))
+			typeString = typeString.toLowerCase();
+
+		// return `	 * @property {${typeString}${!this.required ? "=" : ""}} ${this.name} ${this.description || ""}`;
+		const description = `	/** ${this.description} */
+`;
+		let declaration = `	${this.name}${!this.required ? "?" : ""}: ${typeString};`;
+
+		if (this.description)
+			declaration = description + declaration;
+
+		return declaration;
 	}
 
 	/**
@@ -518,10 +632,88 @@ class Endpoint {
 		this.subject = subject;
 
 		this.params = Utils.sortParams(params);
+		/** @type {Array<Parameter>} */
 		this.params = [new Parameter("reqId", "string", "the request id", true)].concat(this.params);
 
 		this._type = "_Endpoint";
+
+		this.endpointInterface = "";
 	}
+
+	/**
+	 * Converts all data to a javascript service client class
+	 */
+	toTypescriptClass() {
+		const functionParams = `${getParamsList(this.params)}`;
+		const requestBodyParams = `${getParamsList(this.params.slice(1), true)}`;
+		const returnType = `Promise<${getReturnType(this.returnType)}>`;
+		const deprecatedReasonString = this.deprecatedReason ? `	 * @deprecated ${this.deprecatedReason}` : "";
+
+		this.endpointInterface = `
+export interface ${Utils.toTitleCase(this.endpointName)} {
+	${this.params.map(param => param.toTypescriptClass()).join("\n")}
+}`;
+
+		return `	/**
+${deprecatedReasonString}
+	 *
+	 * ${this.description || ""}
+	 */
+	static async ${this.endpointName}({ ${functionParams} }: ${Utils.toTitleCase(this.endpointName)}): ${returnType} {
+		${this.deprecatedReason ? `log.warn("Using deprecated endpoint '${this.endpointName}' : ${this.subject}")` : ""}
+		return (await bus.request({
+			subject: ${this.urlConstant},
+			message: {
+				reqId${requestBodyParams.length > 0 ? `,
+				data: {
+					${requestBodyParams}
+				}` : ""}
+			}
+		})).data;
+	}
+	`;
+
+		/**
+		 * @param {Array<Parameter>} params
+		 * @param {Boolean=} isRequestBody
+		 */
+		function getParamsList(params, isRequestBody) {
+			return params.filter(param => !param.name.includes(".")).map((param, i) => {
+				if (param.name === ADDITIONAL_PROPERTIES_INTERNAL) {
+					if (isRequestBody)
+						return ` ...${ADDITIONAL_PROPERTIES_OUTPUT}`
+					else
+						return ` ${ADDITIONAL_PROPERTIES_OUTPUT}`;
+				}
+
+				return `${i > 0 ? " " : ""}${Utils.replaceReservedKeyword(param.name, isRequestBody)}`
+			});
+		}
+
+		/**
+		 * @param {String|Object} returnType
+		 */
+		function getReturnType(returnType) {
+			let inputType;
+
+			if (returnType) {
+				if (returnType.name)
+					inputType = returnType.name;
+				else
+					inputType = returnType;
+			} else
+				inputType = "Void";
+
+			if (inputType === "Object")
+				inputType = "any";
+
+			if (typescriptDataTypes.includes(inputType))
+				return inputType.toLowerCase();
+			else
+				return Utils.typeToTitleCase(inputType);
+		}
+	}
+
 
 	/**
 	 * Converts all data to a javascript service client class
@@ -611,6 +803,56 @@ class Parameter {
 		this.format = format || null;
 		this.parameterEnum = parameterEnum;
 		this._type = "_Paramter";
+	}
+
+	/**
+	 * Converts all data to a javascript service client class
+	 */
+	toTypescriptClass() {
+		let typeString = "";
+
+		if (Array.isArray(this.type)) {
+			typeString = this.type
+				.filter(type => type !== "null")
+				.map(type => {
+					if (type === "string" && this.format === "date-time")
+						return "Date";
+					else
+						return type;
+				})
+				.map(type => Utils.typeToTitleCase(type)).join("|");
+		} else {
+			if (this.type === "string" && this.format === "date-time")
+				typeString = "Date";
+			else if (this.type === "string" && !!this.parameterEnum && this.parameterEnum.length)
+				typeString = `(${this.parameterEnum.map(e => `"${e}"`).join("|")})`;
+			else
+				typeString = Utils.typeToTitleCase(this.type);
+		}
+
+		if (["Integer", "Float"].includes(typeString))
+			typeString = "Number";
+
+		if (typeString === "Any")
+			typeString = "any";
+
+		if (this.name === ADDITIONAL_PROPERTIES_INTERNAL)
+			this.name = ADDITIONAL_PROPERTIES_OUTPUT;
+
+		if (typescriptDataTypes.includes(typeString))
+			typeString = typeString.toLowerCase();
+
+		// return `	 * @param {${typeString}${!this.required ? "=" : ""}} param0.${Utils.replaceReservedKeyword(this.name)} ${this.description || ""}`;
+
+		const description = `	/** ${this.description} */
+`;
+		let output = `	${Utils.replaceReservedKeyword(this.name)}${!this.required ? "?" : ""}: ${typeString};
+`;
+
+		if (this.description)
+			output = description + output;
+
+		return output;
 	}
 
 	/**
