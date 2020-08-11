@@ -81,22 +81,55 @@ export default class EndpointContainer extends React.Component {
 					// To not break old links to #:userId-ws
 					isWsUserIdEndpoint && <div id=":userId-ws" />
 				}
-				<a href={"#" + serviceName + "-" + (type || "service")}><h2>{serviceName}</h2></a>
+				<div>
+					<a href={"#" + serviceName + "-" + (type || "service")}><h2>{serviceName}</h2></a>
 
-				{
-					type === "service" &&
-					<span className="service-btn">
-						<label
-							htmlFor={serviceName + "-" + (type || "service") + "-" + "select-all"}>
-							Select / deselect all
+					{
+						type === "service" &&
+						<span className="service-btn">
+							<label
+								htmlFor={serviceName + "-" + (type || "service") + "-" + "select-all"}>
+								Select / deselect all
                         </label> <input
-							id={serviceName + "-" + (type || "service") + "-" + "select-all"}
-							onChange={e => this.checkAll()}
-							checked={this.state.checked}
-							type="checkbox" /> | <a href={`/service-client/${serviceName}/ts?subjects=${encodeURIComponent(this.getCheckedEndpoints())}`}><button className="action"><img src="https://www.typescriptlang.org/assets/images/icons/android-chrome-192x192.png" height="15px" style={{ marginBottom: 3 }} /><span className="glyphicon glyphicon-download" style={{ top: "-7px" }}></span></button></a><a href={`/service-client/${serviceName}/js?subjects=${encodeURIComponent(this.getCheckedEndpoints())}`}><button className="action"><img src="http://seravo.fi/uploads/seravo/2013/06/JavaScript-logo.png" height="15px" style={{ marginBottom: 3 }} /><span className="glyphicon glyphicon-download" style={{ top: "-7px" }}></span></button></a>
+								id={serviceName + "-" + (type || "service") + "-" + "select-all"}
+								onChange={e => this.checkAll()}
+								checked={this.state.checked}
+								type="checkbox" /> &nbsp;|
 
-					</span>
-				}
+							<a
+								href={`/service-client/${serviceName}/ts?subjects=${encodeURIComponent(this.getCheckedEndpoints())}`}
+								title="Download ts service client">
+								<button
+									className="action">
+									<img
+										src="assets/ts.png"
+										height="15px"
+										style={{ marginBottom: 3 }} />
+									<span
+										className="glyphicon glyphicon-download"
+										style={{ top: "-7px" }}>
+									</span>
+								</button>
+							</a>
+							<a
+								href={`/service-client/${serviceName}/js?subjects=${encodeURIComponent(this.getCheckedEndpoints())}`}
+								title="Download js service client">
+								<button
+									className="action">
+									<img
+										src="assets/js.png"
+										height="15px"
+										style={{ marginBottom: 3 }} />
+									<span
+										className="glyphicon glyphicon-download"
+										style={{ top: "-7px" }}>
+									</span>
+								</button>
+							</a>
+
+						</span>
+					}
+				</div>
 
 				{this.getEndpoints()}
 

@@ -101,7 +101,7 @@ class ServiceClientGenerator {
 	// TODO: Arrays for interfaces
 
 	/**
- * Converts all data to a javascript service client class
+ * Converts all data to a typescript service client class
  */
 	toTypescriptClass() {
 		const typeDefs = Object.keys(this.customTypeDefs).map(key => this.customTypeDefs[key].toTypescriptClass());

@@ -2,6 +2,7 @@ import hljs from "highlight.js";
 import React from "react";
 import ViewUtils from "../../../utils/ViewUtils";
 import CopyToClipboardComponent from "../copy-to-clipboard/CopyToClipboardComponent";
+import jsf from "json-schema-faker";
 
 hljs.configure({ languages: ["json"] });
 
@@ -29,32 +30,47 @@ function cssFriendlify(string) {
 
 export default class JsonSchemaModalComponent extends React.Component {
 
-	constructor(props) {
-		super(props);
-
-		if (this.props.schema) {
-			// @ts-ignore
-			this.state = this.state || {};
-
-			this.state.schema = this.props.schema;
-
-			const schemaToJson = Object.assign({}, this.state.schema);
-			this.state.jsonSample = schemaToJson && schemaToJson.sample ? JSON.stringify(ViewUtils.sortObject(schemaToJson.sample), null, 2) : undefined;
-
-			if (!props.isError)
-				delete schemaToJson.sample;
-
-			this.state.jsonSchema = JSON.stringify(ViewUtils.sortObject(schemaToJson), null, 2);
-		} else
-			this.state.schema = {};
-	}
-
-	// @ts-ignore
 	state = {
 		colorized: false,
 		modal: {},
-		currentTabIndex: getTabFromHash()
+		currentTabIndex: getTabFromHash(),
+		refreshSample: false // quick hack
 	};
+
+	componentDidMount() {
+		const newState = this.state || {};
+
+		if (this.props.schema) {
+			// @ts-ignore
+			newState.schema = this.props.schema;
+
+			const schemaToJson = Object.assign({}, newState.schema);
+			newState.jsonSample = schemaToJson && schemaToJson.sample ? JSON.stringify(ViewUtils.sortObject(schemaToJson.sample), null, 2) : undefined;
+
+			if (!this.props.isError)
+				delete schemaToJson.sample;
+
+			newState.jsonSchema = JSON.stringify(ViewUtils.sortObject(schemaToJson), null, 2);
+		} else
+			newState.schema = {};
+
+		this.setState(newState);
+	}
+
+	async refreshSample() {
+		const { schema, currentTabIndex } = this.state;
+		const schemaToJson = Object.assign({}, schema);
+		const generatedSample = jsf.generate(schemaToJson);
+		const newJonSample = schemaToJson && generatedSample ? JSON.stringify(ViewUtils.sortObject(generatedSample), null, 2) : undefined;
+
+		await this.setState({ jsonSample: newJonSample, refreshSample: true });
+
+		this.forceUpdate();
+
+		this.setState({ refreshSample: false });
+
+		this.goToTab(currentTabIndex);
+	}
 
 	async setInitialOpenState() {
 		const hashIndex = getTabFromHash();
@@ -143,9 +159,11 @@ export default class JsonSchemaModalComponent extends React.Component {
 		if (!this.state.jsonSample)
 			return <span />;
 
+		if (this.state.refreshSample)
+			return <span />;
+
 		return (
 			<React.Fragment>
-
 				<button
 					style={{
 						display: "inline",
@@ -160,6 +178,19 @@ export default class JsonSchemaModalComponent extends React.Component {
 						copyData={this.state.jsonSample} />
 
 					Copy to clipboard <span className="glyphicon glyphicon-copy"></span>
+
+				</button>
+
+				<button
+					style={{
+						display: "inline",
+						marginTop: "20px"
+					}}
+					className="action btn-copy"
+					id="copy-sample"
+					onClick={e => this.refreshSample()}>
+
+					Refresh sample <span className="glyphicon glyphicon-refresh"></span>
 
 				</button>
 
