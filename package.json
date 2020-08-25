@@ -20,7 +20,7 @@
 		"compression": "1.7.4",
 		"cookie-parser": "^1.4.4",
 		"express": "^4.16.3",
-		"fruster-bus": "0.5.10",
+		"fruster-bus": "0.7.11",
 		"fruster-health": "^0.0.14",
 		"fruster-log": "^0.0.18",
 		"highlight.js": "^9.12.0",
@@ -33,7 +33,8 @@
 		"react": "^16.8.6",
 		"react-dom": "^16.8.6",
 		"request": "^2.88.0",
-		"uuid": "3.1.0"
+		"uuid": "3.1.0",
+		"json-schema-to-typescript": "9.1.1"
 	},
 	"devDependencies": {
 		"babel-core": "^6.26.0",

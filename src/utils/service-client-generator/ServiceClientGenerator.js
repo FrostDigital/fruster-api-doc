@@ -1,3 +1,13 @@
+import { compile as compileTypescriptInterface } from "json-schema-to-typescript"; // TODO: !
+import TypeDef from "./classes/TypeDef";
+import Endpoint from "./classes/Endpoint";
+import Utils from "./classes/Utils";
+import { ADDITIONAL_PROPERTIES_INTERNAL, ADDITIONAL_PROPERTIES_OUTPUT } from "./constants";
+import ArrayParameter from "./classes/ArrayParameter";
+import TypeDefArrayProperty from "./classes/TypeDefArrayProperty";
+import Parameter from "./classes/Parameter";
+import TypeDefProperty from "./classes/TypeDefProperty";
+
 const ViewUtils = require("../ViewUtils");
 const _ = require("lodash");
 
@@ -24,27 +34,10 @@ const _ = require("lodash");
 *TODO: Make it impossible for two functions to get the same name (This will not happen very often)
 */
 
-const typescriptDataTypes = [
-	"Boolean",
-	"Number",
-	"String",
-	"Array",
-	"Tuple",
-	"Enum",
-	"Any",
-	"Void",
-	"Null",
-	"Undefined",
-	"Never"
-];
-
-const ADDITIONAL_PROPERTIES_INTERNAL = "$INTERNAL_ADDITIONAL_PROPERTIES";
-const ADDITIONAL_PROPERTIES_OUTPUT = "additionalProperties";
-
 /**
  * NOTE: all tabs and spaces in the strings are there because they should be there 😁
  */
-class ServiceClientGenerator {
+module.exports = class ServiceClientGenerator {
 
 	/**
 	 * @typedef {Object} EndpointConstant
@@ -70,6 +63,8 @@ class ServiceClientGenerator {
 		/** @type {Array<EndpointConstant>} */
 		this.endpointConstants = [];
 
+		this.jsonSchemas = [];
+
 		this.serviceName = options.serviceName;
 		this.className = ViewUtils.replaceAll(Utils.toTitleCase(this.serviceName), " ", "") + "Client";
 
@@ -88,30 +83,106 @@ class ServiceClientGenerator {
 			const description = endpoint.docs ? endpoint.docs.description : "";
 			const constantsWithSameName = this.endpointConstants.filter(c => c.constantName === constant.constantName);
 
+			if (requestSchema)
+				this.jsonSchemas.push(requestSchema);
+
+			if (responseSchema)
+				this.jsonSchemas.push(responseSchema);
+
 			if (constantsWithSameName.length > 0)
 				constant.constantName = constant.constantName + "_" + constantsWithSameName.length;
 
 			this.endpointConstants.push(constant);
 
-			this.endpoints.push(new Endpoint(constantNameCombined, constant.functionVariableName, endpointParameters, description, returnType, endpoint.deprecated, endpoint.subject));
+			this.endpoints.push(
+				new Endpoint(constantNameCombined,
+					constant.functionVariableName,
+					endpointParameters,
+					description,
+					returnType,
+					endpoint.deprecated,
+					endpoint.subject,
+					requestSchema,
+					responseSchema
+				));
 		});
 	}
 
-	// TODO: add toTypescriptClass!
 	// TODO: Arrays for interfaces
+	// TODO: Object to any
+	// TODO: CLEAN UP
 
 	/**
  * Converts all data to a typescript service client class
  */
-	toTypescriptClass() {
+	async toTypescriptClass() {
+		/** @type {Array<TypeDef>} */
 		const typeDefs = Object.keys(this.customTypeDefs).map(key => this.customTypeDefs[key].toTypescriptClass());
 		const endpoints = this.endpoints.map(endpoint => endpoint.toTypescriptClass());
 
+		let typescriptInterfaces = [];
+		const uniqueSchemaIds = new Set(this.jsonSchemas.map(schema => schema.id));
+
+		const schemasToConvert = this.jsonSchemas.filter(schema => {
+			if (uniqueSchemaIds.has(schema.id)) {
+				uniqueSchemaIds.delete(schema.id);
+				return true;
+			} else
+				return false;
+		});
+
+		const typescriptSchemas = [];
+
+		for (const schema of schemasToConvert) {
+			const typescriptInterface = await compileTypescriptInterface(schema, schema.id, {
+				style: {
+					singleQuote: false,
+					useTabs: true,
+					semi: true
+				},
+				unknownAny: false,
+				declareExternallyReferenced: true,
+				bannerComment: null
+			});
+
+			if (!typescriptInterfaces.find(str => {
+				/**
+				 * json-schema-to-typescript makes interfaces out of all sub-schemas, like User if UserResponse has `users: User, totalCount: number`
+				 * So we have to make sure we don't add them multiple times.
+				 *
+				 * The generated interface string looks something like:
+				 *	//
+				 *	/ Request to resend email verification email.
+				 *	//
+				 *	export interface ResendVerificationEmailRequest {
+				 *		//
+				 *		/ The email address to resent the verification email to.
+				 *		//
+				 *		email?: string;
+				 *	}
+				 *
+				 * So splitting on export will create two substrings, one before and one after export.
+				 * Splitting on space after that will result in:
+				 * 	 - export
+				 * 	 - interface
+				 * 	 - ResendVerificationEmailRequest
+				 *
+				 * Which means index 2 of that array will be the name of the interface, we then compare that to the current interface.
+				*/
+				return typescriptInterface.split("export")[1].split(" ")[2] === str.split("export")[1].split(" ")[2];
+			})) {
+				typescriptInterfaces.push(typescriptInterface);
+				typescriptSchemas.push(typescriptInterface.split("export")[1].split(" ")[2]);
+			}
+		}
+
+		// @ts-ignore
 		this.endpoints.forEach(endpoint => typeDefs.push(endpoint.endpointInterface));
 
-		const classString = `const bus = require("fruster-bus");
+		const classString = `import bus from "fruster-bus";
 
-	${typeDefs.join("\n")}
+${typescriptInterfaces.join("\n")}
+${typeDefs.filter(def => !typescriptSchemas.includes(def.split("export")[1].split(" ")[2])).join("\n")}
 
 /**
  * Note: this service client was generated automatically by api doc @ ${new Date().toJSON()}
@@ -135,7 +206,7 @@ ${this.endpointConstants.map(endpointConstant => `			${endpointConstant.constant
 ${endpoints.join("\n")}
 }`;
 
-		return this._formatTypecript(classString);
+		return this._formatTypescript(classString);
 	}
 
 	/**
@@ -179,11 +250,13 @@ module.exports = ${this.className};`;
 	 * @param {String} string
 	 * @return {String}
 	 */
-	_formatTypecript(string) {
+	_formatTypescript(string) {
 		string = string.split("\t/**\n\n").join("\t/**\n"); // removes new empty lines within comment blocks
 		string = string.split("\t/**\n	 *\n").join("\t/**\n"); // removes double new lines in comments
 		string = string.split("{\n\t\t\n\t\treturn ").join("{\n	\treturn "); // removes new lines before return statement in functions
 		string = string.split(ADDITIONAL_PROPERTIES_INTERNAL).join(ADDITIONAL_PROPERTIES_OUTPUT); // replaces the internal naming of additionalProperties to output format
+		string = string.split("/**  */\n").join("");  // removes empty comments
+		string = string.split("Object;").join("any;"); // TODO: Quick hack to convert type Object to type any
 
 		if (string.includes("log.warn") || string.includes("log.error") || string.includes("log.debug")) // adds fruster-log require if fruster-log is used anywhere
 			string = "const log = require(\"fruster-log\");\n" + string;
@@ -289,6 +362,7 @@ module.exports = ${this.className};`;
 		if (!schema || !schema.id)
 			return [];
 
+		/** @type {Array<Parameter>} */
 		const parameters = [];
 		const properties = getProperties();
 
@@ -303,6 +377,7 @@ module.exports = ${this.className};`;
 			if (!property)
 				continue;
 
+			/** @type {Parameter}*/
 			let parameter;
 
 			if (property.type === "array") {
@@ -450,537 +525,5 @@ module.exports = ${this.className};`;
 			functionVariableName
 		};
 	}
-
-}
-
-module.exports = ServiceClientGenerator;
-
-class TypeDef {
-
-	/**
-	 * @param {String} name
-	 * @param {String} type
-	 * @param {String} description
-	 * @param {Array<TypeDefProperty>} properties
-	 */
-	constructor(name, type, description, properties) {
-		this.name = Utils.toTitleCase(name);
-		this.type = type;
-		this.description = description;
-		this.properties = properties;
-		this._type = "_TypeDef";
-	}
-
-	toTypescriptClass() {
-		const typeDefProperties = this.properties.map(typeDefProperty => typeDefProperty.toTypescriptClass());
-
-		return `/** ${this.description || ""} */
-export interface ${this.name} {
-${typeDefProperties.length > 0 ? typeDefProperties.join("\n") : ""}
-}
-`;
-	}
-
-	/**
-	 * Converts all data to a javascript service client class
-	 */
-	toJavascriptClass() {
-		const typeDefProperties = this.properties.map(typeDefProperty => typeDefProperty.toJavascriptClass());
-
-		return `	/**
-	 * @typedef {${Utils.typeToTitleCase(this.type)}} ${this.name} ${this.description || ""}
-	 *
-${typeDefProperties.length > 0 ? typeDefProperties.join("\n") : ""}
-	 */
-`;
-	}
-
-}
-
-class TypeDefProperty {
-
-	/**
-	 * @param {Object} parameter
-	 * @param {String} parameter.name
-	 * @param {String} parameter.type
-	 * @param {String} parameter.description
-	 * @param {Boolean=} parameter.required
-	 */
-	constructor(parameter) {
-		this.name = parameter.name;
-		this.type = parameter.type;
-		this.description = parameter.description;
-		this.required = !!parameter.required || parameter.type && parameter.type.toLowerCase && parameter.type.toLowerCase().includes("null");
-		this._type = "_TypeDefProperty";
-	}
-
-	/**
-	 * Converts all data to a typescript service client class
-	 */
-	toTypescriptClass() {
-		let typeString = "";
-
-		if (Array.isArray(this.type)) {
-			typeString = this.type
-				.filter(type => type !== "null")
-				.map(type => Utils.typeToTitleCase(type)).join("|");
-		} else if (!this.type || this.type === "")
-			typeString = "any";
-		else
-			typeString = Utils.typeToTitleCase(this.type);
-
-		if (["Integer", "Float"].includes(typeString))
-			typeString = "Number";
-
-		if (typescriptDataTypes.includes(typeString))
-			typeString = typeString.toLowerCase();
-
-		// return `	 * @property {${typeString}${!this.required ? "=" : ""}} ${this.name} ${this.description || ""}`;
-		const description = `	/** ${this.description} */
-`;
-		let declaration = `	${this.name}${!this.required ? "?" : ""}: ${typeString};`;
-
-		if (this.description)
-			declaration = description + declaration;
-
-		return declaration;
-	}
-
-	/**
-	 * Converts all data to a javascript service client class
-	 */
-	toJavascriptClass() {
-		let typeString = "";
-
-		if (Array.isArray(this.type)) {
-			typeString = this.type
-				.filter(type => type !== "null")
-				.map(type => Utils.typeToTitleCase(type)).join("|");
-		} else if (!this.type || this.type === "")
-			typeString = "Object";
-		else
-			typeString = Utils.typeToTitleCase(this.type);
-
-		if (["Integer", "Float"].includes(typeString))
-			typeString = "Number";
-
-		return `	 * @property {${typeString}${!this.required ? "=" : ""}} ${this.name} ${this.description || ""}`;
-	}
-
-}
-
-class TypeDefArrayProperty extends TypeDefProperty {
-
-	/**
-	 * @param {Object} parameter
-	 * @param {String} parameter.name
-	 * @param {String} parameter.type
-	 * @param {String} parameter.description
-	 * @param {Boolean=} parameter.required
-	 */
-	constructor(parameter) {
-		super(parameter);
-
-		if (parameter instanceof ArrayParameter)
-			this.params = parameter.params;
-
-		this._type = "_TypeDefArrayProperty";
-	}
-
-	/**
-	 * Converts all data to a javascript service client class
-	 */
-	toJavascriptClass() {
-		let typeString = "";
-
-		if (Array.isArray(this.type)) {
-			typeString = this.type
-				.filter(type => type !== "null")
-				.map(type => Utils.typeToTitleCase(type)).join("|");
-		} else
-			typeString = Utils.typeToTitleCase(this.type);
-
-		let description = this.description;
-
-		if (description === "")
-			description = this.params[0].description;
-
-		if (["Integer", "Float"].includes(typeString))
-			typeString = "Number";
-
-		return `	 * @property {Array<${typeString}>${!this.required ? "=" : ""}} ${this.name} ${description || ""}`;
-	}
-}
-
-class Endpoint {
-
-	/**
-	 * @param {String} urlConstant
-	 * @param {String} endpointName
-	 * @param {Array<Parameter>} params
-	 * @param {String} description
-	 * @param {String|Object|TypeDefProperty} returnType
-	 * @param {String} deprecatedReason
-	 * @param {String} subject
-	 */
-	constructor(urlConstant, endpointName, params, description, returnType, deprecatedReason, subject) {
-		this.endpointName = endpointName;
-		this.urlConstant = urlConstant;
-		this.description = description;
-		this.returnType = returnType;
-		this.deprecatedReason = deprecatedReason;
-		this.subject = subject;
-
-		this.params = Utils.sortParams(params);
-		/** @type {Array<Parameter>} */
-		this.params = [new Parameter("reqId", "string", "the request id", true)].concat(this.params);
-
-		this._type = "_Endpoint";
-
-		this.endpointInterface = "";
-	}
-
-	/**
-	 * Converts all data to a javascript service client class
-	 */
-	toTypescriptClass() {
-		const functionParams = `${getParamsList(this.params)}`;
-		const requestBodyParams = `${getParamsList(this.params.slice(1), true)}`;
-		const returnType = `Promise<${getReturnType(this.returnType)}>`;
-		const deprecatedReasonString = this.deprecatedReason ? `	 * @deprecated ${this.deprecatedReason}` : "";
-
-		this.endpointInterface = `
-export interface ${Utils.toTitleCase(this.endpointName)} {
-	${this.params.map(param => param.toTypescriptClass()).join("\n")}
-}`;
-
-		return `	/**
-${deprecatedReasonString}
-	 *
-	 * ${this.description || ""}
-	 */
-	static async ${this.endpointName}({ ${functionParams} }: ${Utils.toTitleCase(this.endpointName)}): ${returnType} {
-		${this.deprecatedReason ? `log.warn("Using deprecated endpoint '${this.endpointName}' : ${this.subject}")` : ""}
-		return (await bus.request({
-			subject: ${this.urlConstant},
-			message: {
-				reqId${requestBodyParams.length > 0 ? `,
-				data: {
-					${requestBodyParams}
-				}` : ""}
-			}
-		})).data;
-	}
-	`;
-
-		/**
-		 * @param {Array<Parameter>} params
-		 * @param {Boolean=} isRequestBody
-		 */
-		function getParamsList(params, isRequestBody) {
-			return params.filter(param => !param.name.includes(".")).map((param, i) => {
-				if (param.name === ADDITIONAL_PROPERTIES_INTERNAL) {
-					if (isRequestBody)
-						return ` ...${ADDITIONAL_PROPERTIES_OUTPUT}`
-					else
-						return ` ${ADDITIONAL_PROPERTIES_OUTPUT}`;
-				}
-
-				return `${i > 0 ? " " : ""}${Utils.replaceReservedKeyword(param.name, isRequestBody)}`
-			});
-		}
-
-		/**
-		 * @param {String|Object} returnType
-		 */
-		function getReturnType(returnType) {
-			let inputType;
-
-			if (returnType) {
-				if (returnType.name)
-					inputType = returnType.name;
-				else
-					inputType = returnType;
-			} else
-				inputType = "Void";
-
-			if (inputType === "Object")
-				inputType = "any";
-
-			if (typescriptDataTypes.includes(inputType))
-				return inputType.toLowerCase();
-			else
-				return Utils.typeToTitleCase(inputType);
-		}
-	}
-
-
-	/**
-	 * Converts all data to a javascript service client class
-	 */
-	toJavascriptClass() {
-		const functionParams = `${getParamsList(this.params)}`;
-		const requestBodyParams = `${getParamsList(this.params.slice(1), true)}`;
-		const returnType = `Promise<${getReturnType(this.returnType)}>`;
-		const deprecatedReasonString = this.deprecatedReason ? `	 * @deprecated ${this.deprecatedReason}` : "";
-
-		return `	/**
-${deprecatedReasonString}
-	 *
-	 * ${this.description || ""}
-	 *
-	 * @param {Object} param0
-${this.params.map(param => param.toJavascriptClass()).join("\n")}
-	 *
-	 * @return {${returnType}}
-	 */
-	static async ${this.endpointName}({ ${functionParams} }) {
-		${this.deprecatedReason ? `log.warn("Using deprecated endpoint '${this.endpointName}' : ${this.subject}")` : ""}
-		return (await bus.request({
-			subject: ${this.urlConstant},
-			message: {
-				reqId${requestBodyParams.length > 0 ? `,
-				data: {
-					${requestBodyParams}
-				}` : ""}
-			}
-		})).data;
-	}
-	`;
-
-		/**
-		 * @param {Array<Parameter>} params
-		 * @param {Boolean=} isRequestBody
-		 */
-		function getParamsList(params, isRequestBody) {
-			return params.filter(param => !param.name.includes(".")).map((param, i) => {
-				if (param.name === ADDITIONAL_PROPERTIES_INTERNAL) {
-					if (isRequestBody)
-						return ` ...${ADDITIONAL_PROPERTIES_OUTPUT}`
-					else
-						return ` ${ADDITIONAL_PROPERTIES_OUTPUT}`;
-				}
-
-				return `${i > 0 ? " " : ""}${Utils.replaceReservedKeyword(param.name, isRequestBody)}`
-			});
-		}
-
-		/**
-		 * @param {String|Object} returnType
-		 */
-		function getReturnType(returnType) {
-			let inputType;
-
-			if (returnType) {
-				if (returnType.name)
-					inputType = returnType.name;
-				else
-					inputType = returnType;
-			} else
-				inputType = "Void";
-
-			return Utils.typeToTitleCase(inputType);
-		}
-	}
-
-}
-
-class Parameter {
-
-	/**
-	 * @param {String} name
-	 * @param {String} type
-	 * @param {String} description
-	 * @param {Boolean=} required
-	 * @param {String=} format
-	 * @param {Array<String>=} parameterEnum
-	 */
-	constructor(name, type, description, required, format, parameterEnum) {
-		this.name = name;
-		this.type = type || "any";
-		this.description = description;
-		this.required = !!required || type && type.toLowerCase && type.toLowerCase().includes("null");
-		this.format = format || null;
-		this.parameterEnum = parameterEnum;
-		this._type = "_Paramter";
-	}
-
-	/**
-	 * Converts all data to a javascript service client class
-	 */
-	toTypescriptClass() {
-		let typeString = "";
-
-		if (Array.isArray(this.type)) {
-			typeString = this.type
-				.filter(type => type !== "null")
-				.map(type => {
-					if (type === "string" && this.format === "date-time")
-						return "Date";
-					else
-						return type;
-				})
-				.map(type => Utils.typeToTitleCase(type)).join("|");
-		} else {
-			if (this.type === "string" && this.format === "date-time")
-				typeString = "Date";
-			else if (this.type === "string" && !!this.parameterEnum && this.parameterEnum.length)
-				typeString = `(${this.parameterEnum.map(e => `"${e}"`).join("|")})`;
-			else
-				typeString = Utils.typeToTitleCase(this.type);
-		}
-
-		if (["Integer", "Float"].includes(typeString))
-			typeString = "Number";
-
-		if (typeString === "Any")
-			typeString = "any";
-
-		if (this.name === ADDITIONAL_PROPERTIES_INTERNAL)
-			this.name = ADDITIONAL_PROPERTIES_OUTPUT;
-
-		if (typescriptDataTypes.includes(typeString))
-			typeString = typeString.toLowerCase();
-
-		// return `	 * @param {${typeString}${!this.required ? "=" : ""}} param0.${Utils.replaceReservedKeyword(this.name)} ${this.description || ""}`;
-
-		const description = `	/** ${this.description} */
-`;
-		let output = `	${Utils.replaceReservedKeyword(this.name)}${!this.required ? "?" : ""}: ${typeString};
-`;
-
-		if (this.description)
-			output = description + output;
-
-		return output;
-	}
-
-	/**
-	 * Converts all data to a javascript service client class
-	 */
-	toJavascriptClass() {
-		let typeString = "";
-
-		if (Array.isArray(this.type)) {
-			typeString = this.type
-				.filter(type => type !== "null")
-				.map(type => {
-					if (type === "string" && this.format === "date-time")
-						return "Date";
-					else
-						return type;
-				})
-				.map(type => Utils.typeToTitleCase(type)).join("|");
-		} else {
-			if (this.type === "string" && this.format === "date-time")
-				typeString = "Date";
-			else if (this.type === "string" && !!this.parameterEnum && this.parameterEnum.length)
-				typeString = `(${this.parameterEnum.map(e => `"${e}"`).join("|")})`;
-			else
-				typeString = Utils.typeToTitleCase(this.type);
-		}
-
-		if (["Integer", "Float"].includes(typeString))
-			typeString = "Number";
-
-		if (typeString === "Any")
-			typeString = "any";
-
-		if (this.name === ADDITIONAL_PROPERTIES_INTERNAL)
-			this.name = ADDITIONAL_PROPERTIES_OUTPUT;
-
-		return `	 * @param {${typeString}${!this.required ? "=" : ""}} param0.${Utils.replaceReservedKeyword(this.name)} ${this.description || ""}`;
-	}
-
-}
-
-class ArrayParameter extends Parameter {
-
-	/**
-	 * @param {String} name
-	 * @param {String} type
-	 * @param {String} description
-	 * @param {Array<Parameter>} params
-	 * @param {Boolean=} required
-	 */
-	constructor(name, type, description, params, required) {
-		super(name, type, description, required);
-		this.params = params;
-		this.required = !params.filter(p => !p.required) || required;
-		this._type = "_ArrayParamter";
-	}
-
-	/**
-	 * Converts all data to a javascript service client class
-	 */
-	toJavascriptClass() {
-		let typeString = Utils.typeToTitleCase(this.type);
-
-		if (["Integer", "Float"].includes(typeString))
-			typeString = "Number";
-
-		return `	 * @param {Array<${typeString}>${!this.required ? "=" : ""}} param0.${this.name} ${this.description || ""}`;
-	}
-
-}
-
-class Utils {
-
-	static toTitleCase(string) {
-		return _.startCase(string).split(" ").join("");
-	}
-
-	static typeToTitleCase(string) {
-		string = string.charAt(0).toUpperCase() + string.slice(1);
-
-		let output = "";
-
-		for (let i = 0; i < string.length; i++) {
-			const lastChar = i > 0 ? string.charAt(i - 1) : "<";
-			const char = string.charAt(i);
-
-			if (!isLetter(lastChar))
-				output += char.toUpperCase();
-			else
-				output += char;
-		}
-
-		return output;
-
-		function isLetter(str) {
-			return str.length === 1 && !!str.match(/[a-z]/i);
-		}
-	}
-
-	/**
-	 * @param {Array<Parameter>} params
-	 * @return {Array<Parameter>}
-	 */
-	static sortParams(params) {
-		return params.sort((a, b) => {
-			const aVal = a.required ? 1 : 0;
-			const bVal = b.required ? 1 : 0;
-
-			return bVal - aVal;
-		});
-	}
-
-	static get RESERVED_JAVASCRIPT_KEYWORDS() { return ["abstract", "arguments", "await", "boolean", "break", "byte", "case", "catch", "char", "class", "const", "continue", "debugger", "default", "delete", "do", "double", "else", "enum", "eval", "export", "extends", "false", "final", "finally", "float", "for", "function", "goto", "if", "implements", "import", "in", "instanceof", "int", "interface", "let*", "long", "native", "new", "null", "package", "private", "protected", "public", "return", "short", "static", "super*", "switch", "synchronized", "this", "throw", "throws", "transient", "true", "try", "typeof", "var", "void", "volatile", "while", "with", "yield"]; };
-
-	/**
-	 * Replaces reserved keywords with adjusted name to not collide with them.
-	 *
-	 * @param {String} string
-	 * @param {Boolean=} isRequestBody
-	 */
-	static replaceReservedKeyword(string, isRequestBody = false) {
-		if (Utils.RESERVED_JAVASCRIPT_KEYWORDS.includes(string)) {
-			if (isRequestBody)
-				return `"${string}": ${string}Param`;
-			else
-				return `${string}Param`;
-		} else
-			return string;
-	};
 
 }

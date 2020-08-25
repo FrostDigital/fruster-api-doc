@@ -91,7 +91,7 @@ function startServer() {
 			if (serviceClientType === "js")
 				file = serviceClientGenerator.toJavascriptClass();
 			else if (serviceClientType === "ts")
-				file = serviceClientGenerator.toTypescriptClass();
+				file = await serviceClientGenerator.toTypescriptClass();
 
 			res.setHeader("Content-type", "application/javascript");
 			res.setHeader("Content-disposition", `attachment; filename=${className}.${serviceClientType}`);
@@ -130,23 +130,13 @@ function startServer() {
 
 			let metadataResponses = [];
 
-			if (req.query.project) { /** Lets you input an url to log viewer in order to use that to get metadata */
-				const url = `http://${req.query.project}-log-viewer.c4.fruster.se/api/bus/request`;
-
-				console.log("using", url);
-
-				metadataResponses = await utils.httpRequest("POST", url, {
-					maxResponses: 10000,
-					message: {},
-					subject: "metadata"
-				});
-			} else
-				metadataResponses = await bus.requestMany({
-					skipOptionsRequest: true,
-					subject: "metadata",
-					maxResponses: 10000,
-					message: { reqId: uuid.v4() }
-				});
+			metadataResponses = await bus.requestMany({
+				timeout: 3000,
+				skipOptionsRequest: true,
+				subject: "metadata",
+				maxResponses: 10000,
+				message: { reqId: uuid.v4() }
+			});
 
 			let schemasWithErrors;
 			const promises = [];
