@@ -111,6 +111,8 @@ export default class EndpointContainer extends React.Component {
 		const { endpoints } = this.props;
 		const endpointWithServiceDocs = endpoints.find(e => !!e.serviceDocs && e.serviceDocs.label === serviceName);
 
+		console.log({ serviceName, endpointWithServiceDocs });
+
 		if (!!endpointWithServiceDocs)
 			return endpointWithServiceDocs.serviceDocs;
 		else
@@ -120,7 +122,6 @@ export default class EndpointContainer extends React.Component {
 	onCheckboxChecked = (e) => {
 		this.setState({ checkboxes: { ...this.state.checkboxes, [e.target.name]: e.target.checked }, checked: false });
 	}
-
 
 	render() {
 		let { serviceName, type } = this.props;
@@ -132,6 +133,8 @@ export default class EndpointContainer extends React.Component {
 
 		const serviceDocs = this.findServiceDocs(serviceName);
 		let serviceDocsMarkdown;
+
+		console.log(serviceDocs);
 
 		if (serviceDocs)
 			serviceDocsMarkdown = serviceDocs.markdown;

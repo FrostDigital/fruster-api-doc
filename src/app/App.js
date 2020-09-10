@@ -17,6 +17,8 @@ export default class App extends React.Component {
 			+ Object.keys(this.props.endpointsByType.service).length
 			+ Object.keys(this.props.endpointsByType.ws).length;
 
+		console.log(this.props.endpointsByType);
+
 		this.state = {
 			config: this.props.config,
 			backupEndpointsByType: this.props.endpointsByType,

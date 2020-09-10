@@ -4,6 +4,7 @@ import React from "react";
 import { renderToString } from "react-dom/server";
 import App from "./app/App";
 import template from "./template";
+import fetch from "node-fetch";
 
 const express = require("express");
 const cookieParser = require("cookie-parser");
@@ -125,23 +126,12 @@ function startServer() {
 
 			let metadataResponses = [];
 
-			if (req.query.project) { /** Lets you input an url to log viewer in order to use that to get metadata */
-				const url = `http://${req.query.project}-log-viewer.c4.fruster.se/api/bus/request`;
-
-				console.log("using", url);
-
-				metadataResponses = await utils.httpRequest("POST", url, {
-					maxResponses: 10000,
-					message: {},
-					subject: "metadata"
-				});
-			} else
-				metadataResponses = await bus.requestMany({
-					skipOptionsRequest: true,
-					subject: "metadata",
-					maxResponses: 10000,
-					message: { reqId: uuid.v4() }
-				});
+			metadataResponses = await bus.requestMany({
+				skipOptionsRequest: true,
+				subject: "metadata",
+				maxResponses: 10000,
+				message: { reqId: uuid.v4() }
+			});
 
 			let schemasWithErrors;
 			const promises = [];
@@ -312,41 +302,24 @@ async function getReferencedDocumentation(type) {
 
 	// TODO: move to its own function
 	await Promise.all(subjects.map(async (subject) => {
-		return new Promise(async resolve => {
-			const service = endpointsByType[type][subject];
+		const service = endpointsByType[type][subject];
 
-			if (service && service.serviceDocs) {
-				const url = service.serviceDocs.url;
-				const urlWithoutProtocol = url.replace("http://", "").replace("https://", "");
-				const path = urlWithoutProtocol.substring(urlWithoutProtocol.indexOf("/"));
-				const host = urlWithoutProtocol.replace(path, "");
+		if (service && service.serviceDocs) {
+			const url = service.serviceDocs.url;
 
-				await https.get({
-					port: "",
-					host,
-					path,
-					headers: { "Authorization": "token b4edf1bdf7f2874cd8f75881d151473dafc1e222" } // TODO: make it configurable
-				}, (res) => {
-					res.setEncoding("utf8");
+			const markdown = await fetch(url, {
+				method: 'GET',
+				headers: {
+					"Authorization": "token dcf7e78ee032c3835898f58f6587358d7d69754e",
+					"Accept-Encoding": "gzip"
+				},
+				compress: true
+			}).then(res => res.text());
 
-					let markdown = "";
-
-					res.on("data", (chunk) => markdown += chunk);
-
-					res.on("end", () => {
-						endpointsByType[type][subject].serviceDocs.markdown = markdown;
-						resolve();
-					});
-
-					res.on("error", () => {
-						console.warn("ERR: ", subject);
-						resolve();
-					});
-				});
-			} else
-				resolve();
-		});
+			endpointsByType[type][subject].serviceDocs.markdown = markdown;
+		}
 	}));
+
 }
 
 /**
