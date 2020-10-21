@@ -441,9 +441,19 @@ class TypeDefProperty {
 		if (Array.isArray(this.type)) {
 			typeString = this.type
 				.filter(type => type !== "null")
+				.map(type => {
+					console.log("TypeDefProperty", type);
+
+					if (type === "object" || type === "Object")
+						return "?";
+					else if (type === "array" || type === "Array")
+						return "Array<?>";
+					else
+						return type;
+				})
 				.map(type => Utils.typeToTitleCase(type)).join("|");
 		} else if (!this.type || this.type === "")
-			typeString = "Object";
+			typeString = "?";
 		else
 			typeString = Utils.typeToTitleCase(this.type);
 
@@ -482,6 +492,16 @@ class TypeDefArrayProperty extends TypeDefProperty {
 		if (Array.isArray(this.type)) {
 			typeString = this.type
 				.filter(type => type !== "null")
+				.map(type => {
+					console.log("TypeDefArrayProperty", type);
+
+					if (type === "object" || type === "Object")
+						return "?";
+					else if (type === "array" || type === "Array")
+						return "Array<?>";
+					else
+						return type;
+				})
 				.map(type => Utils.typeToTitleCase(type)).join("|");
 		} else
 			typeString = Utils.typeToTitleCase(this.type);
@@ -625,8 +645,12 @@ class Parameter {
 				.map(type => {
 					if (type === "string" && this.format === "date-time")
 						return "Date";
-					else
-						return type;
+					else if (type === "object" || type === "Object")
+						return "?";
+					else if (type === "array" || type === "Array")
+						return "Array<?>";
+
+					return type;
 				})
 				.map(type => Utils.typeToTitleCase(type)).join("|");
 		} else {

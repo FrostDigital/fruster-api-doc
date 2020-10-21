@@ -139,6 +139,7 @@ function startServer() {
 					skipOptionsRequest: true,
 					subject: "metadata",
 					maxResponses: 10000,
+					timeout: 10000,
 					message: { reqId: uuid.v4() }
 				});
 
