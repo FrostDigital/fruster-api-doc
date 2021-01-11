@@ -78,7 +78,7 @@ class ServiceClientGenerator {
 
 			this.endpointConstants.push(constant);
 
-			this.endpoints.push(new Endpoint(constantNameCombined, constant.functionVariableName, endpointParameters, description, returnType, endpoint.deprecated, endpoint.subject));
+			this.endpoints.push(new Endpoint(constantNameCombined, constant.functionVariableName, endpointParameters, description, returnType, endpoint.deprecated, endpoint.subject, endpoint.forwardToHttp));
 		});
 	}
 
@@ -508,14 +508,16 @@ class Endpoint {
 	 * @param {String|Object|TypeDefProperty} returnType
 	 * @param {String} deprecatedReason
 	 * @param {String} subject
+	 * @param {?} forwardToHttp
 	 */
-	constructor(urlConstant, endpointName, params, description, returnType, deprecatedReason, subject) {
+	constructor(urlConstant, endpointName, params, description, returnType, deprecatedReason, subject, forwardToHttp) {
 		this.endpointName = endpointName;
 		this.urlConstant = urlConstant;
 		this.description = description;
 		this.returnType = returnType;
 		this.deprecatedReason = deprecatedReason;
 		this.subject = subject;
+		this.forwardToHttp = forwardToHttp;
 
 		this.params = Utils.sortParams(params);
 		this.params = [new Parameter("reqId", "string", "the request id", true)].concat(this.params);
@@ -546,6 +548,7 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
 		${this.deprecatedReason ? `log.warn("Using deprecated endpoint '${this.endpointName}' : ${this.subject}")` : ""}
 		return (await bus.request({
 			subject: ${this.urlConstant},
+${!this.forwardToHttp ? `			skipOptionsRequest: true,` : ""}
 			message: {
 				reqId${requestBodyParams.length > 0 ? `,
 				data: {
@@ -689,6 +692,9 @@ class Utils {
 	}
 
 	static typeToTitleCase(string) {
+		if (typeof string === "object")
+			return string.name;
+
 		string = string.charAt(0).toUpperCase() + string.slice(1);
 
 		let output = "";
