@@ -548,7 +548,6 @@ ${this.params.map(param => param.toJavascriptClass()).join("\n")}
 		${this.deprecatedReason ? `log.warn("Using deprecated endpoint '${this.endpointName}' : ${this.subject}")` : ""}
 		return (await bus.request({
 			subject: ${this.urlConstant},
-${!this.forwardToHttp ? `			skipOptionsRequest: true,` : ""}
 			message: {
 				reqId${requestBodyParams.length > 0 ? `,
 				data: {
