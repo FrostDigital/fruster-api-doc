@@ -1,17 +1,12 @@
-FROM mhart/alpine-node:12
-
-ARG SOURCE_VERSION=na
-ENV SOURCE_VERSION=$SOURCE_VERSION
-
-RUN apk add --update bash && rm -rf /var/cache/apk/*
+FROM node:latest
 
 WORKDIR /app
-ADD . .
+COPY . ./
 
 RUN \
-  npm install; \
-  npm run-script build;
+    npm install; \
+    npm run build;
 
-EXPOSE 4000
+EXPOSE 3000
 
-cmd ["node", "dist/server.js"]
+CMD npm start
