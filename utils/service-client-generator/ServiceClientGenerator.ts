@@ -646,7 +646,7 @@ class Parameter {
 	 */
 	constructor(name, type, description, required, format?, parameterEnum?) {
 		this.name = name;
-		this.type = type || "?";
+		this.type = type || "*";
 		this.description = description;
 		this.required = !!required || type && type.toLowerCase && type.toLowerCase().includes("null");
 		this.format = format || null;
@@ -683,7 +683,7 @@ class Parameter {
 			typeString = "Number";
 
 		if (typeString === "Any")
-			typeString = "?";
+			typeString = "*";
 
 		if (this.name === ADDITIONAL_PROPERTIES_INTERNAL)
 			this.name = ADDITIONAL_PROPERTIES_OUTPUT;
