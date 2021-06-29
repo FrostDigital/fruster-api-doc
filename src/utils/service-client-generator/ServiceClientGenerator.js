@@ -95,6 +95,8 @@ class ServiceClientGenerator {
 /**
  * Note: this service client was generated automatically by api doc @ ${new Date().toJSON()}
  */
+
+${typDefs.map(typeDef => typeDef.split("\t").join("")).join("\n")}
 class ${this.className} {
 
 	/**
@@ -110,7 +112,6 @@ ${this.endpointConstants.map(endpointConstant => `			${endpointConstant.constant
 
 	}
 
-${typDefs.join("\n")}
 ${endpoints.join("\n")}
 }
 
@@ -607,7 +608,7 @@ class Parameter {
 	 */
 	constructor(name, type, description, required, format, parameterEnum) {
 		this.name = name;
-		this.type = type || "any";
+		this.type = type || "*";
 		this.description = description;
 		this.required = !!required || type && type.toLowerCase && type.toLowerCase().includes("null");
 		this.format = format || null;
@@ -644,7 +645,7 @@ class Parameter {
 			typeString = "Number";
 
 		if (typeString === "Any")
-			typeString = "any";
+			typeString = "*";
 
 		if (this.name === ADDITIONAL_PROPERTIES_INTERNAL)
 			this.name = ADDITIONAL_PROPERTIES_OUTPUT;
