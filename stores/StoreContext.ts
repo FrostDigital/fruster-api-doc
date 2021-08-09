@@ -5,6 +5,7 @@ import EndpointStore from "./EndpointStore";
 import ToolStore from "./ToolStore";
 import UIStore from "./UIStore";
 import FilterStore from "./FilterStore";
+import ConfigStore from "./ConfigStore";
 
 export class RootStore {
 
@@ -17,6 +18,8 @@ export class RootStore {
 	toolStore: ToolStore;
 
 	uiStore: UIStore;
+
+	configStore: ConfigStore;
 
 	constructor(initialState: any = {}) {
 		if (process.browser)
@@ -35,6 +38,9 @@ export class RootStore {
 
 		this.uiStore = new UIStore(this);
 		this.uiStore.setInitialState(initialState.uiStore);
+
+		this.configStore = new ConfigStore(this);
+		this.configStore.setInitialState(initialState.configStore);
 	}
 
 }

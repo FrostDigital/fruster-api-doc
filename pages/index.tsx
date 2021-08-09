@@ -6,7 +6,6 @@ import EndpointContainer from "../components/EndpointContainer";
 import EndpointsTableOfContentsComponent from "../components/EndpointsTableOfContentsComponent";
 import ErrorMessageComponent from "../components/ErrorMessageComponent";
 import ToolbarComponent from "../components/ToolbarComponent";
-import { PORT, projectName } from "../config";
 import { NIGHTMODE_COOKIE_NAME } from "../constants/constants";
 import { ENDPOINT_TYPE } from "../models/Endpoint";
 import { SubjectObject } from "../stores/EndpointStore";
@@ -16,9 +15,12 @@ import { filterByDocs, filterByPermissions, filterByService, filterBySubject } f
 import { reactToHashChange } from "../utils/hash-utils";
 import NextPropsMiddleware from "../utils/NextPropsMiddleware";
 import ViewUtils from "../utils/ViewUtils";
+import { PORT, apiRoot, projectName, colorCodedWords } from "../config";
+import Head from "next/head";
 
 const Index = ({ lastCachedDate }) => {
-	const { filterStore, toolStore, uiStore, endpointStore } = useStore();
+	const { filterStore, toolStore, uiStore, endpointStore, configStore } = useStore();
+	const { projectName } = configStore.config;
 
 	useEffect(() => {
 		if (toolStore.filter !== "") {
@@ -128,6 +130,10 @@ const Index = ({ lastCachedDate }) => {
 
 	return (
 		<>
+			<Head>
+				<title>{projectName ? (projectName + " ") : ""}API documentation</title>
+			</Head>
+
 			<div
 				className={`container`}
 				title="content container"
@@ -144,7 +150,7 @@ const Index = ({ lastCachedDate }) => {
 					!!toolStore.filter.length &&
 					<span style={{ marginLeft: "15px", color: "#ff6969", display: "inline", fontSize: "14px" }}>
 						<b>Note: </b><i>Showing filtered result by <b>"{toolStore.filter}"</b></i>.&nbsp;
-							<a
+						<a
 							className="clickable"
 							title="Reset filter (R)"
 							onClick={resetFilter}>Reset</a>
@@ -193,7 +199,9 @@ const Index = ({ lastCachedDate }) => {
 
 export default observer(Index);
 
-export const getServerSideProps = NextPropsMiddleware(async ({ req, res }, { endpointStore, toolStore }) => {
+export const getServerSideProps = NextPropsMiddleware(async ({ req, res }, { endpointStore, toolStore, configStore }) => {
+	configStore.config = { PORT, apiRoot, projectName, colorCodedWords };
+
 	const fetchClient = new FetchClient({
 		apiRoot: "http://localhost:" + PORT
 	});

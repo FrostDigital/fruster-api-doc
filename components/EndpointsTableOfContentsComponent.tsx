@@ -81,7 +81,7 @@ const EndpointsTableOfContentsComponent = ({ type, subjectObjects }: Props) => {
 
 			const subjectsMarkup = subjectObjs.map((subjectObj, i) => {
 				return (
-					<>
+					<React.Fragment key={i}>
 						<li
 							key={i}
 							hidden={subjectObjects[group] && subjectObjects[group][i] && subjectObjects[group][i].hidden}
@@ -98,7 +98,7 @@ const EndpointsTableOfContentsComponent = ({ type, subjectObjects }: Props) => {
 								</span> to {subjectObj.colorCodedSubject}
 							</a>
 						</li>
-					</>
+					</React.Fragment>
 				)
 			}).filter(e => !!e);
 

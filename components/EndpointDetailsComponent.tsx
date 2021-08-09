@@ -1,7 +1,6 @@
 import ReactMarkdown from "react-markdown";
 import { observer } from "mobx-react";
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { apiRoot } from "../config";
 import { useStore } from "../stores/StoreContext";
 import { SCHEMA_TYPE } from "../stores/UIStore";
 import ViewUtils from "../utils/ViewUtils";
@@ -26,7 +25,7 @@ interface Props {
 const EndpointDetailsComponent = ({ subject, schemas, type, checked, onCheck, serviceName, hidden }: Props) => {
 	const markup = useRef(null);
 
-	const { uiStore, endpointStore, toolStore } = useStore();
+	const { uiStore, endpointStore, toolStore, configStore } = useStore();
 	const allEndpoints = endpointStore.allEndpoints;
 	const endpoint = endpointStore.getEndpointBySubject(serviceName, subject);
 
@@ -188,6 +187,7 @@ const EndpointDetailsComponent = ({ subject, schemas, type, checked, onCheck, se
 	 */
 	const getEndpointDetailsTable = () => {
 		const { subject, serviceName, requestSchema, responseSchema, permissions, mustBeLoggedIn } = endpoint;
+		const { apiRoot } = configStore.config;
 
 		return (
 			<table
