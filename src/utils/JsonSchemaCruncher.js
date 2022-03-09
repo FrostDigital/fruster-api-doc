@@ -28,6 +28,9 @@ class JsonSchemaCruncher {
 		await fs.ensureDir(this.schemasDir);
 
 		await bundle.map(async (jsonSchema) => {
+			// Patch json schema in case newer "$id" is used instead of "id"
+			jsonSchema.id = jsonSchema.id || jsonSchema.$id;
+
 			if (this.schemasDir && jsonSchema.id) {
 				const filePath = path.join(this.schemasDir, jsonSchema.id);
 
