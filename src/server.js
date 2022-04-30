@@ -60,6 +60,10 @@ function startServer() {
 		res.json({ services: Object.keys(endpointsByType.service) });
 	});
 
+	app.get("/http-endpoints", async (req, res) => {
+		res.json(endpointsByType.http);
+	});
+
 	app.get("/service/:serviceName/endpoints", async (req, res) => {
 		if (!endpointsByType.service.length)
 			await handleGenerateApiDoc(req, res, true);

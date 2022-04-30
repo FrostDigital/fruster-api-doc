@@ -36,6 +36,7 @@
 		"uuid": "3.1.0"
 	},
 	"devDependencies": {
+		"@types/jasmine": "^2.8.6",
 		"babel-core": "^6.26.0",
 		"babel-loader": "^6.4.1",
 		"babel-polyfill": "^6.26.0",
@@ -46,18 +47,17 @@
 		"browser-refresh": "^1.7.2",
 		"browser-refresh-taglib": "^1.1.0",
 		"extract-text-webpack-plugin": "^1.0.1",
+		"jasmine": "^2.8.0",
+		"jasmine-spec-reporter": "^4.2.1",
 		"json-loader": "^0.5.4",
 		"nodemon": "1.17.3",
 		"npm-run-all": "^4.0.2",
+		"nyc": "^13.0.1",
 		"rollup-plugin-commonjs": "^9.1.0",
 		"rollup-plugin-replace": "^2.0.0",
 		"rollup-plugin-uglify": "^3.0.0",
 		"webpack": "^1.13.1",
-		"webpack-node-externals": "^1.2.0",
-		"@types/jasmine": "^2.8.6",
-		"jasmine": "^2.8.0",
-		"jasmine-spec-reporter": "^4.2.1",
-		"nyc": "^13.0.1"
+		"webpack-node-externals": "^1.2.0"
 	},
 	"engines": {
 		"node": "12.13.0"
