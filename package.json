@@ -21,7 +21,7 @@
 		"cookie-parser": "^1.4.4",
 		"express": "^4.16.3",
 		"fruster-bus": "0.5.10",
-		"fruster-health": "^0.0.14",
+		"fruster-health": "^0.2.1",
 		"fruster-log": "^0.0.18",
 		"highlight.js": "^9.12.0",
 		"jquery": "^3.3.1",
